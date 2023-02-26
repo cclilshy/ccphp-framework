@@ -1,0 +1,4 @@
+cron/**
+pipe/**
+temp/**
+template/**
