@@ -31,38 +31,34 @@ class Console
         return self::$argv;
     }
 
+    public static function pgreen(string $content)
+    {
+        self::printn("\033[32m{$content}\033[0m");
+    }
+
     public static function printn(string $content): void
     {
         echo $content . PHP_EOL;
     }
 
-    public static function brief(string $title, string $content): void
+    public static function pdebug()
     {
-        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
-        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
-        self::printn("\t\033[34m{$title}\033[0m \t\t\033[37m {$content} \033[0m");
-    }
-
-    public static function pgreen(string $content){
-        self::printn("\033[32m{$content}\033[0m");
-    }
-
-    public static function pred(string $content){
-        self::printn("\033[31m{$content}\033[0m");
-    }
-
-    public static function pdebug(){
         $args = func_get_args();
         $content = '';
-        foreach ($args as $arg){
-            if(is_array($arg) || is_object($arg)){
+        foreach ($args as $arg) {
+            if (is_array($arg) || is_object($arg)) {
                 $content .= json_encode($arg, JSON_UNESCAPED_UNICODE) . ',';
-            }else{
+            } else {
                 $content .= $arg . ',';
             }
         }
 
-        self::pred('[DEBUG]['.date("H:i:s").']'.$content);
+        self::pred('[DEBUG][' . date("H:i:s") . ']' . $content);
+    }
+
+    public static function pred(string $content)
+    {
+        self::printn("\033[31m{$content}\033[0m");
     }
 
     public function run(): void
@@ -83,5 +79,12 @@ class Console
             self::brief('run', 'mini server');
             foreach (self::$commands as $key => $item) self::brief($key, $item);
         }
+    }
+
+    public static function brief(string $title, string $content): void
+    {
+        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+        self::printn("\t\033[34m{$title}\033[0m \t\t\033[37m {$content} \033[0m");
     }
 }

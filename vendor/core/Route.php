@@ -24,6 +24,23 @@ class Route
         self::push($arguments[0], $name, self::parseCallback($arguments[1], $arguments[2] ?? ''));
     }
 
+    private static function push($entrance, $method, $map): void
+    {
+        if (in_array($method, self::METHODS)) self::$map[$method][trim($entrance, '/')] = $map;
+    }
+
+    private static function parseCallback($functionRoute, $params = ''): false|Map
+    {
+        $params = explode(',', $params);
+        if (is_string($functionRoute)) {
+            $route = explode('@', trim($functionRoute));
+            return Map::create($route[0], $route[1] ?? 'main', $params);
+        } elseif (is_callable($functionRoute)) {
+            return Map::create('', $functionRoute, $params);
+        }
+        return false;
+    }
+
     public static function init(): void
     {
         $path = APP_PATH . FS . 'route';
@@ -99,22 +116,5 @@ class Route
     public static function simulator($method, $target)
     {
         return self::guide($method, $target);
-    }
-
-    private static function push($entrance, $method, $map): void
-    {
-        if (in_array($method, self::METHODS)) self::$map[$method][trim($entrance, '/')] = $map;
-    }
-
-    private static function parseCallback($functionRoute, $params = ''): false|Map
-    {
-        $params = explode(',', $params);
-        if (is_string($functionRoute)) {
-            $route = explode('@', trim($functionRoute));
-            return Map::create($route[0], $route[1] ?? 'main', $params);
-        } elseif (is_callable($functionRoute)) {
-            return Map::create('', $functionRoute, $params);
-        }
-        return false;
     }
 }

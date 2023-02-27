@@ -9,9 +9,6 @@
 
 namespace core;
 
-use core\Pipe;
-use core\Console;
-
 class Observer
 {
     public string $name;
@@ -31,10 +28,20 @@ class Observer
         }
     }
 
+    public function lock(bool $wait = false): bool
+    {
+        return $this->pipe->lock($wait);
+    }
+
     public static function notice(Pipe $pipe, string $info): void
     {
         $pipe->insert($info);
         $pipe->unlock();
+    }
+
+    public function insert(string $info): bool|int
+    {
+        return $this->pipe->insert($info);
     }
 
     public static function listener(string $pipeName, callable $handle): Observer
@@ -49,11 +56,6 @@ class Observer
         }, true);
     }
 
-    public function insert(string $info): bool|int
-    {
-        return $this->pipe->insert($info);
-    }
-
     public function go(): bool
     {
         return $this->pipe->unlock();
@@ -65,34 +67,29 @@ class Observer
         $this->pipe = Pipe::register($name);
     }
 
-    public function lock(bool $wait = false): bool
-    {
-        return $this->pipe->lock($wait);
-    }
-
-    public function release(): void
-    {
-        $this->pipe->release();
-    }
-
     public function ob(): void
     {
         while (true) {
             Console::pdebug('ob wait command :' . $this->name);
             if ($pipe = Pipe::load($this->name)) {
-                if(!$command = $pipe->read()){
+                if (!$command = $pipe->read()) {
                     sleep(1);
                     continue;
                 }
                 $this->count++;
                 $pipe->release();
                 Console::pdebug('ob recv command :' . $this->name . ' ' . $command);
-                call_user_func($this->handle, $command,$this);
-                
-            }else{
+                call_user_func($this->handle, $command, $this);
+
+            } else {
                 sleep(10);
                 Console::pdebug('ob not found :' . $this->name . '');
             }
         }
+    }
+
+    public function release(): void
+    {
+        $this->pipe->release();
     }
 }

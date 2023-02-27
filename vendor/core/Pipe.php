@@ -28,7 +28,7 @@ class Pipe
         $this->resource = fopen($this->fullFilePath, 'r+');
     }
 
-    public static function register($name): Pipe | false
+    public static function register($name): Pipe|false
     {
         $fullFilePath = CACHE_PATH . FS . 'pipe' . FS . $name . '.pipe';
         if (file_exists($fullFilePath)) {
@@ -38,7 +38,7 @@ class Pipe
         }
     }
 
-    public static function load($name): Pipe | false
+    public static function load($name): Pipe|false
     {
         $fullFilePath = CACHE_PATH . FS . 'pipe' . FS . $name . '.pipe';
         if (!file_exists($fullFilePath)) {

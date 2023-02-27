@@ -12,7 +12,6 @@ namespace core\Server;
 use core\Route;
 use core\Process\Process;
 
-
 class Cron
 {
     private static $tasks;

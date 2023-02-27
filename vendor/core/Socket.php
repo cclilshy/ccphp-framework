@@ -25,7 +25,7 @@ class Socket extends Server
             $onClose = Config::get('socket.onClose');
             $c = new Sock($onStart, $onConnect, $onMessage, $onClose);
             $c->listen('tcp://0.0.0.0:9999');
-        }else{
+        } else {
             echo " [Socket] start faild \n";
         }
     }

@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-02-19 20:58:16
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @Description: My house
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
@@ -20,9 +20,16 @@ class IPC
     private $common; // 公共管道
     private $observer; // 监控函数
 
-    public static function create(callable $observer, object $object = null, string $name = null): IPC | false
+    private function __construct(string $name)
     {
-        $name = $name ??  CACHE_PATH . '/pipe/ipc_fifo_' . posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
+        $this->name = $name;
+        $this->lockFilePath = $name . '_l.pipe';
+        $this->common = fopen($this->name . '_c.pipe', 'r+');
+    }
+
+    public static function create(callable $observer, object $object = null, string $name = null): IPC|false
+    {
+        $name = $name ?? CACHE_PATH . '/pipe/ipc_fifo_' . posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
         if (file_exists($name . '_l.pipe')) return false;
         if (file_exists($name . '_p.pipe')) return false;
         if (file_exists($name . '_s.pipe')) return false;
@@ -40,29 +47,6 @@ class IPC
         } else {
             return false;
         }
-    }
-
-    public static function link(string $name): IPC | false
-    {
-        if (!file_exists($name . '_l.pipe')) return false;
-        if (!file_exists($name . '_p.pipe')) return false;
-        if (!file_exists($name . '_s.pipe')) return false;
-        if (!file_exists($name . '_c.pipe')) return false;
-        $o = new self($name);
-        $o->initStream();
-        return $o;
-    }
-
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    private function __construct(string $name)
-    {
-        $this->name = $name;
-        $this->lockFilePath = $name . '_l.pipe';
-        $this->common = fopen($this->name . '_c.pipe', 'r+');
     }
 
     private function ob(): int
@@ -86,7 +70,7 @@ class IPC
                         $context = call_user_func_array($this->observer, $work);
                         fwrite($this->common, serialize($context) . PHP_EOL);
                         fwrite($this->to, 1);
-                        if($context === 'quit'){
+                        if ($context === 'quit') {
                             exit;
                         }
                     }
@@ -103,6 +87,22 @@ class IPC
     {
         $this->me = fopen($this->name . '_p.pipe', 'r+');
         $this->to = fopen($this->name . '_s.pipe', 'r+');
+    }
+
+    public static function link(string $name): IPC|false
+    {
+        if (!file_exists($name . '_l.pipe')) return false;
+        if (!file_exists($name . '_p.pipe')) return false;
+        if (!file_exists($name . '_s.pipe')) return false;
+        if (!file_exists($name . '_c.pipe')) return false;
+        $o = new self($name);
+        $o->initStream();
+        return $o;
+    }
+
+    public function __get($name)
+    {
+        return $this->$name;
     }
 
     public function call(): mixed
@@ -131,13 +131,6 @@ class IPC
         return $result;
     }
 
-    public function close(): void
-    {
-        fclose($this->me);
-        fclose($this->to);
-        fclose($this->common);
-    }
-
     public function release(): void
     {
         fwrite($this->common, 'quit' . PHP_EOL);
@@ -149,7 +142,15 @@ class IPC
         unlink($this->name . '_l.pipe');
     }
 
-    public function stop(){
+    public function close(): void
+    {
+        fclose($this->me);
+        fclose($this->to);
+        fclose($this->common);
+    }
+
+    public function stop()
+    {
         fwrite($this->common, serialize(true));
         fwrite($this->to, 1);
         exit;

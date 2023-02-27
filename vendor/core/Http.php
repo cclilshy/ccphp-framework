@@ -67,6 +67,16 @@ class Http
         return Http::$map->$name;
     }
 
+    public function run(): void
+    {
+        if (Http::$map = Route::guide(Http::$request->uri, Http::$request->method)) {
+            Http::end(Http::$map->run());
+        } else {
+            header('HTTP/1.1 404 Not Found');
+            Http::httpErrorHandle(0, 'Route not found: {' . Http::$request->uri . '}', __FILE__, 1);
+        }
+    }
+
     public static function end(string $content = null): void
     {
         if (Http::$config['debug'] === true && Http::$request->ajax === false) {
@@ -127,15 +137,5 @@ class Http
         $html = Template::apply($html);
 
         die($html);
-    }
-
-    public function run(): void
-    {
-        if (Http::$map = Route::guide(Http::$request->uri, Http::$request->method)) {
-            Http::end(Http::$map->run());
-        } else {
-            header('HTTP/1.1 404 Not Found');
-            Http::httpErrorHandle(0, 'Route not found: {' . Http::$request->uri . '}', __FILE__, 1);
-        }
     }
 }

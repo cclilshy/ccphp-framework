@@ -36,6 +36,32 @@ class Template
         self::$arguments = array_merge(self::$arguments, [$key => $value]);
     }
 
+    private static function executeForeach(array $arguments, array $tempArgv = array()): string
+    {
+        foreach (array_merge(self::$arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
+            $$executeIfForeachKey = $executeIfForeachValue;
+        }
+        $originContent = $arguments[0];
+        $templateFrammentArrayName = $arguments[1];
+        $templateFrammentKeyName = $arguments[2];
+        $templateFrammentItemName = $arguments[3];
+        $templateFrammentContent = $arguments[4];
+        if ($templateFrammentItemName === '') $templateFrammentItemName = $templateFrammentKeyName;
+        foreach (self::$arguments as $applyForeachAssignmentKey => $applyForeachAssignmentValue)
+            $$applyForeachAssignmentKey = $applyForeachAssignmentValue;
+        $templateFrammentHtml = '';
+        $templateFrammentArray = eval('return ' . $templateFrammentArrayName . ';');
+        $templateFrammentIndex = 0;
+        foreach ($templateFrammentArray as $templateFrammentKey => $templateFrammentValue) {
+            $templateFrammentHtml .= self::apply($templateFrammentContent, [
+                substr($templateFrammentKeyName, 1) => $templateFrammentKey,
+                substr($templateFrammentItemName, 1) => $templateFrammentValue,
+            ]);
+            $templateFrammentIndex++;
+        }
+        return $templateFrammentHtml;
+    }
+
     public static function apply(string $applyTemplateText, array $tempArguments = array()): string
     {
         //定义变量
@@ -96,33 +122,7 @@ class Template
         return $applyTemplateText;
     }
 
-    private static function executeForeach(array $arguments, array  $tempArgv = array()): string
-    {
-        foreach (array_merge(self::$arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
-            $$executeIfForeachKey = $executeIfForeachValue;
-        }
-        $originContent = $arguments[0];
-        $templateFrammentArrayName = $arguments[1];
-        $templateFrammentKeyName = $arguments[2];
-        $templateFrammentItemName = $arguments[3];
-        $templateFrammentContent = $arguments[4];
-        if ($templateFrammentItemName === '') $templateFrammentItemName = $templateFrammentKeyName;
-        foreach (self::$arguments as $applyForeachAssignmentKey => $applyForeachAssignmentValue)
-            $$applyForeachAssignmentKey = $applyForeachAssignmentValue;
-        $templateFrammentHtml = '';
-        $templateFrammentArray = eval('return ' . $templateFrammentArrayName . ';');
-        $templateFrammentIndex = 0;
-        foreach ($templateFrammentArray as $templateFrammentKey => $templateFrammentValue) {
-            $templateFrammentHtml .= self::apply($templateFrammentContent, [
-                substr($templateFrammentKeyName, 1) => $templateFrammentKey,
-                substr($templateFrammentItemName, 1) => $templateFrammentValue,
-            ]);
-            $templateFrammentIndex++;
-        }
-        return $templateFrammentHtml;
-    }
-
-    private static function execute(string $content, string $tag, array  $arguments): string | false
+    private static function execute(string $content, string $tag, array $arguments): string|false
     {
         $matchc = preg_match(self::$regexs[$tag], $content, $matchs);
         if ($matchc > 0)
@@ -160,7 +160,7 @@ class Template
         return $executeWhileFarmment;
     }
 
-    private static function executeIf(array $arguments, array  $tempArgv = array()): string
+    private static function executeIf(array $arguments, array $tempArgv = array()): string
     {
         foreach (array_merge(self::$arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
             $$executeIfForeachKey = $executeIfForeachValue;

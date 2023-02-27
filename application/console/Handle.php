@@ -2,8 +2,6 @@
 
 namespace console;
 
-use core\Thread;
-
 class Handle
 {
     public static function register(): string

@@ -24,14 +24,10 @@ class Server
             $console::printn("Please enter the command \n> master server [start|stop] [-d]\n");
             return;
         }
-
-        $pid = \core\Process\Process::fork(function(){
-            for ($i=0; $i < 10; $i++) { 
-                sleep(1);
-                echo "1";
-            }
-        });
-        sleep(3);
-        \core\Process\Process::kill($pid, SIGKILL);
+        if ($argv[1] == 'start') {
+            \core\Process\Tree::launch();
+        } elseif ($argv[1] === 'stop') {
+            \core\Process\Tree::stop();
+        }
     }
 }
