@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-07 20:41:26
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/Database.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -10,31 +10,34 @@
 
 namespace core;
 
+use Illuminate\Database\Capsule\Manager as Capsule;
+use Illuminate\Database\Connection;
+
 class DB
 {
-    protected static $config;
-    protected static $db;
-    protected static string $dbClass;
+    private static $config;
+    private static $db;
+    private static string $dbClass;
+    private static Capsule $capsule;
+    private static Connection $connect;
 
     public static function init($config): void
     {
-        $type = $config['type'];
-        self::$dbClass = __NAMESPACE__ . '\Database\\' . ucfirst($type);
-        self::$config = $config[$type];
+        // $type = $config['type'];
+        // self::$dbClass = __NAMESPACE__ . '\Database\\' . ucfirst($type);
+        // self::$config = $config[$type];
+        self::$capsule = new Capsule;
+        self::$capsule->addConnection($config);
+        self::$connect =  self::connect();
     }
 
-    public static function connect()
+    public static function connect(): Connection
     {
-        return new self::$dbClass(self::$config);
+        return self::$capsule->getConnection();
     }
 
-    public static function table($name)
+    public static function __callStatic($name,$arguments)
     {
-        return call_user_func([new self::$dbClass(self::$config), 'table'], $name);
-    }
-
-    public static function name($name)
-    {
-        return call_user_func([new self::$dbClass(self::$config), self::$config['prefix'] . $name]);
+        return call_user_func_array([self::$connect,$name],$arguments);
     }
 }
