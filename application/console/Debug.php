@@ -21,15 +21,16 @@ class Debug
     public function main($argv, $console): void
     {
         Process::init();
-        for ($i = 0; $i < 100; $i++) {
+        for ($i = 0; $i < 1000; $i++) {
             Process::fork(function () use ($i) {
                 echo $i . ',';
-                sleep(rand(10, 30));
+                sleep(rand(5, 10));
             });
+            usleep(100);
         }
 
-        sleep(1);
-        Process::killAll(posix_getpid());
+        sleep(3);
+        // Process::killAll(posix_getpid());
         Process::guard();
     }
 }

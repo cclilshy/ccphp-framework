@@ -11,6 +11,8 @@ namespace console;
 
 // Start The Service Class Perform Timing Tasks And Socket Services
 
+use core\Process\Tree;
+
 class Server
 {
     public static function register(): string
@@ -25,9 +27,9 @@ class Server
             return;
         }
         if ($argv[1] == 'start') {
-            \core\Process\Tree::launch();
+            Tree::launch();
         } elseif ($argv[1] === 'stop') {
-            \core\Process\Tree::stop();
+            Tree::stop();
         }
     }
 }

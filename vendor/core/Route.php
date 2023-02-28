@@ -83,7 +83,7 @@ class Route
                     continue;
                 for ($i = 0; $i < count($routeKeyFrags); $i++) {
                     if ($entranceFrags[$i] !== $routeKeyFrags[$i]) {
-                        if ((strpos($routeKeyFrags[$i], ':') === 0)) {
+                        if ((str_starts_with($routeKeyFrags[$i], ':'))) {
                             Input::set('get', substr($routeKeyFrags[$i], 1), $entranceFrags[$i]);
                         } else {
                             break;

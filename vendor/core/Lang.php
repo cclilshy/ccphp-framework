@@ -33,6 +33,7 @@ class Lang
      * @param string $name 语言包名称
      * @param string $lang 语言包
      * @return string
+     * @throws Exception
      */
     public static function get(string $name, string $lang = ''): string
     {
@@ -45,6 +46,7 @@ class Lang
      * 加载语言包
      * @param string $lang 语言包名称
      * @return array
+     * @throws Exception
      */
     public static function load(string $lang): array
     {

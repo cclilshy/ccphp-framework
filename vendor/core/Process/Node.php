@@ -16,7 +16,7 @@ namespace core\Process;
 
 class Node
 {
-    private static array $hashMap = []; // 哈希表索引
+    // 哈希表索引
     private int $pid; // 进程id
     private int $ppid; // 父进程
     private array $children; // 子进程
@@ -102,7 +102,7 @@ class Node
      * @param int $pid
      * @return void
      */
-    public function extend(int $pid): Node
+    public function extend(int $pid)
     {
         $this->ppid = $pid;
         return $this;
@@ -130,7 +130,7 @@ class Node
      * @param $pid
      * @return void
      */
-    public function get($pid): Node|null
+    public function get($pid)
     {
         return $this->children[$pid] ?? null;
     }

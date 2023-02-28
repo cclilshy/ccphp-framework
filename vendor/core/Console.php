@@ -31,7 +31,7 @@ class Console
         return self::$argv;
     }
 
-    public static function pgreen(string $content)
+    public static function pgreen(string $content): void
     {
         self::printn("\033[32m{$content}\033[0m");
     }
@@ -41,7 +41,7 @@ class Console
         echo $content . PHP_EOL;
     }
 
-    public static function pdebug()
+    public static function pdebug(): void
     {
         $args = func_get_args();
         $content = '';
@@ -56,7 +56,7 @@ class Console
         self::pred('[DEBUG][' . date("H:i:s") . ']' . $content);
     }
 
-    public static function pred(string $content)
+    public static function pred(string $content): void
     {
         self::printn("\033[31m{$content}\033[0m");
     }

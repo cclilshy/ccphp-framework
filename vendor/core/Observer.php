@@ -83,7 +83,7 @@ class Observer
 
             } else {
                 sleep(10);
-                Console::pdebug('ob not found :' . $this->name . '');
+                Console::pdebug('ob not found :' . $this->name);
             }
         }
     }

@@ -9,6 +9,8 @@
 
 namespace core\Process;
 
+use JetBrains\PhpStorm\NoReturn;
+
 class IPC
 {
     public object $object;  // 允许在初始化时用户自定义的对象
@@ -19,6 +21,7 @@ class IPC
     private $to; // 目标进程
     private $common; // 公共管道
     private $observer; // 监控函数
+    private $lock;
 
     private function __construct(string $name)
     {
@@ -35,13 +38,13 @@ class IPC
         if (file_exists($name . '_s.pipe')) return false;
         if (file_exists($name . '_c.pipe')) return false;
 
-        touch($name . '_l.pipe', 0600);
+        posix_mkfifo($name . '_l.pipe', 0600);
         posix_mkfifo($name . '_p.pipe', 0600);
         posix_mkfifo($name . '_s.pipe', 0600);
         posix_mkfifo($name . '_c.pipe', 0600);
         $o = new self($name);
         if ($object) $o->object = $object;
-        $o->observer = $observer;;
+        $o->observer = $observer;
         if ($o->ob()) {
             return $o;
         } else {
@@ -55,11 +58,20 @@ class IPC
             case 0:
                 $this->me = fopen($this->name . '_s.pipe', 'r+');
                 $this->to = fopen($this->name . '_p.pipe', 'r+');
-                while (fread($this->me, 1)) {
-                    $work = fgets($this->common);
-                    if ($work === 'quit' . PHP_EOL) {
-                        fwrite($this->common, 'quit' . PHP_EOL);
-                        fwrite($this->to, 1);
+                while ($length = intval(fgets($this->me))) {
+                    $work = '';
+                    while ($length > 0) {
+                        if ($length > 8192) {
+                            $work .= fread($this->common, 8192);
+                            $length -= 8192;
+                        } else {
+                            $work .= fread($this->common, $length);
+                            $length = 0;
+                        }
+                    }
+                    if ($work === 'quit') {
+                        fwrite($this->common, 'quit');
+                        fwrite($this->to, 4 . PHP_EOL);
                         fclose($this->me);
                         fclose($this->to);
                         fclose($this->common);
@@ -67,10 +79,11 @@ class IPC
                     } else {
                         $work = unserialize($work);
                         array_unshift($work, $this);
-                        $context = call_user_func_array($this->observer, $work);
-                        fwrite($this->common, serialize($context) . PHP_EOL);
-                        fwrite($this->to, 1);
-                        if ($context === 'quit') {
+                        $result = call_user_func_array($this->observer, $work);
+                        $context = serialize($result);
+                        fwrite($this->common, $context);
+                        fwrite($this->to,  strlen($context) . PHP_EOL);
+                        if ($result === 'quit') {
                             exit;
                         }
                     }
@@ -85,6 +98,8 @@ class IPC
 
     private function initStream(): void
     {
+        $this->lock = fopen($this->lockFilePath, 'r+');
+        fwrite($this->lock, 1);
         $this->me = fopen($this->name . '_p.pipe', 'r+');
         $this->to = fopen($this->name . '_s.pipe', 'r+');
     }
@@ -107,14 +122,25 @@ class IPC
 
     public function call(): mixed
     {
-        $f = fopen($this->lockFilePath, 'r+');
-        flock($f, LOCK_EX);
-        fwrite($this->common, serialize(func_get_args()) . PHP_EOL);
-        fwrite($this->to, 1);
-        fread($this->me, 1);
-        $result = unserialize(fgets($this->common));
-        flock($f, LOCK_UN);
-        fclose($f);
+        fread($this->lock,1);
+        echo '';
+        $context =  serialize(func_get_args());
+        fwrite($this->common, $context);
+        fwrite($this->to, strlen($context) . PHP_EOL);
+
+        $length = intval(fgets($this->me));
+        $result = '';
+        while ($length > 0) {
+            if ($length > 8192) {
+                $result .= fread($this->common, 8192);
+                $length -= 8192;
+            } else {
+                $result .= fread($this->common, $length);
+                $length = 0;
+            }
+        }
+        $result = unserialize($result);
+        fwrite($this->lock, 1);
         return $result;
     }
 
@@ -122,10 +148,20 @@ class IPC
     {
         $f = fopen($this->lockFilePath, 'r+');
         flock($f, LOCK_EX);
-        fwrite($this->common, $context . PHP_EOL);
-        fwrite($this->to, 1);
-        fread($this->me, 1);
-        $result = fgets($this->common);
+        fwrite($this->common, $context);
+        fwrite($this->to, strlen($context) . PHP_EOL);
+
+        $length = intval(fgets($this->me));
+        $result = '';
+        while ($length > 0) {
+            if ($length > 8192) {
+                $result .= fread($this->common, 8192);
+                $length -= 8192;
+            } else {
+                $result .= fread($this->common, $length);
+                $length = 0;
+            }
+        }
         flock($f, LOCK_UN);
         fclose($f);
         return $result;
@@ -149,7 +185,7 @@ class IPC
         fclose($this->common);
     }
 
-    public function stop()
+    #[NoReturn] public function stop(): void
     {
         fwrite($this->common, serialize(true));
         fwrite($this->to, 1);

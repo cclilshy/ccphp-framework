@@ -32,6 +32,6 @@ class Socket extends Server
 
     public static function stop(): bool
     {
-        return Server::release();
+        return (new Server\Server)->release();
     }
 }

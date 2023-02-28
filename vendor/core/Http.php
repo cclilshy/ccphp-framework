@@ -11,6 +11,7 @@
 namespace core;
 
 use core\Ccphp\Launch;
+use JetBrains\PhpStorm\NoReturn;
 use stdClass;
 
 // Load The Running Http Information 
@@ -100,7 +101,7 @@ class Http
         echo $content;
     }
 
-    public static function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine): void
+    #[NoReturn] public static function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine): void
     {
         $statistics = Launch::statistics();
         $fileDescribe = '';
