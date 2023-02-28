@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2023-02-14 10:29:00
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @Description: My house
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
@@ -28,12 +28,12 @@ class Server
             $this->status = false;
             $this->name = $name;
             $this->pid = posix_getpid();
-            $this->pipe = Pipe::register($name);
+            $this->pipe = Pipe::create($name);
             $this->data = [];
             $this->record();
             return;
         } else {
-            $this->pipe = Pipe::load($name);
+            $this->pipe = Pipe::link($name);
             $server = $this->pipe->read();
             $server = unserialize($server);
             $this->status = $server->status;
@@ -42,7 +42,6 @@ class Server
             $this->data = $server->data;
             return;
         }
-
     }
 
     // public function __destruct(){
@@ -59,25 +58,24 @@ class Server
         $this->record();
     }
 
-    public function release() : void
+    public function release(): void
     {
         $this->pipe->release();
     }
 
     private function record(): void
     {
-        $this->pipe->flush();
-        $this->pipe->insert(serialize($this));
+        $this->pipe->write(serialize($this));
     }
 
     // 创建一个服务,并自动储存该类的信息, 返回创建成功与否
     public static function create(string $name = ''): Server | false
     {
         $name = empty($name) ? str_replace('/', '_', debug_backtrace()[0]['file']) : $name;
-        if (Pipe::exists($name)) {
+        if (Pipe::link($name)) {
             return false;
         } else {
-            return new self($name,true);
+            return new self($name, true);
         }
     }
 
@@ -85,7 +83,7 @@ class Server
     public static function load(string $name = ''): object | false
     {
         $name = empty($name) ? str_replace('/', '_', debug_backtrace()[0]['file']) : $name;
-        if (Pipe::exists($name)) {
+        if (Pipe::link($name)) {
             return new self($name);
         } else {
             return false;

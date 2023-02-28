@@ -145,8 +145,8 @@ class Tree
         if ($server = Server::load('Tree')) {
             $ipcName = $server->data['tree_name'];
             if ($IPC = IPC::link($ipcName)) {
-                $IPC->send('quit');
                 $server->release();
+                $IPC->release();
                 Console::pgreen('[TreeServer] stopped!');
                 return true;
             }

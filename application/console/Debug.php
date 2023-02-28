@@ -21,7 +21,7 @@ class Debug
     public function main($argv, $console): void
     {
         Process::init();
-        for ($i = 0; $i < 1000; $i++) {
+        for ($i = 0; $i < 10; $i++) {
             Process::fork(function () use ($i) {
                 echo $i . ',';
                 sleep(rand(5, 10));
@@ -30,7 +30,7 @@ class Debug
         }
 
         sleep(3);
-        // Process::killAll(posix_getpid());
+        Process::killAll(posix_getpid());
         Process::guard();
     }
 }

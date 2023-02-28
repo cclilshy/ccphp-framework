@@ -84,7 +84,8 @@ class IPC
                         fwrite($this->common, $context);
                         fwrite($this->to,  strlen($context) . PHP_EOL);
                         if ($result === 'quit') {
-                            exit;
+                            sleep(1);
+                            $this->release();
                         }
                     }
                 }
@@ -169,13 +170,14 @@ class IPC
 
     public function release(): void
     {
-        fwrite($this->common, 'quit' . PHP_EOL);
-        fwrite($this->to, 1);
+        fwrite($this->common, 'quit');
+        fwrite($this->to, 4 . PHP_EOL);
         $this->close();
         unlink($this->name . '_p.pipe');
         unlink($this->name . '_s.pipe');
         unlink($this->name . '_c.pipe');
         unlink($this->name . '_l.pipe');
+        exit;
     }
 
     public function close(): void

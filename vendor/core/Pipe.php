@@ -1,74 +1,123 @@
 <?php
-/*
- * @Author: cclilshy jingnigg@163.com
- * @Date: 2022-12-06 16:13:41
- * @LastEditors: cclilshy jingnigg@163.com
- * @FilePath: /ccphp/vendor/core/Pipe.php
- * @Description: My house
- * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
+
+/**
+ * @Author: cclilshy
+ * @Date:   2023-02-28 16:51:36
+ * @Last Modified by:   cclilshy
+ * @Last Modified time: 2023-02-28 17:30:12
  */
 
 namespace core;
 
-// 管道类
-
 class Pipe
 {
-    public string $fullFilePath;
-    public $resource;
-    public $name;
+    private $resource;
+    private int $point;
+    private int $eof;
+    private string $name;
+    private string $path;
 
-    public function __construct($name)
+    private function __construct($name, $eof = -1)
     {
         $this->name = $name;
-        $this->fullFilePath = CACHE_PATH . FS . 'pipe' . FS . $name . '.pipe';
-        if (!file_exists($this->fullFilePath)) {
-            touch($this->fullFilePath);
-        }
-        $this->resource = fopen($this->fullFilePath, 'r+');
+        $this->path = CACHE_PATH . '/pipe/' .  $name . '.pipe';
+        $this->resource = fopen($this->path, 'r+');
+        $this->point = 0;
+        $this->eof = $eof;
     }
 
-    public static function register($name): Pipe|false
+    private function adjustPoint(int $location): void
     {
-        $fullFilePath = CACHE_PATH . FS . 'pipe' . FS . $name . '.pipe';
-        if (file_exists($fullFilePath)) {
-            return false;
-        } else {
-            return new self($name);
-        }
+        $this->point = $location;
+        fseek($this->resource, $this->point);
     }
 
-    public static function load($name): Pipe|false
-    {
-        $fullFilePath = CACHE_PATH . FS . 'pipe' . FS . $name . '.pipe';
-        if (!file_exists($fullFilePath)) {
-            return false;
-        } else {
-            return new self($name);
-        }
-    }
-
-    public static function exists($name): bool
-    {
-        return file_exists(CACHE_PATH . FS . 'pipe' . FS . $name . '.pipe');
-    }
-
-    public function flush(): void
+    private function flush(): void
     {
         ftruncate($this->resource, 0);
+        $this->eof = -1;
+        $this->adjustPoint(0);
     }
 
-    public function insert($string, int $start = 0): false|int
+    public static function create(string $name): Pipe|false
     {
-        $this->lock(true);
-        fseek($this->resource, $start);
-        $this->unlock();
-        return fwrite($this->resource, $string);
+        if (!file_exists(CACHE_PATH . '/pipe/' .  $name . '.pipe')) {
+            touch(CACHE_PATH . '/pipe/' .  $name . '.pipe', 0666);
+            return new Pipe($name);
+        }
+        return false;
     }
 
-    public function lock($wait = false): bool
+    public static function link(string $name): Pipe|false
     {
-        return flock($this->resource, $wait ? (LOCK_EX) : (LOCK_EX | LOCK_NB));
+        if (file_exists(CACHE_PATH . '/pipe/' .  $name . '.pipe')) {
+            return new Pipe($name, filesize(CACHE_PATH . '/pipe/' .  $name . '.pipe'));
+        }
+        return false;
+    }
+
+
+    public function write(string $content, int $start = 0): int | false
+    {
+        if (strlen($content) < 1) {
+            return false;
+        }
+
+        if ($start === 0) {
+            $this->flush();
+        }
+        $this->adjustPoint($start);
+        $this->eof += strlen($content) - $start;
+        return fwrite($this->resource, $content);
+    }
+
+    public function push(string $content): int
+    {
+        $this->adjustPoint($this->eof);
+        $this->eof += strlen($content);
+        fwrite($this->resource, $content);
+        return $this->eof;
+    }
+
+    public function read(): string | false
+    {
+        return $this->section(0);
+    }
+
+    public function section(int $start, int $end = 0): string | false
+    {
+        if ($end === 0) {
+            $end = $this->eof - $start;
+        }
+
+        if ($end > $this->eof || $end < $start) {
+            return false;
+        }
+
+        $this->adjustPoint($start);
+        $length = $end - $start  + 1;
+        $context = '';
+
+        while ($length > 0) {
+            if ($length > 8192) {
+                $context .= fread($this->resource, 8192);
+                $length -= 8192;
+            } else {
+                $context .= fread($this->resource, $length);
+                $length = 0;
+            }
+        }
+
+        return $context;
+    }
+
+    public function lock($wait = true): bool
+    {
+        if ($wait) {
+            return flock($this->resource, LOCK_EX);
+        } else {
+            return flock($this->resource, LOCK_EX | LOCK_NB);
+        }
     }
 
     public function unlock(): bool
@@ -76,27 +125,20 @@ class Pipe
         return flock($this->resource, LOCK_UN);
     }
 
-    public function read(int $start = 0, int $length = 0): false|string
+    public function clone(): Pipe
     {
-        $this->lock(true);
-        if ($length === 0) {
-            return file_get_contents($this->fullFilePath);
-        }
+        return new self($this->name, $this->eof);
+    }
 
-        fseek($this->resource, $start);
-        $this->unlock();
-        return fread($this->resource, $length);
+    public function close(): void
+    {
+        fclose($this->resource);
     }
 
     public function release(): void
     {
         $this->unlock();
         fclose($this->resource);
-        file_exists($this->fullFilePath) && unlink($this->fullFilePath);
-    }
-
-    public function listen(callable $handler): int
-    {
-        return -1;
+        unlink($this->path);
     }
 }

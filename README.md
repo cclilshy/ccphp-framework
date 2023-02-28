@@ -214,7 +214,7 @@ $pipe->unlock();
 
 # 文件读写, 非线程安全, 可以配合锁使用
 //尾部追加数据
-$pipe->insert(posix_getpid());
+$pipe->write(posix_getpid());
 //读取管道数据
 $pipe->read();
 ```
