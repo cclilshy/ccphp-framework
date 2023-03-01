@@ -9,6 +9,8 @@
 
 namespace core\Process;
 
+use core\Pipe;
+
 class IPC
 {
     public object $object;  // 允许在初始化时用户自定义的对象
@@ -20,14 +22,14 @@ class IPC
     private $to; // 目标进程
     private $common; // 公共管道
     private $observer; // 监控函数
-    private $lock;
+    private Pipe $lock;
 
     private function __construct(string $name)
     {
         $this->name = $name;
-        $this->fifoFile =  CACHE_PATH . '/pipe/ipc_fifo_' . $name;
-        $this->lockFilePath = $this->fifoFile . '_l.pipe';
+        $this->fifoFile = CACHE_PATH . '/pipe/ipc_fifo_' . $name;
         $this->common = fopen($this->fifoFile . '_c.pipe', 'r+');
+        $this->lock = Pipe::link($name);
     }
 
     public static function create(callable $observer, object $object = null, string $name = null): IPC|false
@@ -36,12 +38,15 @@ class IPC
             $name = posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
         }
         $path =  CACHE_PATH . '/pipe/ipc_fifo_' . $name;
-        if (file_exists($path . '_l.pipe')) return false;
+        if ($pipe = Pipe::link($name)) {
+            $pipe->close();
+            return false;
+        }
         if (file_exists($path . '_p.pipe')) return false;
         if (file_exists($path . '_s.pipe')) return false;
         if (file_exists($path . '_c.pipe')) return false;
 
-        posix_mkfifo($path . '_l.pipe', 0600);
+        Pipe::create($name);
         posix_mkfifo($path . '_p.pipe', 0600);
         posix_mkfifo($path . '_s.pipe', 0600);
         posix_mkfifo($path . '_c.pipe', 0600);
@@ -61,7 +66,6 @@ class IPC
             case 0:
                 $this->me = fopen($this->fifoFile . '_s.pipe', 'r+');
                 $this->to = fopen($this->fifoFile . '_p.pipe', 'r+');
-                $this->lock = fopen($this->lockFilePath, 'r+');
                 while ($arguments = $this->fullText()) {
                     $arguments = unserialize($arguments);
                     if (isset($arguments[0]) && $arguments[0] === 'quit') {
@@ -91,8 +95,6 @@ class IPC
 
     private function initStream(): void
     {
-        $this->lock = fopen($this->lockFilePath, 'r+');
-        fwrite($this->lock, 1);
         $this->me = fopen($this->fifoFile . '_p.pipe', 'r+');
         $this->to = fopen($this->fifoFile . '_s.pipe', 'r+');
     }
@@ -100,10 +102,11 @@ class IPC
     public static function link(string $name): IPC|false
     {
         $path = CACHE_PATH . '/pipe/ipc_fifo_' . $name;
-        if (!file_exists($path . '_l.pipe')) return false;
+        if (!$pipe = Pipe::link($name)) return false;
         if (!file_exists($path . '_p.pipe')) return false;
         if (!file_exists($path . '_s.pipe')) return false;
         if (!file_exists($path . '_c.pipe')) return false;
+        $pipe->close();
         $o = new self($name);
         $o->initStream();
         return $o;
@@ -116,11 +119,12 @@ class IPC
 
     public function call(): mixed
     {
-        fread($this->lock, 1);
+        $lock = $this->lock->clone();
+        $lock->lock();
         $context = serialize(func_get_args());
         $result = $this->send($context);
         $result = unserialize($result);
-        fwrite($this->lock, 1);
+        $lock->unlock();
         return $result;
     }
 
@@ -154,7 +158,7 @@ class IPC
         unlink($this->fifoFile . '_p.pipe');
         unlink($this->fifoFile . '_s.pipe');
         unlink($this->fifoFile . '_c.pipe');
-        unlink($this->fifoFile . '_l.pipe');
+        $this->lock->release();
     }
 
     public function stop(): void
@@ -169,6 +173,6 @@ class IPC
         fclose($this->me);
         fclose($this->to);
         fclose($this->common);
-        fclose($this->lock);
+        $this->lock->close();
     }
 }

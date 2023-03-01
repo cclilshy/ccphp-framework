@@ -137,8 +137,10 @@ class Pipe
 
     public function release(): void
     {
-        $this->unlock();
-        fclose($this->resource);
+        if(!get_resource_type($this->resource) === 'Unknown'){
+            fclose($this->resource);
+        }
+        
         unlink($this->path);
     }
 }

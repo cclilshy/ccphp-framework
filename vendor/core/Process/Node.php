@@ -109,7 +109,7 @@ class Node
     }
 
     /** 明确杀死子进程
-     * @return bool
+     * @return array
      */
     public function kill(): array
     {

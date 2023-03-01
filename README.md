@@ -25,7 +25,7 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 * 数据库连接池
 * 跨进程访问函数
 * 全局进程调度
-* 前后端分离
+* 前后端分离:
 * 模块化开发
 * 终端/HTTP端分离,可单独使用
 * 多进程全局通信/管控

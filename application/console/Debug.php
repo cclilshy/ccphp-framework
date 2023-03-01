@@ -10,6 +10,7 @@
 namespace console;
 
 use core\Process\Process;
+use core\Process\IPC;
 
 class Debug
 {
@@ -21,16 +22,12 @@ class Debug
     public function main($argv, $console): void
     {
         Process::init();
-        sleep(1);
-        for ($i = 0; $i < 100; $i++) {
-            Process::fork(function () use ($i) {
-                echo $i . ',';
-                sleep(rand(5, 10));
+        for ($i=0; $i < 100; $i++) { 
+            Process::fork(function() use ($i){
+                sleep(1000);
             });
-            usleep(100);
         }
-
-        sleep(3);
+        sleep(1);
         Process::killAll(posix_getpid());
         Process::guard();
     }
