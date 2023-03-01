@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-04 00:13:15
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/Http.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -11,7 +11,6 @@
 namespace core;
 
 use core\Ccphp\Launch;
-use JetBrains\PhpStorm\NoReturn;
 use stdClass;
 
 // Load The Running Http Information 
@@ -101,7 +100,7 @@ class Http
         echo $content;
     }
 
-    #[NoReturn] public static function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine): void
+    public static function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine): void
     {
         $statistics = Launch::statistics();
         $fileDescribe = '';

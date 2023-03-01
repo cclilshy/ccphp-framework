@@ -3,7 +3,7 @@
 ## 安装
 
 > 环境要求`PHP 8.2+`
-> 并且还没写完,正在.......
+> 并且还没写完,每天下课有空写,正在.......
 > 数据库连接池虽然保证了数据库的稳定性但代价就是堵塞用户请求,正在完成队列调度中
 > Fast还没写,但暂时还没必要
 
@@ -40,17 +40,17 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 
 ### 目录结构
 
-* application      #应用根目录
-  * http      #网站
-  * console   #终端
-  * route   #路由
-* cache    #临时文件目录
-* extend    #外部插件目录
-* model    #模型目录
-* resource    #资源目录
-  * config   #配置文件
-  * logs    #日志文件
-* vendor    #框架核心
+* application 应用根目录
+  * http 网站
+  * console 终端
+  * route 路由
+* cache 临时文件目录
+* extend 外部插件目录
+* model 模型目录
+* resource 资源目录
+  * config 配置文件
+  * logs 日志文件
+* vendor 框架核心
 
 ### 框架核心类空间
 
@@ -114,7 +114,7 @@ $pipe->point; // 指针位置
 ## 配置
 
 ```php
-use core\Config;
+use \core\Config;
 
 //获取 database.php 配置项下的type项
 Config::get('database.type');
@@ -146,7 +146,7 @@ $server->info($name);
 
 ### 进程控制
 
->以下控制方法依赖树服务
+> 以下控制方法依赖树服务
 
 ```php
 use \core\Process\Tree;
@@ -218,7 +218,7 @@ $link->call($a,$b,$c,$d,$e);
  * @ string/callback 控制器@方法名 / 函数体
  * @ string 附加参数名(与参数1的冒号取值对应)
  */
-use core\Route;
+use \core\Route;
 Route::get('hello/:name','/http/controller/Hello@index','name');
 Route::get('hello/:name',function($name){ echo "$name"; },'name');
 
@@ -287,16 +287,16 @@ return \core\View::template();
 <!-- 判断输出 -->
 @if(\model\Member::isLogin())
 
-    <!-- 变量输出 -->
-    <p>name : {{$name}}</p>
+<!-- 变量输出 -->
+<p>name : {{$name}}</p>
 
-    <!-- 函数输出 -->
-    <p>{{ substr($describe,0,100); }}</p>
+<!-- 函数输出 -->
+<p>{{ substr($describe,0,100); }}</p>
 
-    <!-- 循环输出,支持for/while/foreach -->
-    @foreach($arr as $key => $value)
-    <p>{{$key}} : {{$value}}</p>
-    @endforeach
+<!-- 循环输出,支持for/while/foreach -->
+@foreach($arr as $key => $value)
+<p>{{$key}} : {{$value}}</p>
+@endforeach
 
 <!--  判断尾  -->
 @endif

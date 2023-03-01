@@ -9,7 +9,7 @@
  */
 namespace core\Cache;
 
-use core\Config;
+use \core\Config;
 
 class Redis
 {
@@ -31,7 +31,7 @@ class Redis
     }
 
     public function __construct(){
-        $this->connect = core\Database\Redis::connect((object)self::$config);
+        $this->connect = \core\Database\Redis::connect((object)self::$config);
     }
 
     public function __destruct()

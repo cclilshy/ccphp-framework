@@ -100,7 +100,7 @@ class Node
 
     /** 指定一个继承人
      * @param int $pid
-     * @return void
+     * @return Node|void
      */
     public function extend(int $pid)
     {

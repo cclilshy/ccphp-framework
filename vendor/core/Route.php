@@ -66,7 +66,7 @@ class Route
     public static function simulation($entrance, $method): void
     {
         $result = self::guide($entrance, $method);
-        $result ? $result->run() : null;
+        $result && $result->run();
     }
 
     public static function guide($entrance, $method)

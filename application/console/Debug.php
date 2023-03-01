@@ -9,9 +9,8 @@
 
 namespace console;
 
-use core\Process\Process;
-use core\Process\IPC;
 use core\Database\Pool;
+use core\Process\Process;
 
 class Debug
 {
@@ -23,10 +22,10 @@ class Debug
     public function main($argv, $console): void
     {
         Process::init();
-        
-        for($i=0;$i<100;$i++){
-            Process::fork(function(){
-                if ($link = Pool::link()){
+
+        for ($i = 0; $i < 100; $i++) {
+            Process::fork(function () {
+                if ($link = Pool::link()) {
                     for ($i = 0; $i < 10; $i++) {
                         $result = $link->table('area')
                             ->where('id', '=', mt_rand(1049112, 1050111))

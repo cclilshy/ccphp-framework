@@ -20,29 +20,16 @@ class Pipe
     private function __construct($name, $eof = -1)
     {
         $this->name = $name;
-        $this->path = CACHE_PATH . '/pipe/' .  $name . '.pipe';
+        $this->path = CACHE_PATH . '/pipe/' . $name . '.pipe';
         $this->resource = fopen($this->path, 'r+');
         $this->point = 0;
         $this->eof = $eof;
     }
 
-    private function adjustPoint(int $location): void
-    {
-        $this->point = $location;
-        fseek($this->resource, $this->point);
-    }
-
-    private function flush(): void
-    {
-        ftruncate($this->resource, 0);
-        $this->eof = -1;
-        $this->adjustPoint(0);
-    }
-
     public static function create(string $name): Pipe|false
     {
-        if (!file_exists(CACHE_PATH . '/pipe/' .  $name . '.pipe')) {
-            touch(CACHE_PATH . '/pipe/' .  $name . '.pipe', 0666);
+        if (!file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe')) {
+            touch(CACHE_PATH . '/pipe/' . $name . '.pipe', 0666);
             return new Pipe($name);
         }
         return false;
@@ -50,14 +37,13 @@ class Pipe
 
     public static function link(string $name): Pipe|false
     {
-        if (file_exists(CACHE_PATH . '/pipe/' .  $name . '.pipe')) {
-            return new Pipe($name, filesize(CACHE_PATH . '/pipe/' .  $name . '.pipe'));
+        if (file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe')) {
+            return new Pipe($name, filesize(CACHE_PATH . '/pipe/' . $name . '.pipe'));
         }
         return false;
     }
 
-
-    public function write(string $content, int $start = 0): int | false
+    public function write(string $content, int $start = 0): int|false
     {
         if (strlen($content) < 1) {
             return false;
@@ -71,6 +57,19 @@ class Pipe
         return fwrite($this->resource, $content);
     }
 
+    private function flush(): void
+    {
+        ftruncate($this->resource, 0);
+        $this->eof = -1;
+        $this->adjustPoint(0);
+    }
+
+    private function adjustPoint(int $location): void
+    {
+        $this->point = $location;
+        fseek($this->resource, $this->point);
+    }
+
     public function push(string $content): int
     {
         $this->adjustPoint($this->eof);
@@ -79,12 +78,12 @@ class Pipe
         return $this->eof;
     }
 
-    public function read(): string | false
+    public function read(): string|false
     {
         return $this->section(0);
     }
 
-    public function section(int $start, int $end = 0): string | false
+    public function section(int $start, int $end = 0): string|false
     {
         if ($end === 0) {
             $end = $this->eof - $start;
@@ -95,7 +94,7 @@ class Pipe
         }
 
         $this->adjustPoint($start);
-        $length = $end - $start  + 1;
+        $length = $end - $start + 1;
         $context = '';
 
         while ($length > 0) {
@@ -137,10 +136,10 @@ class Pipe
 
     public function release(): void
     {
-        if(!get_resource_type($this->resource) === 'Unknown'){
+        if (!get_resource_type($this->resource) == 'Unknown') {
             fclose($this->resource);
         }
-        
+
         unlink($this->path);
     }
 }

@@ -10,10 +10,10 @@
 namespace core\Database;
 
 use Illuminate\Database\Connection;
-use core\Process\IPC;
-use core\Server\Server;
-use core\DB;
-use core\Console;
+use \core\Process\IPC;
+use \core\Server\Server;
+use \core\DB;
+use \core\Console;
 
 class Pool
 {

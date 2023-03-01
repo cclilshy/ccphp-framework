@@ -12,10 +12,17 @@ namespace core;
 class Fifo
 {
     private $stream;
-    private $name;
-    private $path;
+    private string $name;
+    private string $path;
 
-    public static function create(string $name): Fifo | false
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+        $this->path = CACHE_PATH . '/pipe/fifo_' . $name . '.fifo';
+        $this->stream = fopen($this->path, 'r+');
+    }
+
+    public static function create(string $name): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
         if (file_exists($path . '.fifo')) {
@@ -27,7 +34,7 @@ class Fifo
         }
     }
 
-    public static function link(string $name): Fifo | false
+    public static function link(string $name): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
         if (!!file_exists($path . '.fifo')) {
@@ -35,13 +42,6 @@ class Fifo
         } else {
             return false;
         }
-    }
-
-    public function __construct(string $name)
-    {
-        $this->name = $name;
-        $this->path = CACHE_PATH . '/pipe/fifo_' . $name . '.fifo';
-        $this->stream = fopen($this->path, 'r+');
     }
 
     public function write(string $context): int
@@ -64,18 +64,18 @@ class Fifo
         return stream_get_contents($this->stream);
     }
 
-    public function close(): void
-    {
-        if (get_resource_type($this->stream) !== 'Unknown') {
-            fclose($this->stream);
-        }
-    }
-
     public function release(): void
     {
         $this->close();
         if (file_exists($this->path)) {
             unlink($this->path);
+        }
+    }
+
+    public function close(): void
+    {
+        if (get_resource_type($this->stream) !== 'Unknown') {
+            fclose($this->stream);
         }
     }
 }
