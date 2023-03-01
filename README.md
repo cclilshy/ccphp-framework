@@ -3,7 +3,9 @@
 ## 安装
 
 > 环境要求`PHP 8.2+`
-> 并且还没写完,没有稳定版,唯一版本就是正在开发版
+> 并且还没写完,正在.......
+> 数据库连接池虽然保证了数据库的稳定性但代价就是堵塞用户请求,正在完成队列调度中
+> Fast还没写,但暂时还没必要
 
 ### Linux
 
@@ -25,7 +27,7 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 * 数据库连接池
 * 跨进程访问函数
 * 全局进程调度
-* 前后端分离:
+* 前后端分离
 * 模块化开发
 * 终端/HTTP端分离,可单独使用
 * 多进程全局通信/管控
@@ -154,7 +156,7 @@ Process::init();
 
 // 返回一个PID,创建失败则返回 -1
 Process::fork(function(){
-    echo 'hhh';
+    echo posix_getpid() . PHP_EOL;
 });
 
 // 在任何地方和进程里销毁一进程
@@ -166,8 +168,11 @@ Process::killAll($pid); //提供父ID或组名称
 // 发送信号, 如果用户hook了信号的处理请在确定进程结束时主动树服务
 Process::signal($pid,$signo); 
 
-// 如果用户hook了信号的处理, 请在确定进程结束时主动释放, 否则无需手动控制
-\core\Process\Process::notice($pid,'exit');
+// 非堵塞模式,call回收,守护者在子程序运行结束后会自动回收
+Process::guard();
+
+// 如果子进程hook了信号的处理, 请在确定进程结束时主动通知树服务, 否则无需手动控制
+self::$TreeIPC->call('exit', ['pid' => posix_getpid()]);
 ```
 
 ### 进程间通讯
@@ -176,11 +181,12 @@ Process::signal($pid,$signo);
 use \core\Process\IPC;
 // 创建一个Observer
 // 支持更多的创建方法
-// 参数2: 把当前类实例反射到的 object 属性中
+// 参数2: 把当前类(或自定义数据)实例反射到的 space 属性中,数据生命周期为该IPC的生命周期而非匿名周期
 // 参数3: 自定义IPC名称
 
 $ipc = IPC::create(
-    function($ipc,$info,$c,$d,$e){
+    // call调用者参数多追加一个参数(可选),可以接ipc对象自身,以访问对象和space
+    function($info,$c,$d,$e,IPC $ipc){
         echo $info['name'] . PHP_EOL;
     }
 );
@@ -276,16 +282,18 @@ return \core\View::template();
 <!-- 判断输出 -->
 @if(\model\Member::isLogin())
 
-<!-- 变量输出 -->
-<p>name : {{$name}}</p>
+    <!-- 变量输出 -->
+    <p>name : {{$name}}</p>
 
-<!-- 函数输出 -->
-<p>{{ substr($describe,0,100) }}</p>
+    <!-- 函数输出 -->
+    <p>{{ substr($describe,0,100) }}</p>
 
-<!-- 循环输出,支持for/while/foreach -->
-@foreach($arr as $key => $value)
-<p>{{$key}} : {{$value}}</p>
-@endforeach
+    <!-- 循环输出,支持for/while/foreach -->
+    @foreach($arr as $key => $value)
+    <p>{{$key}} : {{$value}}</p>
+    @endforeach
+
+<!--  判断尾  -->
 @endif
 
 <!-- 兼容Vue的写法 -->
@@ -297,7 +305,7 @@ return \core\View::template();
 
 ### 数据库
 
-> 暂时使用`Illuminate`数据库引擎(同Laravel数据库引擎), [文档](https://github.com/illuminate/database)
+> 还没写,暂时使用`Illuminate`数据库引擎(同Laravel数据库引擎)替代, [文档](https://github.com/illuminate/database)
 
 ```php
 use \core\DB;
@@ -306,15 +314,24 @@ use \core\Database\DatabasePool;
 DB::name('user')->where('id',1)->first(); // 查询
 DB::getConnect($config); // 获取一个新连接,config留空则使用默认配置
 
-// 获取连接池服务(使用方法同上)
-// 所有查询请求加入队列,由连接池调度并堵塞直到返回查询结果(按队列次序)
-DatabasePool::getSequential();
+// 数据库连接池,目前只能队列请求,
+// 错位调度开发中(后续考虑在http入口自动连接池子而不是直接连接数据库)
+use \core\Database\Pool;
+
+// 例子
+$con = Pool::link();
+
+// 该方法和直接调用的效果一致,但返回的是反序化之后的内容,而不是查询事件的主体也就是说不可操作对象或数组
+// 支持LevelORM所有语法
+$con->table('user')->where('id',1)->first()->go();
 ```
 
 ### 缓存
 
+> 还没开始写,暂时用Redis替代,依赖PHPRedis
+
 ```php
-//支持Redis所有命令,如
+//支持Redis所有命令,如:
 \core\Cache::set('count',1);
 \core\Cache::get('count'); 
 ```
