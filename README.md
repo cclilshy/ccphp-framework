@@ -13,6 +13,10 @@
 git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && php -S 127.0.0.1:8080 -t application/http/public 
 ```
 
+```bash
+./master server start # 启动服务(包括数据库连接池和进程管理服务)
+```
+
 ### Windows(不建议)
 
 ```bash
@@ -131,7 +135,7 @@ $server = \core\Server::create(string $name = '');
 // 加载现有服务信息,不提供$name则按照文件命名, 一个服务允许多个入口加载查看信息,重载
 $server = \core\Server::create(string $name = ''); 
 
-// 释放该服务信息(不意味着释放了服务,只是一处储存信息)
+// 释放该服务信息(不意味着释放了服务,只是移除储存信息)
 $server->release(); 
 
 //设定特定数据,$name为空则返回设定的数据
@@ -150,6 +154,7 @@ use \core\Process\Process;
 
 // 启动树服务,只需要启动一次
 Tree::launch();
+Tree::stop(); //关闭树服务
 
 // 连接树
 Process::init();
@@ -286,7 +291,7 @@ return \core\View::template();
     <p>name : {{$name}}</p>
 
     <!-- 函数输出 -->
-    <p>{{ substr($describe,0,100) }}</p>
+    <p>{{ substr($describe,0,100); }}</p>
 
     <!-- 循环输出,支持for/while/foreach -->
     @foreach($arr as $key => $value)
@@ -317,7 +322,8 @@ DB::getConnect($config); // 获取一个新连接,config留空则使用默认配
 // 数据库连接池,目前只能队列请求,
 // 错位调度开发中(后续考虑在http入口自动连接池子而不是直接连接数据库)
 use \core\Database\Pool;
-
+Pool::launch(); //启动连接池服务
+Pool::stop(); //关闭连接池
 // 例子
 $con = Pool::link();
 

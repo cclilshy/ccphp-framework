@@ -267,7 +267,7 @@ class Mysql
             $this->command .= "ORDER BY {$this->order}";
         }
 
-        \core\Ccphp\Launch::record('sql', $this->command);
+        core\Ccphp\Launch::record('sql', $this->command);
         $this->execr = $this->mysqli->query($this->command);
         return $this;
     }

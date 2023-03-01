@@ -32,13 +32,13 @@ class Launch
                 Launch::httpLauncher();
                 break;
             case 'cli':
-                \core\Master::rouse('Console')->run();
+                core\Master::rouse('Console')->run();
                 break;
         }
     }
 
     private static function httpLauncher(){
-        \core\Master::rouse('Http')->run();
+        core\Master::rouse('Http')->run();
     }
     
     // 常驻内存运行数据重置接口
@@ -59,8 +59,8 @@ class Launch
         if ($type === 'sql') {
             array_push(self::$launch->sqls, $data);
         } elseif ($type === 'input') {
-            Launch::$launch->get = \core\Input::get();
-            Launch::$launch->post = \core\Input::post();
+            Launch::$launch->get = core\Input::get();
+            Launch::$launch->post = core\Input::post();
         } elseif($type === 'end') {
             Launch::$launch->loadFiles = get_included_files();
             Launch::$launch->endTime = microtime(true);

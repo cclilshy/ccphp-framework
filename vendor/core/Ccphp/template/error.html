@@ -204,7 +204,7 @@
     <div class="error-container">
         <div class="error-title">{{ $general['info']['errstr'] }}</div>
         <div class="error-file">{{ $general['info']['errFile'] }}({{ $general['info']['errLine'] }})</div>
-        @if(\core\Config::get('http.debug') === true)
+        @if(core\Config::get('http.debug') === true)
         <div id="detail">
             <pre><code id="errcode">{{ $general['info']['fileDescribe'] }}</code></pre>
             <div class="table-container">
