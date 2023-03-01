@@ -13,7 +13,7 @@ use core\Pipe;
 
 class IPC
 {
-    public object $object;  // 允许在初始化时用户自定义的对象
+    public $object;  // 允许在初始化时用户自定义的对象
     private int $observerProcessId; //监控进程ID
     private string $name;   // IPC名称
     private string $fifoFile;
@@ -32,7 +32,7 @@ class IPC
         $this->lock = Pipe::link($name);
     }
 
-    public static function create(callable $observer, object $object = null, string $name = null): IPC|false
+    public static function create(callable $observer,  $object = null, string $name = null): IPC|false
     {
         if (!$name) {
             $name = posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);

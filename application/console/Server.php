@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2023-01-30 10:32:18
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @Description: My house
  * Copyright (c) 2023 by cclilshy email: cclilshy@163.com, All Rights Reserved.
  */
@@ -12,6 +12,7 @@ namespace console;
 // Start The Service Class Perform Timing Tasks And Socket Services
 
 use core\Process\Tree;
+use core\Database\Pool;
 
 class Server
 {
@@ -28,8 +29,10 @@ class Server
         }
         if ($argv[1] == 'start') {
             Tree::launch();
+            Pool::launch();
         } elseif ($argv[1] === 'stop') {
             Tree::stop();
+            Pool::stop();
         }
     }
 }

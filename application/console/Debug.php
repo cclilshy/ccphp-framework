@@ -11,6 +11,7 @@ namespace console;
 
 use core\Process\Process;
 use core\Process\IPC;
+use core\Database\Pool;
 
 class Debug
 {
@@ -22,13 +23,20 @@ class Debug
     public function main($argv, $console): void
     {
         Process::init();
-        for ($i=0; $i < 100; $i++) { 
-            Process::fork(function() use ($i){
-                sleep(1000);
+        for($i=0;$i<100;$i++){
+            Process::fork(function(){
+                for ($i=0; $i < 10; $i++) {
+                    if ($link = Pool::link()) {
+                        $result = $link->table('area')
+                            ->where('id', '=', mt_rand(1049112, 1050111))
+                            ->first()
+                            ->go();
+
+                        var_dump($result);
+                    }
+                }
             });
         }
-        sleep(1);
-        Process::killAll(posix_getpid());
         Process::guard();
     }
 }

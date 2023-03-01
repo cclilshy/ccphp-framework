@@ -12,6 +12,7 @@ namespace core;
 
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Connection;
+use core\Database\Pool;
 
 class DB
 {
@@ -19,7 +20,7 @@ class DB
     private static $db;
     private static string $dbClass;
     private static Capsule $capsule;
-    private static Connection $connect;
+    private static Connection | Pool $connect;
 
     public static function init($config): void
     {
@@ -28,16 +29,21 @@ class DB
         // self::$config = $config[$type];
         self::$capsule = new Capsule;
         self::$capsule->addConnection($config);
-        self::$connect =  self::connect();
+        self::$connect =  self::getConnect();
     }
 
-    public static function connect(): Connection
+    public static function load()
+    {
+        self::$connect = Pool::link();
+    }
+
+    public static function getConnect(): Connection
     {
         return self::$capsule->getConnection();
     }
 
-    public static function __callStatic($name,$arguments)
+    public static function __callStatic($name, $arguments)
     {
-        return call_user_func_array([self::$connect,$name],$arguments);
+        return call_user_func_array([self::$connect, $name], $arguments);
     }
 }
