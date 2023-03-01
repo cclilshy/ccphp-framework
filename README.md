@@ -2,13 +2,15 @@
 
 ## 安装
 
+> 环境要求`PHP 8.2+`
+
 ### Linux
 
 ```bash
 git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && ./master run
 ```
 
-### Windows -不建议
+### Windows(不建议)
 
 ```bash
 git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && php master run
@@ -19,6 +21,9 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 > 原生PHP-MVC框架
 
 * 常驻/非常驻内存区分
+* 数据库连接池
+* 跨进程访问函数
+* 全局进程调度
 * 前后端分离
 * 模块化开发
 * 终端/HTTP端分离,可单独使用
@@ -28,38 +33,163 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 
 ### 目录结构
 
-- application 	    #应用根目录
-	- http		    #网站
-	- console 		#终端
-	- route 		#路由
-- cache 			#临时文件目录
-- extend 			#外部插件目录
-- model 			#模型目录
-- resource 			#资源目录
-    - config 		#配置文件
-    - logs 			#日志文件
-- vendor 			#框架核心
+* application      #应用根目录
+  * http      #网站
+  * console   #终端
+  * route   #路由
+* cache    #临时文件目录
+* extend    #外部插件目录
+* model    #模型目录
+* resource    #资源目录
+  * config   #配置文件
+  * logs    #日志文件
+* vendor    #框架核心
 
-### HTTP入口路径
+### 框架核心类空间
+
+```php
+namespace core;
+```
+
+### HTTP入口文件路径
 
 > application/http/public
 
-### 加载器
+### 加载器 Master
 
-> 所有扩展和服务必须从加载器加载(兼容内存常驻,服务,日志等)
->
+> 所有扩展和服务必须从加载器加载(兼容内存常驻)
 > APP类保留 `init`,`load` 方法,
->
-> 初次加载时会执行init方法,该方法内的数据内存常驻
->
-> load方法在每次访问时执行, 重置初始化参数
+> 初次加载时会执行init方法,该方法内的数据内存常驻(如数据库配置,日志流文件,路由等)
+> load方法在每次访问时会在用户自己的内存块执行, 重置初始化参数
 
 ```php
 // 加载\core\App类下 `init` 方法, 并返回 `init` 的返回
 \core\Master::rouse('App');
 
-// 加载多个组件, 并返回第一个组件的返回
+// 加载多个组件, 并返回第一个组件的 `init` 返回
 \core\Master::rouse('App,Database,Cache');
+```
+
+## 管道
+
+### 管道安全
+
+```php
+$pipe = \core\Pipe::create('name'); // 创建管道
+$pipe = \core\Pipe::link('name'); // 连接管道
+$spipe = $pipe->clone(); // 克隆一个管道(不共用流和指针,因此指针互斥,可以给子进程使用)
+$wait = false;           // 是否堵塞
+$pipe->lock($wait);      // 多个进程之间,对同一个名称管道的调用,只有一个进程能上锁成功
+$pipe->unlock();
+```
+
+### 数据处理
+
+```php
+// 取区间文本
+$pipe->section(0,0); //(开始,结束),第二个参数为空则自动追加到流末尾
+
+// 读管道信息
+$pipe->read();
+
+// 尾部追加数据
+$pipe->insert('hello');
+
+// 指定位置开始覆写数据,如指定位置为0则清空文本
+$pipe->write('test',1);
+
+$pipe->eof; // 指针末尾,-1为空文本
+$pipe->point; // 指针位置
+```
+
+## 配置
+
+```php
+use core\Config;
+
+//获取 database.php 配置项下的type项
+Config::get('database.type');
+
+//获取 database.php 配置项下mysql下的host
+Config::get('database.mysql.host');
+
+//设置一个配置项,当前请求的生命周期内有效
+Config::set('cid',1);
+```
+
+## 服务
+
+```php
+// 创建一个服务,返回false或服务类,不提供$name则按照文件命名, 一个服务仅允许创建一次,除非主动释放
+$server = \core\Server::create(string $name = ''); 
+
+// 加载现有服务信息,不提供$name则按照文件命名, 一个服务允许多个入口加载查看信息,重载
+$server = \core\Server::create(string $name = ''); 
+
+// 释放该服务信息(不意味着释放了服务,只是一处储存信息)
+$server->release(); 
+
+//设定特定数据,$name为空则返回设定的数据
+$server->info($name); 
+```
+
+## 进程管理
+
+### 进程控制
+
+>以下控制方法依赖树服务
+
+```php
+use \core\Process\Tree;
+use \core\Process\Process;
+
+// 启动树服务,只需要启动一次
+Tree::launch();
+
+// 连接树
+Process::init();
+
+// 返回一个PID,创建失败则返回 -1
+Process::fork(function(){
+    echo 'hhh';
+});
+
+// 在任何地方和进程里销毁一进程
+Process::kill($pid);
+
+// 销毁一棵树下的所有进程
+Process::killAll($pid); //提供父ID或组名称
+
+// 发送信号, 如果用户hook了信号的处理请在确定进程结束时主动树服务
+Process::signal($pid,$signo); 
+
+// 如果用户hook了信号的处理, 请在确定进程结束时主动释放, 否则无需手动控制
+\core\Process\Process::notice($pid,'exit');
+```
+
+### 进程间通讯
+
+```php
+use \core\Process\IPC;
+// 创建一个Observer
+// 支持更多的创建方法
+// 参数2: 把当前类实例反射到的 object 属性中
+// 参数3: 自定义IPC名称
+
+$ipc = IPC::create(
+    function($ipc,$info,$c,$d,$e){
+        echo $info['name'] . PHP_EOL;
+    }
+);
+
+// 获取IPC名称
+$name = $ipc->name;
+
+// 在任何地方和进程里连接IPC
+$link = IPC::link($name);
+
+// 调用监听者
+$link->call($a,$b,$c,$d,$e);
 ```
 
 ### 路由
@@ -67,18 +197,18 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 > 所有路由规则写在 application/route/ 中
 
 ```php
-<?php
+// 支持HTTP方法 'get', 'post', 'put', 'patch', 'delete', 'options', 'any', 'console'
+/**
+ * @ params
+ * @ string 路径
+ * @ string/callback 控制器@方法名 / 函数体
+ * @ string 附加参数名(与参数1的冒号取值对应)
+ */
 use core\Route;
-// @ params
-// - string 路径
-// - string/callback 控制器@方法名 / 函数体
-// - string 附加参数名(与参数1的冒号取值对应)
-// 支持 'get', 'post', 'put', 'patch', 'delete', 'options', 'any', 'console'
-
 Route::get('hello/:name','/http/controller/Hello@index','name');
 Route::get('hello/:name',function($name){ echo "$name"; },'name');
 
-//Class Hello
+// Class Hello
 public function index($name){
     echo "hello,$name";
 }
@@ -100,8 +230,6 @@ public function index($name){
 #### 路由规则
 
 ```php
-<?php
-use core\Route;
 Route::console('handle','console/Handle');
 ```
 
@@ -160,141 +288,36 @@ return \core\View::template();
 <!-- 兼容Vue的写法 -->
 这段文本不会被解析: @{{ message }}
 
-<!-- 模板包含 从TEMPLATE_PATH 往下的 index/common 模板文件-->
-@embed index/common @endembed
+<!-- 模板包含以`TEMPLATE_PATH为`根向下索引的模板文件-->
+@embed("index/common") @endembed
 ```
 
 ### 数据库
 
-> 考虑暂时使用第三方类库
+> 暂时使用`Illuminate`数据库引擎(同Laravel数据库引擎), [文档](https://github.com/illuminate/database)
 
 ```php
-\core\DB::table('user')->where('id',1)->first();
+use \core\DB;
+use \core\Database\DatabasePool;
+
+DB::name('user')->where('id',1)->first(); // 查询
+DB::getConnect($config); // 获取一个新连接,config留空则使用默认配置
+
+// 获取连接池服务(使用方法同上)
+// 所有查询请求加入队列,由连接池调度并堵塞直到返回查询结果(按队列次序)
+DatabasePool::getSequential();
 ```
 
 ### 缓存
 
 ```php
 //支持Redis所有命令,如
-\core\Cache::set('count',8);
+\core\Cache::set('count',1);
 \core\Cache::get('count'); 
-```
-
-### 后台应用(仅linux)
-
-```php
-$func = function($thread){
-    //Multiprocess 支持多应用技术,共享数据池异步存取,详情查看 Multiprocess 类
-    while(rand(1,100)<50){
-        sleep(1);
-    }
-};
-//进程数
-$count = 10;
-//后台运行
-$debug = false;
-
-\core\Multiprocess::create($func,10)->run($debug);
 ```
 
 ## 日志
 
 ```php
 \core\Log::record($msg); //记录一段日志
-```
-
-## 管道
-
-```php
-$pipe = \core\Pipe::register('name');
-//非堵塞锁
-$wait = false;           // 是否堵塞
-$pipe->lock($wait);      // 多个进程之间,对同一个名称管道的调用,只有一个进程能上锁成功
-$pipe->unlock();
-
-# 文件读写, 非线程安全, 可以配合锁使用
-//尾部追加数据
-$pipe->write(posix_getpid());
-//读取管道数据
-$pipe->read();
-```
-
-## 配置
-
-```php
-<?php
-use core\Config;
-
-//获取 database.php 配置项下的type项
-Config::get('database.type');
-
-//获取 database.php 配置项下mysql下的host
-Config::get('database.mysql.host');
-
-//设置一个配置项,当前请求的生命周期内有效
-Config::set('cid',1);
-```
-
-## 服务
-
-```php
-// 创建一个服务,返回false或服务类,不提供$name则按照文件命名, 一个服务仅允许创建一次,除非释放
-$server = \core\Server::create(string $name = ''); 
-
-// 加载现有服务信息,不提供$name则按照文件命名, 一个服务允许多个入口加载查看信息,重载
-$server = \core\Server::create(string $name = ''); 
-
-// 释放该服务信息
-$server->release(); 
-
-//设定特定数据,$name为空则返回设定的数据
-$server->info($name); 
-```
-
-## 进程管理
-
-### 进程控制
-
->以下控制方法依赖树服务
-
-```php
-// 启动树服务
-\core\Process\Tree::launch();
-// 连接树
-\core\Process\Process::init();
-
-// 返回一个PID,创建失败则返回 -1
-$pid = \core\Process\Process::fork(function(){
-    echo 'hhh';
-});
-
-// 销毁一进程
-\core\Process\Process::kill($pid);
-
-// 销毁一棵树下的所有进程
-\core\Process\Process::killAll($pid);
-
-// 发送信号, 如果用户hook了信号的处理, 请在确定进程结束时主动释放
-\core\Process\Process::signal($pid,$signo);
-
-// 如果用户hook了信号的处理, 请在确定进程结束时主动释放, 否则无需手动控制
-\core\Process\Process::notice($pid,'exit');
-```
-
-### 进程间通讯
-
-```php
-// 创建一个监视者,并把当前类实例反射到 IPC->object 中
-$ipc = \core\Process\IPC::create(function($ipc,$info){
-    echo $info['name'] . PHP_EOL;
-},new self);
-
-// 获取IPC名称
-$name = $ipc->name;
-
-// 在任何地方连接IPC
-$ipc = \core\Process\IPC::link($name);
-
-// 调用监听者
-$ipc->call(['name'=>'xiaoming']);
 ```
