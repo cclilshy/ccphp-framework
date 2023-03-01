@@ -3,17 +3,18 @@
 ## 安装
 
 > 环境要求`PHP 8.2+`
+> 并且还没写完,没有稳定版,唯一版本就是正在开发版
 
 ### Linux
 
 ```bash
-git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && ./master run
+git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && php -S 127.0.0.1:8080 -t application/http/public 
 ```
 
 ### Windows(不建议)
 
 ```bash
-git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && php master run
+git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && php -S 127.0.0.1:8080 -t application/http/public 
 ```
 
 ## 简介
@@ -75,12 +76,14 @@ namespace core;
 ### 管道安全
 
 ```php
-$pipe = \core\Pipe::create('name'); // 创建管道
+$pipe = \core\Pipe::create('name'); // 创建管道空间
 $pipe = \core\Pipe::link('name'); // 连接管道
-$spipe = $pipe->clone(); // 克隆一个管道(不共用流和指针,因此指针互斥,可以给子进程使用)
+$spipe = $pipe->clone(); // 克隆一个管道(不共用流和指针,因此锁互斥,可以给子进程使用)
 $wait = false;           // 是否堵塞
 $pipe->lock($wait);      // 多个进程之间,对同一个名称管道的调用,只有一个进程能上锁成功
-$pipe->unlock();
+$pipe->unlock();        // 解锁
+$pipe->close();         // 关闭管道
+$pipe->release();       // 请确保该管道空间没人使用了
 ```
 
 ### 数据处理
