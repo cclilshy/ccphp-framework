@@ -27,8 +27,8 @@ class Tree
     public static function launch(): bool
     {
         if ($server = Server::create('Tree')) {
-            $handler = function ($action, $data, $fifo) {
-                $fifo->object->handler($fifo, $action, $data);
+            $handler = function ($action, $data, $ipc) {
+                $ipc->space->handler($ipc, $action, $data);
             };
             $ipcName = IPC::create($handler, new self)->name;
 
@@ -41,7 +41,7 @@ class Tree
         }
     }
 
-    public function handler($fifo, $action, $data): void
+    public function handler($ipc, $action, $data): void
     {
         Console::pdebug('[MESSAGE] ' . json_encode(func_get_args()));
         switch ($action) {

@@ -34,12 +34,12 @@ class Pool
             }
 
             $ipc = IPC::create(function (array $flow, IPC $ipc) {
-                if ($connect = array_shift($ipc->object)) {
+                if ($connect = array_shift($ipc->space)) {
                     $handler = $connect;
                     foreach ($flow as $item) {
                         $handler = call_user_func_array([$handler, $item['m']], $item['a']);
                     }
-                    $ipc->object[] = $connect;
+                    $ipc->space[] = $connect;
                     return $handler;
                 }
             }, self::$connects);
@@ -80,6 +80,11 @@ class Pool
         $result =  $this->ipc->call($this->flow);
         $this->flow = array();
         return $result;
+    }
+
+    public function unlink(): void
+    {
+        $this->ipc->close();
     }
 
     public function __call($name, $arguments)

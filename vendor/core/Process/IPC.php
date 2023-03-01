@@ -10,106 +10,83 @@
 namespace core\Process;
 
 use core\Pipe;
+use core\Fifo;
 
 class IPC
 {
-    public $object;  // 允许在初始化时用户自定义的对象
+    public $space;  // 允许在初始化时用户自定义的对象
+    private $observer; // 监控函数
+
     private int $observerProcessId; //监控进程ID
     private string $name;   // IPC名称
-    private string $fifoFile;
-    private string $lockFilePath; // 锁文件
-    private $me; // 本进程
-    private $to; // 目标进程
-    private $common; // 公共管道
-    private $observer; // 监控函数
+
+    private Fifo $me; // 本进程
+    private Fifo $to; // 目标进程
+    private Fifo $common; // 公共管道
     private Pipe $lock;
 
     private function __construct(string $name)
     {
         $this->name = $name;
-        $this->fifoFile = CACHE_PATH . '/pipe/ipc_fifo_' . $name;
-        $this->common = fopen($this->fifoFile . '_c.pipe', 'r+');
-        $this->lock = Pipe::link($name);
     }
 
-    public static function create(callable $observer,  $object = null, string $name = null): IPC|false
+    public static function create(callable $observer,  $space = null, string $name = null): IPC|false
     {
-        if (!$name) {
-            $name = posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
-        }
-        $path =  CACHE_PATH . '/pipe/ipc_fifo_' . $name;
-        if ($pipe = Pipe::link($name)) {
-            $pipe->close();
+        $name = $name ?? posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
+        if (1 && (Fifo::link($name . '_p')
+            || Fifo::link($name . '_s')
+            || Fifo::link($name . '_c')))
             return false;
-        }
-        if (file_exists($path . '_p.pipe')) return false;
-        if (file_exists($path . '_s.pipe')) return false;
-        if (file_exists($path . '_c.pipe')) return false;
 
-        Pipe::create($name);
-        posix_mkfifo($path . '_p.pipe', 0600);
-        posix_mkfifo($path . '_s.pipe', 0600);
-        posix_mkfifo($path . '_c.pipe', 0600);
-        $o = new self($name);
-        if ($object) $o->object = $object;
-        $o->observer = $observer;
-        if ($o->ob()) {
-            return $o;
+        $ipc = new self($name);
+        $ipc->space = $space;
+        $ipc->observer = $observer;
+        $ipc->me = Fifo::create($name . '_p');
+        $ipc->to = Fifo::create($name . '_s');
+        $ipc->common = Fifo::create($name . '_c');
+        $ipc->lock = Pipe::create($name);
+        if ($ipc->ob()) {
+            return $ipc;
         } else {
+            $ipc->release();
             return false;
         }
+    }
+
+    public static function link(string $name): IPC|false
+    {
+        $name = $name ?? posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
+        if (
+            false
+            || !Fifo::link($name . '_p')
+            || !Fifo::link($name . '_s')
+            || !Fifo::link($name . '_c')
+        )
+            return false;
+
+        $ipc = new self($name);
+        $ipc->me = Fifo::link($name . '_p');
+        $ipc->to = Fifo::link($name . '_s');
+        $ipc->common = Fifo::link($name . '_c');
+        $ipc->lock = Pipe::link($name);
+        return $ipc;
     }
 
     private function ob(): int
     {
         switch ($pid = pcntl_fork()) {
             case 0:
-                $this->me = fopen($this->fifoFile . '_s.pipe', 'r+');
-                $this->to = fopen($this->fifoFile . '_p.pipe', 'r+');
-                while ($arguments = $this->fullText()) {
-                    $arguments = unserialize($arguments);
-                    if (isset($arguments[0]) && $arguments[0] === 'quit') {
-                        fwrite($this->common, serialize('quit'));
-                        fwrite($this->to, strlen(serialize('quit')) . PHP_EOL);
-                        break;
-                    }
-                    array_push($arguments, $this);
-                    $result = call_user_func_array($this->observer, $arguments);
-                    $context = serialize($result);
-                    fwrite($this->common, $context);
-                    fwrite($this->to, strlen($context) . PHP_EOL);
-                    if ($result === 'quit') {
-                        sleep(1);
-                        $this->release();
-                        exit;
-                    }
-                }
-                $this->close();
-                exit;
+                set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+                    echo 'Err(' . $errno . ')File ' . $errfile . ' (' . $errline . ') :' . $errstr . PHP_EOL;
+                    $this->common->write(serialize(false));
+                    $this->to->write(strlen(serialize(false)) . PHP_EOL);
+                    $this->listenr();
+                }, E_ALL);
+                $this->listenr();
             default:
                 $this->observerProcessId = $pid;
-                $this->initStream();
                 return $pid;
         }
-    }
-
-    private function initStream(): void
-    {
-        $this->me = fopen($this->fifoFile . '_p.pipe', 'r+');
-        $this->to = fopen($this->fifoFile . '_s.pipe', 'r+');
-    }
-
-    public static function link(string $name): IPC|false
-    {
-        $path = CACHE_PATH . '/pipe/ipc_fifo_' . $name;
-        if (!$pipe = Pipe::link($name)) return false;
-        if (!file_exists($path . '_p.pipe')) return false;
-        if (!file_exists($path . '_s.pipe')) return false;
-        if (!file_exists($path . '_c.pipe')) return false;
-        $pipe->close();
-        $o = new self($name);
-        $o->initStream();
-        return $o;
     }
 
     public function __get($name)
@@ -122,43 +99,12 @@ class IPC
         $lock = $this->lock->clone();
         $lock->lock();
         $context = serialize(func_get_args());
-        $result = $this->send($context);
-        $result = unserialize($result);
+        $this->common->write($context);
+        $this->to->write(strlen($context) . PHP_EOL);
+        $length = $this->me->fgets();
+        $context = unserialize($this->common->read($length));
         $lock->unlock();
-        return $result;
-    }
-
-    public function fullText(): string
-    {
-        $length = intval(fgets($this->me));
-        $result = '';
-        while ($length > 0) {
-            if ($length > 8192) {
-                $result .= fread($this->common, 8192);
-                $length -= 8192;
-            } else {
-                $result .= fread($this->common, $length);
-                $length = 0;
-            }
-        }
-        return $result;
-    }
-
-    private function send(string $context): string
-    {
-        fwrite($this->common, $context);
-        fwrite($this->to, strlen($context) . PHP_EOL);
-        $result = $this->fullText();
-        return $result;
-    }
-
-    private function release(): void
-    {
-        $this->close();
-        unlink($this->fifoFile . '_p.pipe');
-        unlink($this->fifoFile . '_s.pipe');
-        unlink($this->fifoFile . '_c.pipe');
-        $this->lock->release();
+        return $context;
     }
 
     public function stop(): void
@@ -170,9 +116,44 @@ class IPC
 
     public function close(): void
     {
-        fclose($this->me);
-        fclose($this->to);
-        fclose($this->common);
+        $this->me->close();
+        $this->to->close();
+        $this->common->close();
         $this->lock->close();
+    }
+
+    private function release(): void
+    {
+        $this->close();
+        $this->me->release();
+        $this->to->release();
+        $this->common->release();
+        $this->lock->release();
+    }
+
+    private function listenr()
+    {
+        $this->me = Fifo::link($this->name . '_s');
+        $this->to = Fifo::link($this->name . '_p');
+        $this->common = Fifo::link($this->name . '_c');
+        while ($length = $this->me->fgets()) {
+            $arguments = unserialize($this->common->read($length));
+            if (isset($arguments[0]) && $arguments[0] === 'quit') {
+                $this->common->write(serialize('quit'));
+                $this->to->write(strlen(serialize('quit')) . PHP_EOL);
+                $this->close();
+                exit;
+            }
+            array_push($arguments, $this);
+            $result = call_user_func_array($this->observer, $arguments);
+            $context = serialize($result);
+            $this->common->write($context);
+            $this->to->write(strlen($context) . PHP_EOL);
+            if ($result === 'quit') {
+                sleep(1);
+                $this->release();
+                exit;
+            }
+        }
     }
 }

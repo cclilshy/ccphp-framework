@@ -23,20 +23,24 @@ class Debug
     public function main($argv, $console): void
     {
         Process::init();
+        
         for($i=0;$i<100;$i++){
             Process::fork(function(){
-                for ($i=0; $i < 10; $i++) {
-                    if ($link = Pool::link()) {
+                if ($link = Pool::link()){
+                    for ($i = 0; $i < 10; $i++) {
                         $result = $link->table('area')
                             ->where('id', '=', mt_rand(1049112, 1050111))
                             ->first()
                             ->go();
 
-                        var_dump($result);
+                        echo json_encode($result);
                     }
+                    $link->close();
                 }
             });
         }
+        sleep(1);
         Process::guard();
+
     }
 }
