@@ -21,7 +21,8 @@ class Debug
     public function main($argv, $console): void
     {
         Process::init();
-        for ($i = 0; $i < 10; $i++) {
+        sleep(1);
+        for ($i = 0; $i < 100; $i++) {
             Process::fork(function () use ($i) {
                 echo $i . ',';
                 sleep(rand(5, 10));

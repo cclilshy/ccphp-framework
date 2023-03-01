@@ -27,7 +27,7 @@ class Tree
     public static function launch(): bool
     {
         if ($server = Server::create('Tree')) {
-            $handler = function ($fifo, $action, $data) {
+            $handler = function ($action, $data, $fifo) {
                 $fifo->object->handler($fifo, $action, $data);
             };
             $ipcName = IPC::create($handler, new self)->name;
@@ -146,7 +146,7 @@ class Tree
             $ipcName = $server->data['tree_name'];
             if ($IPC = IPC::link($ipcName)) {
                 $server->release();
-                $IPC->release();
+                $IPC->stop();
                 Console::pgreen('[TreeServer] stopped!');
                 return true;
             }

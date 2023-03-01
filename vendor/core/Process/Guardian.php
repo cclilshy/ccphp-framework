@@ -18,7 +18,7 @@ class Guardian
 
     public static function create(): string
     {
-        $handler = function ($fifo, $action, $data) {
+        $handler = function ($action, $data, $fifo) {
             Console::pdebug('[Guardian] ' . $action . ':' . json_encode($data));
             switch ($action) {
                 case 'new':
