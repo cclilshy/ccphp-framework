@@ -145,6 +145,7 @@ class ComposerStaticInit60944a74844f458d25e8d2a2c6af6162
         0 => __DIR__ . '/../..' . '/extend',
         1 => __DIR__ . '/../..' . '/vendor',
         2 => __DIR__ . '/../..' . '/application',
+        3 => __DIR__ . '/../..' . '/model',
     );
 
     public static $classMap = array (
