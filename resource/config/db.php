@@ -11,10 +11,10 @@
 return [
     'driver' => 'mysql',
     'host' => 'localhost',
-    'database' => 'temp',
+    'database' => 'im',
     'username' => 'root',
     'password' => '123456',
     'charset' => 'utf8',
-    'collation' => 'utf8_unicode_ci',
-    'prefix' => ''
+    'collation' => 'utf8_general_ci',
+    'prefix' => 'db_'
 ];

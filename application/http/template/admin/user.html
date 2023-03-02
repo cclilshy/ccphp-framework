@@ -1,0 +1,114 @@
+<!--
+ * @Author: cclilshy cclilshy@163.com
+ * @Date: 2023-03-02 11:12:34
+ * @LastEditors: cclilshy cclilshy@163.com
+ * @Description: My house
+ * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
+-->
+<!Doctype html>
+<html>
+
+<head>
+    <title>用户列表</title>
+    @embed('admin/common/head')@endembed
+</head>
+
+<body>
+    <div class="im-content">
+        <input type="text" name="title" required lay-verify="required" placeholder="请输入标题" autocomplete="off"
+            class="layui-input">
+        <template type="text/html" id="head_toolbar">
+            <div class="layui-btn-container">
+                <button class="layui-btn layui-btn-sm" lay-event="add">创建用户</button>
+            </div>
+            
+        </template>
+        <teamlate type="text/html" id="cell_toolbar" style="display: none">
+            <a class="layui-btn layui-btn-xs" lay-event="detail">详细</a>
+            <a class="layui-btn layui-btn-xs" lay-event="edit">群组</a>
+            <a class="layui-btn layui-btn-xs" lay-event="edit">好友</a>
+            <a class="layui-btn layui-btn-xs" lay-event="edit">发言记录</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">封禁</a>
+            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+        </teamlate>
+        <table id="list" lay-filter="list"></table>
+    </div>
+    <script>
+        layui.use('table', function () {
+            var table = layui.table;
+            //第一个实例
+            table.render({
+                elem: '#list',
+                height: 750,
+                page: true,
+                url: "/admin/user",
+                toolbar: "#head_toolbar",
+                cols: [[
+                    { field: 'id', title: 'ID', width: 80, sort: true, fixed: 'left' },
+                    { field: 'username', title: '用户名', width: 100 },
+                    { field: 'sex', title: '性别', width: 80 },
+                    { field: 'email', title: '邮箱', width: 200 },
+                    { field: 'birthday', title: '生日', width: 120, sort: true },
+                    { field: 'intro', title: '个人简介', width: 200 },
+                    { field: 'reg_time', title: '注册时间', width: 180, sort: true },
+                    { field: 'last_active', title: '上次活跃', width: 180, sort: true },
+                    { title: '操作', width: 400, templet: '#cell_toolbar' }
+                ]],
+                // data: [
+                //     {
+                //         "id": 1001,
+                //         "username": "Alice",
+                //         "sex": "女",
+                //         "email": "alice@example.com",
+                //         "birthday": "1990-01-01",
+                //         "intro": "写作爱好者",
+                //         "reg_time": "2022-01-01 10:00:00",
+                //         "last_active": "2022-02-01 12:00:00"
+                //     },
+                //     {
+                //         "id": 1002,
+                //         "username": "Bob",
+                //         "sex": "男",
+                //         "email": "bob@example.com",
+                //         "birthday": "1985-05-05",
+                //         "intro": "工程师",
+                //         "reg_time": "2022-01-05 10:00:00",
+                //         "last_active": "2022-02-05 12:00:00"
+                //     },
+                //     {
+                //         "id": 1003,
+                //         "username": "Charlie",
+                //         "sex": "男",
+                //         "email": "charlie@example.com",
+                //         "birthday": "1988-08-08",
+                //         "intro": "教师",
+                //         "reg_time": "2022-01-10 10:00:00",
+                //         "last_active": "2022-02-10 12:00:00"
+                //     },
+                //     {
+                //         "id": 1004,
+                //         "username": "David",
+                //         "sex": "男",
+                //         "email": "david@example.com",
+                //         "birthday": "1980-12-12",
+                //         "intro": "医生",
+                //         "reg_time": "2022-01-15 10:00:00",
+                //         "last_active": "2022-02-15 12:00:00"
+                //     },
+                //     {
+                //         "id": 1005,
+                //         "username": "Emma",
+                //         "sex": "女",
+                //         "email": "emma@example.com",
+                //         "birthday": "1982-02-02",
+                //         "intro": "律师",
+                //         "reg_time": "2022-01-20 10:00:00",
+                //         "last_active": "2022-02-20 12:00:00"
+                //     }
+                // ]
+            });
+        });
+    </script>
+</body>
+
+</html>

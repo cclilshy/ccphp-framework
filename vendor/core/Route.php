@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-08 14:48:01
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/Route.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -71,6 +71,11 @@ class Route
 
     public static function guide($entrance, $method)
     {
+        
+        if($index = strpos($entrance,strstr($entrance, '?'))){
+            $entrance = substr($entrance,0,$index);
+        }
+
         self::$entrance = $entrance;
         $method = strtolower($method);
         if (isset(self::$map[$method][$entrance])) {
