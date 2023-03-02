@@ -11,7 +11,8 @@
 namespace http\controller;
 
 use core\View;
-use \model\User;
+use model\User;
+use core\DB;
 
 class Admin
 {
@@ -28,8 +29,11 @@ class Admin
         if(!\core\Http::ajax()){
             return View::template();
         }else{
-            $list = User::list();
-            return View::json(['code'=>0,'msg'=>'ok','data'=>$list]);
+            if($list = DB::table('user')->where('id','<',50)->get()){
+                return View::json(['code' => 0, 'msg' => 'success', 'data' => $list->toArray()]);
+            }else{
+                return View::json(['code' => -1, 'msg' => null, 'data' => []]);
+            }
         }
         
     }
