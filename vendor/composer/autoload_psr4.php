@@ -25,5 +25,5 @@ return array(
     'Doctrine\\Inflector\\' => array($vendorDir . '/doctrine/inflector/lib/Doctrine/Inflector'),
     'Carbon\\' => array($vendorDir . '/nesbot/carbon/src/Carbon'),
     'Brick\\Math\\' => array($vendorDir . '/brick/math/src'),
-    '' => array($baseDir . '/extend', $vendorDir . '', $baseDir . '/application'),
+    '' => array($baseDir . '/extend', $vendorDir . '', $baseDir . '/application', $baseDir . '/model'),
 );
