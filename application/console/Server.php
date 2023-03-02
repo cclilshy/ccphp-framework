@@ -13,6 +13,7 @@ namespace console;
 
 use core\Database\Pool;
 use core\Process\Tree;
+use core\Config;
 
 class Server
 {
@@ -28,7 +29,9 @@ class Server
             return;
         }
         if ($argv[1] == 'start') {
-            Tree::launch();
+            if(Config::get('server.database_pool') === true){
+                 Tree::launch();
+            }
             Pool::launch();
         } elseif ($argv[1] === 'stop') {
             Tree::stop();
