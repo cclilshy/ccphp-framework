@@ -15,38 +15,60 @@
 
 <body>
     <div class="im-content">
-        <form class="layui-form layui-form-pane" action="">
-            <div class="layui-form-item">
-                <label class="layui-form-label">搜索项</label>
-                <div class="layui-inline">
-                    <select name="search_key">
-                        <option value=""></option>
-                        <option value="username">用户名</option>
-                        <option value="sex">性别</option>
-                        <option value="email">邮箱</option>
-                        <option value="birthday">生日</option>
-                        <option value="brief">简介</option>
-                    </select>
-                </div>
-                <div class="layui-inline">
-                    <input type="text" name="search_value" placeholder="搜索值" autocomplete="off" class="layui-input">
-                </div>
+        <div class="layui-card">
+            <div class="layui-card-header">用户管理</div>
+            <div class="layui-card-body">
+                <form class="layui-form layui-form-pane" action="">
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">搜索项</label>
+                        <div class="layui-inline">
+                            <select name="search_key">
+                                <option value=""></option>
+                                <option value="username">用户名</option>
+                                <option value="sex">性别</option>
+                                <option value="email">邮箱</option>
+                                <option value="birthday">生日</option>
+                                <option value="brief">简介</option>
+                            </select>
+                        </div>
+                        <div class="layui-inline">
+                            <input type="text" name="search_value" placeholder="搜索值" autocomplete="off"
+                                class="layui-input">
+                        </div>
 
-            </div>
-            <div class="layui-form-item">
-                <label class="layui-form-label">时间范围</label>
-                <div class="layui-inline">
-                    <input type="text" class="layui-input" id="register_time" placeholder="注册时间">
-                </div>
-                <div class="layui-inline">
-                    <input type="text" class="layui-input" id="active_time" placeholder="最后活跃">
-                </div>
-                <div class="layui-inline">
-                    <button class="layui-btn" lay-submit lay-filter="formDemo">搜索</button>
-                </div>
-            </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">时间范围</label>
+                        <div class="layui-inline">
+                            <input type="text" class="layui-input" id="register_time" placeholder="注册时间">
+                        </div>
+                        <div class="layui-inline">
+                            <input type="text" class="layui-input" id="active_time" placeholder="最后活跃">
+                        </div>
+                        <div class="layui-inline">
+                            <button class="layui-btn" lay-submit lay-filter="formDemo">搜索</button>
+                        </div>
+                    </div>
+                    <template type="text/html" id="head_toolbar">
+                        <div class="layui-btn-container">
+                            <button class="layui-btn layui-btn-sm" lay-event="add">创建用户</button>
+                        </div>
+                    </template>
+                    <teamlate type="text/html" id="cell_toolbar" style="display: none">
+                        <a class="layui-btn layui-btn-xs" lay-event="detail">详细</a>
+                        <a class="layui-btn layui-btn-xs" lay-event="edit">群组</a>
+                        <a class="layui-btn layui-btn-xs" lay-event="edit">好友</a>
+                        <a class="layui-btn layui-btn-xs" lay-event="edit">发言记录</a>
+                        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">封禁</a>
+                        <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                    </teamlate>
 
-        </form>
+                    <table id="list" lay-filter="list"></table>
+
+                </form>
+            </div>
+        </div>
+
 
         <script>
             //Demo
@@ -60,21 +82,7 @@
                 });
             });
         </script>
-        <template type="text/html" id="head_toolbar">
-            <div class="layui-btn-container">
-                <button class="layui-btn layui-btn-sm" lay-event="add">创建用户</button>
-            </div>
-        </template>
-        <teamlate type="text/html" id="cell_toolbar" style="display: none">
-            <a class="layui-btn layui-btn-xs" lay-event="detail">详细</a>
-            <a class="layui-btn layui-btn-xs" lay-event="edit">群组</a>
-            <a class="layui-btn layui-btn-xs" lay-event="edit">好友</a>
-            <a class="layui-btn layui-btn-xs" lay-event="edit">发言记录</a>
-            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">封禁</a>
-            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
-        </teamlate>
 
-        <table id="list" lay-filter="list"></table>
     </div>
     <script>
         layui.use(['laydate', 'table'], function () {
@@ -95,7 +103,7 @@
 
             table.render({
                 elem: '#list',
-                height: 750,
+                height: 650,
                 page: true,
                 url: "/admin/user",
                 toolbar: "#head_toolbar",

@@ -29,8 +29,8 @@ class Admin
         if(!\core\Http::ajax()){
             return View::template();
         }else{
-            if($list = DB::table('user')->where('id','<',50)->get()){
-                return View::json(['code' => 0, 'msg' => 'success', 'data' => $list->toArray()]);
+            if($list = User::list(array(['id','<',100]))){
+                return View::json(['code' => 0, 'msg' => 'success', 'data' => $list]);
             }else{
                 return View::json(['code' => -1, 'msg' => null, 'data' => []]);
             }

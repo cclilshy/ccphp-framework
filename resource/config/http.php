@@ -8,7 +8,7 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 return [
-    'debug' => false,
+    'debug' => true,
     'template_extension' => 'html',
     'auto_routing' => true
 ];

@@ -16,7 +16,13 @@ class User extends Model
 {
     public static function list($where = array())
     {
-        return [];
-        return DB::name('user')->where($where)->select()->toArray();
+        $user = DB::table('user');
+        if($where){
+           while($item = array_shift($where)){
+                $user = $user->where($item[0],$item[1],$item[2]);
+           }
+        }
+
+        return $user->get()->toArray();
     }
 }
