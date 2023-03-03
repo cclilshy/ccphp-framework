@@ -33,7 +33,7 @@ class Http
 
     public static function reset(): void
     {
-        Master::rouse('Input', 'Session');
+        Master::rouse('Input', 'Session', 'Template');
         Http::$request = new stdClass;
         Http::$request->uri = trim(Input::get('route') ?? $_SERVER['REQUEST_URI'], '/');
         Http::$request->method = $_SERVER['REQUEST_METHOD'];
