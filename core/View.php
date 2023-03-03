@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-04 00:12:34
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/View.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -20,11 +20,13 @@ class View
     public static function template($template = null, $data = []): string
     {
         if (is_array($template) || $template === null) {
+            $templateFileName = Http::getMapAttribute('functionName');
+            $templateFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $templateFileName));
             self::$content = file_get_contents(
                 TMP_PATH . FS
-                . strtolower(Http::getMapAttribute('controllerName')) . FS
-                . strtolower(Http::getMapAttribute('functionName')) . '.'
-                . Config::get('http.template_extension')
+                    . strtolower(Http::getMapAttribute('controllerName')) . FS
+                    . $templateFileName . '.'
+                    . Config::get('http.template_extension')
             );
             self::$data = $template ?? [];
         } else {
