@@ -12,6 +12,8 @@ namespace core;
 
 use core\Ccphp\Launch;
 use stdClass;
+use core\Http\Response;
+use core\Http\Request;
 
 // Load The Running Http Information 
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
@@ -20,47 +22,24 @@ class Http
 {
     private static $config;
     private static $map;
-    private static $request;
+    private static Request $request;
+    private static Response $response;
 
     public static function init($config = null): Http
     {
         Http::$config = $config;
-        self::reset();
+        self::load();
         set_error_handler([__CLASS__, 'httpErrorHandle'], E_ALL);
-
+        Master::rouse('Route', 'Input', 'Session');
         return new Http();
     }
 
-    public static function reset(): void
+    public static function load()
     {
-        Master::rouse('Input', 'Session');
-        Http::$request = new stdClass;
-        Http::$request->uri = trim(Input::get('route') ?? $_SERVER['REQUEST_URI'], '/');
-        Http::$request->method = $_SERVER['REQUEST_METHOD'];
-        Http::$request->ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+        Http::$request = Request::load();
     }
 
     // 常驻内存运行数据重置接口
-
-    public static function get(string $key = '')
-    {
-        return Input::get($key);
-    }
-
-    public static function post(string $key = '')
-    {
-        return Input::post($key);
-    }
-
-    public static function ajax(): bool
-    {
-        return Http::$request->ajax;
-    }
-
-    public static function method(): string
-    {
-        return Http::$request->method;
-    }
 
     public static function getMapAttribute($name)
     {
@@ -69,10 +48,10 @@ class Http
 
     public function run(): void
     {
-        if (Http::$map = Route::guide(Http::$request->uri, Http::$request->method)) {
+        if (Http::$map = Route::guide(trim(Http::$request->path, '/'), Http::$request->method)) {
             Http::end(Http::$map->run());
         } else {
-            Http::httpErrorHandle(0, 'Route not found: {' . Http::$request->uri . '}', __FILE__, 1, 404);
+            Http::httpErrorHandle(0, 'Route not found: {' . Http::$request->path . '}', __FILE__, 1, 404);
         }
     }
 
@@ -83,7 +62,7 @@ class Http
             $statistics = Launch::statistics();
             $general = [
                 'timeLength' => $statistics->endTime - $statistics->startTime,
-                'uri' => Http::$request->uri,
+                'uri' => Http::$request->path,
                 'fileCount' => count($statistics->loadFiles),
                 'memory' => $statistics->memory,
                 'maxMemory' => $statistics->maxMemory
@@ -138,5 +117,10 @@ class Http
         $html = Template::apply($html);
 
         die($html);
+    }
+
+    public static function isAjax(): bool
+    {
+        return Http::$request->ajax;
     }
 }

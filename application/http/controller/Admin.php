@@ -26,7 +26,7 @@ class Admin
     }
 
     public function user(){
-        if(!\core\Http::ajax()){
+        if(!\core\Http::isAjax()){
             return View::template();
         }else{
             if($list = User::list(array(['id','<',100]))){

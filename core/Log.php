@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2023-01-05 20:29:29
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/Log.php
  * @Description: My house
  * Copyright (c) 2023 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -28,10 +28,10 @@ class Log
     public static function init(): void
     {
         Log::$env = Launch::getPhpEnv();
-        self::reset();
+        self::load();
     }
 
-    public static function reset(): void
+    public static function load(): void
     {
         $entrance = Route::entrance();
         Log::$entrance = $entrance[0];
