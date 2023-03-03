@@ -71,6 +71,12 @@ class Route
 
     public static function guide($entrance, $method)
     {
+<<<<<<< HEAD
+=======
+        if($index = strpos($entrance,strstr($entrance, '?'))){
+            $entrance = substr($entrance,0,$index);
+        }
+>>>>>>> 8ae1a4e (http)
         self::$entrance = $entrance;
         $method = strtolower($method);
         if (isset(self::$map[$method][$entrance])) {

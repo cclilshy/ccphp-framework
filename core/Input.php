@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2023-01-04 00:33:01
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/Input.php
  * @Description: My house
  * Copyright (c) 2023 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -11,6 +11,7 @@
 namespace core;
 
 use core\Ccphp\Launch;
+use core\Http\Request;
 
 // Load The Level Record The Input Of The User Request And Provide The Corresponding Method
 
@@ -21,10 +22,13 @@ class Input
 
     public static function init(): void
     {
-        Input::$get = $_GET;
-        Input::$post = $_POST;
-        $_GET = array();
-        $_POST = array();
+        self::load();
+    }
+
+    public static function load(): void
+    {
+        Input::$get = Request::$request->get;
+        Input::$post = Request::$request->post;
         Launch::record('input');
     }
 

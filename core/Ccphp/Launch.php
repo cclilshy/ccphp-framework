@@ -18,12 +18,12 @@ class Launch
     private static $launch;
     public static function init($config = null)
     {
-        self::reset();
+        self::load();
         switch (Launch::$launch->type) {
             case 'cli-server':
                 Launch::httpLauncher();
                 break;
-            
+
             case 'fpm-fcgi':
                 Launch::httpLauncher();
                 break;
@@ -37,12 +37,13 @@ class Launch
         }
     }
 
-    private static function httpLauncher(){
+    private static function httpLauncher()
+    {
         \core\Master::rouse('Http')->run();
     }
-    
+
     // 常驻内存运行数据重置接口
-    public static function reset()
+    public static function load()
     {
         Launch::$launch = new \stdClass();
         Launch::$launch->sqls = [];
@@ -61,7 +62,7 @@ class Launch
         } elseif ($type === 'input') {
             Launch::$launch->get = \core\Input::get();
             Launch::$launch->post = \core\Input::post();
-        } elseif($type === 'end') {
+        } elseif ($type === 'end') {
             Launch::$launch->loadFiles = get_included_files();
             Launch::$launch->endTime = microtime(true);
             Launch::$launch->memory = memory_get_usage();
@@ -75,12 +76,13 @@ class Launch
         return self::$launch;
     }
 
-    public static function template(string $name) : string
+    public static function template(string $name): string
     {
         return file_get_contents(__DIR__ . '/template/' . $name);
     }
 
-    public static function getPhpEnv() : string {
+    public static function getPhpEnv(): string
+    {
         return Launch::$launch->type === 'cli' ? 'cli' : 'http';
     }
 }
