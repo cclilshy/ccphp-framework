@@ -23,6 +23,10 @@ class User extends Model
            }
         }
 
-        return $user->get()->toArray();
+        return $user->get();
+    }
+
+    public static function find($uid){
+        return DB::table('user')->where('id','=',$uid)->first();
     }
 }

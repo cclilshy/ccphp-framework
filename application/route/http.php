@@ -13,6 +13,8 @@ use core\Route;
 Route::get('admin', 'http\controller\Admin@index');
 Route::get('admin/general', 'http\controller\Admin@general');
 Route::get('admin/user', 'http\controller\Admin@user');
+Route::get('admin/user/edit', 'http\controller\Admin@userEdit');
+
 Route::get('admin/friend', 'http\controller\Admin@general');
 Route::get('admin/message', 'http\controller\Admin@general');
 Route::get('admin/group', 'http\controller\Admin@general');

@@ -1,0 +1,108 @@
+<!--
+ * @Author: cclilshy cclilshy@163.com
+ * @Date: 2023-03-03 11:25:56
+ * @LastEditors: cclilshy cclilshy@163.com
+ * @Description: My house
+ * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
+-->
+<html>
+
+<head>
+    @embed('admin/common/head')@endembed
+</head>
+
+<body>
+    <div class="layui-card">
+        <div class="layui-card-header">
+        </div>
+        <div class="layui-card-body">
+
+            <form class="layui-form" action="">
+                @if(isset($userInfo))
+                <div class="layui-form-item">
+                    <label class="layui-form-label">ID</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="id" autocomplete="off" class="layui-input" value="{{$userInfo->id}}"
+                            disabled>
+                    </div>
+                </div>
+                @endif
+                <div class="layui-form-item">
+                    <label class="layui-form-label">头像</label>
+                    <div class="layui-input-inline">
+                        <img src="https://avatars.githubusercontent.com/u/59851383?s=40&v=4">
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">昵称</label>
+                    <div class="layui-input-inline">
+                        <input type="text" name="nickname" required lay-verify="required" placeholder="昵称"
+                            autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">密码</label>
+                    <div class="layui-input-inline">
+                        <input type="password" placeholder="请输入密码" autocomplete="off" class="layui-input">
+                    </div>
+                    <div class="layui-form-mid layui-word-aux">留空则不修改</div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">邮箱地址</label>
+                    <div class="layui-input-inline">
+                        <input type="email" name="email" placeholder="邮箱地址" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">出生日期</label>
+                    <div class="layui-input-inline">
+                        <input type="birthday" name="birthday" placeholder="生日" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">性别</label>
+                    <div class="layui-input-block">
+                        <input type="radio" name="sex" value="none" title="保密" checked>
+                        <input type="radio" name="sex" value="boy" title="男">
+                        <input type="radio" name="sex" value="girl" title="女">
+                    </div>
+                </div>
+
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">个性签名</label>
+                    <div class="layui-input-block">
+                        <textarea name="desc" placeholder="请输入个性签名" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+
+                <div class="layui-form-item">
+                    <label class="layui-form-label">启用</label>
+                    <div class="layui-input-block">
+                        <input type="checkbox" name="switch" lay-skin="switch">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="form">保存</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        //Demo
+        layui.use('form', function () {
+            var form = layui.form;
+
+            //提交
+            form.on('submit(form)', function (data) {
+                layer.msg(JSON.stringify(data.field));
+                return false;
+            });
+        });
+    </script>
+</body>
+
+</html>
