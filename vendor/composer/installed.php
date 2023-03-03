@@ -3,7 +3,7 @@
         'name' => 'root/core.loc',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '56d212420c89071ec6cc9d9c86efc9447855d7c8',
+        'reference' => 'f6e2a1c299da5575cf278ffed648d336c6de21ff',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -163,7 +163,7 @@
         'root/core.loc' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '56d212420c89071ec6cc9d9c86efc9447855d7c8',
+            'reference' => 'f6e2a1c299da5575cf278ffed648d336c6de21ff',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

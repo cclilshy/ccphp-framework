@@ -3,7 +3,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-06 16:22:36
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/master
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -11,5 +11,5 @@
 
 use core\Master;
 
-include __DIR__ . '/vendor/ccload.php';
+include __DIR__ . '/core/base/ccload.php';
 Master::rouse('Ccphp');

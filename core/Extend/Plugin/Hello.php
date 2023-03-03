@@ -2,13 +2,13 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-03 23:15:15
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/extend/plugin/Hello.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-namespace plugin;
+namespace Plugin;
 
 class Hello
 {
