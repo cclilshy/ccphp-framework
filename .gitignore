@@ -3,5 +3,6 @@
 .env
 sftp-config.json
 .DS_Store
+debug.php
 # composer.json
 # composer.lock

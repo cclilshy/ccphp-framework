@@ -72,13 +72,13 @@ class Http
         if (Http::$map = Route::guide(Http::$request->uri, Http::$request->method)) {
             Http::end(Http::$map->run());
         } else {
-            header('HTTP/1.1 404 Not Found');
-            Http::httpErrorHandle(0, 'Route not found: {' . Http::$request->uri . '}', __FILE__, 1);
+            Http::httpErrorHandle(0, 'Route not found: {' . Http::$request->uri . '}', __FILE__, 1, 404);
         }
     }
 
-    public static function end(string $content = null): void
+    public static function end(string $content = null, $statusCode = 200): void
     {
+        header('HTTP/1.1 ' . $statusCode);
         if (Http::$config['debug'] === true && Http::$request->ajax === false) {
             $statistics = Launch::statistics();
             $general = [
@@ -100,8 +100,9 @@ class Http
         echo $content;
     }
 
-    public static function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine): void
+    public static function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): void
     {
+        header('HTTP/1.1 ' . $httpCode);
         $statistics = Launch::statistics();
         $fileDescribe = '';
         if (is_file($errFile)) {

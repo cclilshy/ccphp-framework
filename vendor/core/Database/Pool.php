@@ -9,42 +9,70 @@
 
 namespace core\Database;
 
+use core\Process\ProcessMirroring;
 use Illuminate\Database\Connection;
-use \core\Process\IPC;
-use \core\Server\Server;
-use \core\DB;
-use \core\Console;
+use core\Process\IPC;
+use core\Server\Server;
+use core\DB;
+use core\Console;
+use core\Config;
+use core\Process\Process;
 
 class Pool
 {
-    private static array $connects = array();
+    private static IPC $dispatcher;
     private array $flow = array();
-    private IPC $ipc;
 
-    public static function getConnect(): Connection
+    private static function dispatcher()
     {
-        return DB::getConnect();
+        self::$dispatcher = IPC::create(function ($action, $name, $ipc) {
+            Console::pdebug('[Pool][' . \microtime(true) . ']' . $name . '->' . $action);
+            switch ($action) {
+                case 'new':
+                    for ($i = 0; $i < Config::get('server.database_pool_max'); $i++) {
+                        $ipc->space[] = $name;
+                    }
+                    break;
+                case 'get':
+                    return array_shift($ipc->space);
+                case 'back':
+                    $ipc->space[] = $name;
+                    break;
+            }
+        }, array());
     }
 
-    public static function launch(int $count = 1): void
+    public static function launch(): void
     {
         if ($server = Server::create('DatabasePool')) {
-            for ($i = 0; $i < $count; $i++) {
-                self::$connects[] = self::getConnect();
-            }
+            // 运行调度服务
+            self::dispatcher();
 
-            $ipc = IPC::create(function (array $flow, IPC $ipc) {
-                if ($connect = array_shift($ipc->space)) {
-                    $handler = $connect;
-                    foreach ($flow as $item) {
-                        $handler = call_user_func_array([$handler, $item['m']], $item['a']);
+            // 一个进程分配一个连接
+            for ($i = 0; $i < Config::get('server.database_pool_connect'); $i++) {
+                $connectNames = array();
+                try {
+                    $ipc = IPC::create(function (array $flow, IPC $ipc) {
+                        return ProcessMirroring::production($ipc->space, $flow);
+                    }, DB::getConnect());
+
+                    if ($ipc === false) throw new \Exception('IPC服务启动失败');
+
+                    self::$dispatcher->call('new', $ipc->name);
+
+                    $connectNames[] = $ipc->name;
+                } catch (\Exception $e) {
+                    foreach ($connectNames as $name) {
+                        IPC::link($name)->stop();
                     }
-                    $ipc->space[] = $connect;
-                    return $handler;
+                    echo $e->getMessage() . PHP_EOL;
+                    exit;
                 }
-            }, self::$connects);
-
-            $server->info(['ipc_name' => $ipc->name]);
+            }
+            $server->info([
+                'dispatcher_name' => self::$dispatcher->name,
+                'connect_names' => $connectNames,
+            ]);
             Console::pgreen('[Database-Pool-Server] started!');
         } else {
             Console::pred('[Database-Pool-Server] start failed : it\'s start');
@@ -54,9 +82,13 @@ class Pool
     public static function stop()
     {
         if ($server = Server::load('DatabasePool')) {
-            $ipcName = $server->info()['ipc_name'];
-            $ipc = IPC::link($ipcName);
-            $ipc->stop();
+            $info = $server->info();
+            $dispatcherName = $info['dispatcher_name'];
+            $connectNames = $info['connect_names'];
+            foreach ($connectNames as $connectName) {
+                IPC::link($connectName)->stop();
+            }
+            IPC::link($dispatcherName)->stop();
             $server->release();
             Console::pgreen('[Database-Pool-Server] stoped!');
         } else {
@@ -64,37 +96,27 @@ class Pool
         }
     }
 
-    public static function link(): Pool | false
+    public static function get(): ProcessMirroring | false
     {
         if ($server = Server::load('DatabasePool')) {
-            if ($ipc = IPC::link($server->info()['ipc_name'])) {
-                return new self($ipc);
+            $info = $server->info();
+            $dispatcherName = $info['dispatcher_name'];
+            $dispatcher = IPC::link($dispatcherName);
+            if ($connectName = $dispatcher->call('get', null)) {
+                $std = new \stdClass;
+                $std->dispatcher = $dispatcher;
+                $std->connect = IPC::link($connectName);
+
+                return new ProcessMirroring(function ($p) {
+                    if (isset($p->flow[0]) && $p->flow[0]['m'] === 'back') {
+
+                        $p->space->dispatcher->call('back', $p->space->connect->name);
+                        return;
+                    }
+                    return $p->space->connect->call($p->flow);
+                }, $std);
             }
         }
-
         return false;
-    }
-
-    public function go()
-    {
-        $result =  $this->ipc->call($this->flow);
-        $this->flow = array();
-        return $result;
-    }
-
-    public function unlink(): void
-    {
-        $this->ipc->close();
-    }
-
-    public function __call($name, $arguments)
-    {
-        $this->flow[] = array('m' => $name, 'a' => $arguments);
-        return $this;
-    }
-
-    public function __construct(IPC $ipc)
-    {
-        $this->ipc = $ipc;
     }
 }

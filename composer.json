@@ -7,7 +7,7 @@
         "extend",
         "vendor",
         "application",
-        "model"
+        ""
       ]
     }
   },

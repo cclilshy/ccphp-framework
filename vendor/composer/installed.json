@@ -348,8 +348,8 @@
         },
         {
             "name": "illuminate/container",
-            "version": "v10.1.4",
-            "version_normalized": "10.1.4.0",
+            "version": "v10.2.0",
+            "version_normalized": "10.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/container.git",
@@ -408,8 +408,8 @@
         },
         {
             "name": "illuminate/contracts",
-            "version": "v10.1.5",
-            "version_normalized": "10.1.5.0",
+            "version": "v10.2.0",
+            "version_normalized": "10.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -465,17 +465,17 @@
         },
         {
             "name": "illuminate/database",
-            "version": "v10.1.5",
-            "version_normalized": "10.1.5.0",
+            "version": "v10.2.0",
+            "version_normalized": "10.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/database.git",
-                "reference": "782940a3092e86c8d022d6d8d168b64fb97933a5"
+                "reference": "851046b8ee2dd24453e08bbe082e7ba172d69470"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/database/zipball/782940a3092e86c8d022d6d8d168b64fb97933a5",
-                "reference": "782940a3092e86c8d022d6d8d168b64fb97933a5",
+                "url": "https://api.github.com/repos/illuminate/database/zipball/851046b8ee2dd24453e08bbe082e7ba172d69470",
+                "reference": "851046b8ee2dd24453e08bbe082e7ba172d69470",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -504,7 +504,7 @@
                 "illuminate/pagination": "Required to paginate the result set (^10.0).",
                 "symfony/finder": "Required to use Eloquent model factories (^6.2)."
             },
-            "time": "2023-02-23T18:43:10+00:00",
+            "time": "2023-03-02T14:29:55+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -543,8 +543,8 @@
         },
         {
             "name": "illuminate/events",
-            "version": "v10.1.4",
-            "version_normalized": "10.1.4.0",
+            "version": "v10.2.0",
+            "version_normalized": "10.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/events.git",
@@ -662,8 +662,8 @@
         },
         {
             "name": "illuminate/pagination",
-            "version": "v10.1.4",
-            "version_normalized": "10.1.4.0",
+            "version": "v10.2.0",
+            "version_normalized": "10.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/pagination.git",
@@ -721,8 +721,8 @@
         },
         {
             "name": "illuminate/pipeline",
-            "version": "v10.1.5",
-            "version_normalized": "10.1.5.0",
+            "version": "v10.2.0",
+            "version_normalized": "10.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/pipeline.git",
@@ -778,17 +778,17 @@
         },
         {
             "name": "illuminate/support",
-            "version": "v10.1.4",
-            "version_normalized": "10.1.4.0",
+            "version": "v10.2.0",
+            "version_normalized": "10.2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/support.git",
-                "reference": "0311d96fb673e9694e1df838abb12f4e4019cdc4"
+                "reference": "2b2f74449a7b95fbbfaeb26399cc5e1df85a96fa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/support/zipball/0311d96fb673e9694e1df838abb12f4e4019cdc4",
-                "reference": "0311d96fb673e9694e1df838abb12f4e4019cdc4",
+                "url": "https://api.github.com/repos/illuminate/support/zipball/2b2f74449a7b95fbbfaeb26399cc5e1df85a96fa",
+                "reference": "2b2f74449a7b95fbbfaeb26399cc5e1df85a96fa",
                 "shasum": "",
                 "mirrors": [
                     {
@@ -822,7 +822,7 @@
                 "symfony/var-dumper": "Required to use the dd function (^6.2).",
                 "vlucas/phpdotenv": "Required to use the Env class and env helper (^5.4.1)."
             },
-            "time": "2023-02-23T07:42:03+00:00",
+            "time": "2023-03-02T14:29:55+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
