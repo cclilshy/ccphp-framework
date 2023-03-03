@@ -8,9 +8,8 @@
  */
 
 use core\Master;
-
-include 'autoload.php';
-include 'base/configure.php';
-include 'base/function.php';
-include 'base/global.php';
+include 'configure.php';
+include 'function.php';
+include 'global.php';
+include ROOT_PATH . '/vendor/autoload.php';
 Master::rouse('Config', 'Route', 'DB', 'Cache');

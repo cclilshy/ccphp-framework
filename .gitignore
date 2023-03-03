@@ -4,5 +4,5 @@
 sftp-config.json
 .DS_Store
 debug.php
-# composer.json
-# composer.lock
+composer.json
+composer.lock

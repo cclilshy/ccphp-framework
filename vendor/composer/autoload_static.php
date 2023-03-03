@@ -21,6 +21,14 @@ class ComposerStaticInit60944a74844f458d25e8d2a2c6af6162
         array (
             'voku\\' => 5,
         ),
+        'm' => 
+        array (
+            'model\\' => 6,
+        ),
+        'c' => 
+        array (
+            'core\\' => 5,
+        ),
         'S' => 
         array (
             'Symfony\\Polyfill\\Php80\\' => 23,
@@ -63,6 +71,14 @@ class ComposerStaticInit60944a74844f458d25e8d2a2c6af6162
         'voku\\' => 
         array (
             0 => __DIR__ . '/..' . '/voku/portable-ascii/src/voku',
+        ),
+        'model\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/model',
+        ),
+        'core\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/core',
         ),
         'Symfony\\Polyfill\\Php80\\' => 
         array (
@@ -142,10 +158,9 @@ class ComposerStaticInit60944a74844f458d25e8d2a2c6af6162
     );
 
     public static $fallbackDirsPsr4 = array (
-        0 => __DIR__ . '/../..' . '/extend',
-        1 => __DIR__ . '/../..' . '/vendor',
-        2 => __DIR__ . '/../..' . '/application',
-        3 => __DIR__ . '/../..' . '/',
+        0 => __DIR__ . '/../..' . '/vendor',
+        1 => __DIR__ . '/../..' . '/application',
+        2 => __DIR__ . '/../..' . '/core/Extend',
     );
 
     public static $classMap = array (
