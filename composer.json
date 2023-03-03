@@ -6,7 +6,8 @@
       "": [
         "extend",
         "vendor",
-        "application"
+        "application",
+        ""
       ]
     }
   },
