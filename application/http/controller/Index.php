@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-04 11:34:28
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/application/http/controller/Index.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -19,8 +19,8 @@ class Index
         return View::template();
     }
 
-    public function hello($name): void
+    public function hello(string $name): string
     {
-        echo 'hello,' . $name;
+        return 'hello,' . $name;
     }
 }

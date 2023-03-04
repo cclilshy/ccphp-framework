@@ -23,6 +23,7 @@ class Request
     private array $header;
     private array $get;
     private array $post;
+<<<<<<< HEAD
     public Response $response;
 
     public static Request $request;
@@ -33,11 +34,36 @@ class Request
     }
 
     public static function load(string $original = ''): Request
+=======
+
+    public static Request $request;
+
+    public static function init($original = ''): Request
+    {
+        return self::load($original);
+    }
+
+    public static function load($original = ''): Request
+>>>>>>> main
     {
         return self::$request = new Request($original);
     }
 
+<<<<<<< HEAD
     public function __construct(string $original = '')
+=======
+    public static function type(): string
+    {
+        return self::$request->type;
+    }
+
+    public static function get()
+    {
+        return self::$request;
+    }
+
+    public function __construct($original = '')
+>>>>>>> main
     {
         if (empty($original)) {
             $this->useCGI();
@@ -45,7 +71,10 @@ class Request
             $this->original = $original;
             $this->parse();
         }
+<<<<<<< HEAD
         $this->response = new Response();
+=======
+>>>>>>> main
     }
 
     public function __get($name)
@@ -56,7 +85,11 @@ class Request
     public function useCGI(): void
     {
         $this->method = $_SERVER['REQUEST_METHOD'];
+<<<<<<< HEAD
         $this->path = $_SERVER['REQUEST_URI'];
+=======
+        $this->path = trim($_SERVER['REQUEST_URI'], "/");
+>>>>>>> main
         $this->version = floatval($_SERVER['SERVER_PROTOCOL']);
         $this->body = file_get_contents('php://input');
         $this->header = $_SERVER;
@@ -76,12 +109,22 @@ class Request
         $headerInfo = explode("\r\n", $header);
         $httpInfo   = explode(' ', $headerInfo[0]);
 
+<<<<<<< HEAD
         foreach ($headerInfo as $hitem) {
             $hitem = explode(':', $hitem);
             $this->header[trim($hitem[0])] = trim($hitem[1]);
         }
         $this->method  = $httpInfo[0];
         $this->path    = $httpInfo[1];
+=======
+        foreach ($headerInfo as $headerItem) {
+            $headerItem = explode(':', $headerItem);
+            $this->header[trim($headerItem[0])] = trim($headerItem[1]);
+        }
+
+        $this->method  = $httpInfo[0];
+        $this->path    = trim(strtok($httpInfo[1], '?'), "/");
+>>>>>>> main
         $this->version = floatval($httpInfo[2]);
         $this->body    = $body ?? '';
         $this->cookie  = $this->header['Cookie'] ?? '';

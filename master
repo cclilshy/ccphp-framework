@@ -10,6 +10,8 @@
  */
 
 use core\Master;
+use core\Ccphp\Launch;
 
 include __DIR__ . '/core/base/ccload.php';
 Master::rouse('Ccphp');
+Launch::start('Console');

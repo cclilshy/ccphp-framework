@@ -21,50 +21,53 @@ use core\Ccphp\Launch;
 class Log
 {
     private static $logFile;
-    private static $env;
-    private static $entrance;
-    private static $guide;
+    private static $env = '';
+    private static $constant = [];
 
     public static function init(): void
     {
+<<<<<<< HEAD
         Log::$env = Launch::getPhpEnv();
         self::load();
+=======
+        self::$logFile = fopen(RES_PATH .'/logs/' . date("Y-m-d", time()) . '-initial' . '.log', 'a+');
+>>>>>>> main
     }
 
     public static function load(): void
     {
-        $entrance = Route::entrance();
-        Log::$entrance = $entrance[0];
-        Log::$guide = $entrance[1];
-        Log::$logFile = fopen(RES_PATH . FS . 'logs' . FS . 'ccphp-' . date("Y-m-d", time()) . '.log', 'a+');
+        self::$constant = [];
     }
 
-    public static function record(string $data = ''): bool
+    public static function setConstant(array $constant): void
     {
-        $env = Log::$env;
-        $entrance = Log::$entrance;
-        $guide = Log::$guide;
+        self::$constant = $constant;
+    }
+
+    public static function setEnv(string $env): void
+    {
+        self::$env = $env;
+    }
+
+    public static function record($params = array()): bool
+    {
         $nowDate = date("Y-m-d H:i:s", time());
-
-        switch ($env) {
-            case 'http':
-                $params = array_merge(Input::get(), Input::post());
-                $userInfo = "{$_SERVER['REMOTE_ADDR']}({$_SERVER['HTTP_USER_AGENT']})" . PHP_EOL . "[SESSIONID] " . Session::id();
-                break;
-            case 'cli':
-                $params = Console::argv();
-                $userInfo = get_current_user();
-                break;
+        
+        $content = '[' . self::$env . ']' . '[' . $nowDate . ']' . PHP_EOL;
+        foreach (array_merge(self::$constant,$params) as $key => $value) {
+            $content .= '[' . $key . ']' . $value . PHP_EOL;
         }
+        // switch ($env) {
+        //     case 'http':
+        //         $params = array_merge(Input::get(), Input::post());
+        //         $userInfo = "{$_SERVER['REMOTE_ADDR']}({$_SERVER['HTTP_USER_AGENT']})" . PHP_EOL . "[SESSIONID] " . Session::id();
+        //         break;
+        //     case 'cli':
+        //         $params = Console::argv();
+        //         $userInfo = get_current_user();
+        //         break;
+        // }
 
-        $params = json_encode($params);
-        $functionName = is_callable($guide->functionName) ? 'callable' : $guide->functionName;
-        $content = "[$env] $nowDate \"$entrance\" "
-            . PHP_EOL . "[ACTION] $guide->className::$functionName ($params)"
-            . PHP_EOL . "[USER] {$userInfo}"
-            . PHP_EOL . "[DATA] {$data}"
-            . PHP_EOL . '------------------------------------------------------' . PHP_EOL;
-
-        return fwrite(Log::$logFile, $content);
+        return fwrite(Log::$logFile , $content. '==========='.PHP_EOL);
     }
 }

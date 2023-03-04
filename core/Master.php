@@ -26,7 +26,11 @@ class Master
         return count($modules) === 1 ? current($modules) : $modules;
     }
 
+<<<<<<< HEAD
     public static function flush()
+=======
+    public static function flush(): void
+>>>>>>> main
     {
         foreach (self::$record as $item) {
             if (in_array($item, self::$record)) {
@@ -36,4 +40,13 @@ class Master
             }
         }
     }
+<<<<<<< HEAD
 }
+=======
+
+    public static function list(): array
+    {
+        return self::$record;
+    }
+}
+>>>>>>> main

@@ -11,9 +11,15 @@
 namespace core;
 
 use core\Ccphp\Launch;
+<<<<<<< HEAD
 use stdClass;
 use core\Http\Response;
 use core\Http\Request;
+=======
+use core\Http\Response;
+use core\Http\Request;
+use core\Ccphp\Statistics;
+>>>>>>> main
 
 // Load The Running Http Information 
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
@@ -21,21 +27,48 @@ use core\Http\Request;
 class Http
 {
     private static $config;
+<<<<<<< HEAD
     private static $map;
     private static Request $request;
     private static Response $response;
+=======
+    private static Http $http;
+>>>>>>> main
 
-    public static function init($config = null): Http
+    private Request $request;
+    private Response $response;
+    private Statistics $statistics;
+    private string $controllerName;
+    private $functionName;
+
+    public static function init($config = null): void
     {
         Http::$config = $config;
+<<<<<<< HEAD
         self::load();
         set_error_handler([__CLASS__, 'httpErrorHandle'], E_ALL);
         Master::rouse('Route', 'Input', 'Session');
         return new Http();
+=======
+        Master::rouse(
+            'Http\\Request',    // 唤醒请求类
+            'Http\\Response',   // 唤醒响应类
+            'DB',               // 唤醒数据库类
+            'Session',          // 唤醒会话类
+            'Model',            // 唤醒模型类
+            'Input',            // 唤醒输入类
+            'Ccphp\\Statistics', // 唤醒统计类
+            'Template',         //  唤醒模板类
+            'Log'   // 唤醒日志类
+        );
+        self::$http = new self;
+        self::$http->executeStream();
+>>>>>>> main
     }
 
     public static function load()
     {
+<<<<<<< HEAD
         Http::$request = Request::load();
     }
 
@@ -52,37 +85,82 @@ class Http
             Http::end(Http::$map->run());
         } else {
             Http::httpErrorHandle(0, 'Route not found: {' . Http::$request->path . '}', __FILE__, 1, 404);
+=======
+        self::$http = new self;
+        self::$http->executeStream();
+    }
+
+    public static function isAjax(): bool
+    {
+        return self::$http->request->ajax;
+    }
+
+    public static function __callStatic($name, $arguments)
+    {
+        return self::$http->$name;
+    }
+
+    private function __construct()
+    {
+        $this->request = Request::get();
+        $this->response = Response::get();
+        $this->statistics = Statistics::get();
+    }
+
+    public function executeStream()
+    {
+        Log::setEnv('HTTP');
+        Log::setConstant([
+            'URL' => $this->request->path,
+            'QUEST' => json_encode(array_merge($this->request->get, $this->request->post)),
+        ]);
+
+        if ($route  = Route::guide($this->request->path, $this->request->method)) {
+            $this->controllerName = $route->controllerName;
+            $this->functionName = is_callable($route->functionName) ? 'funcion' : $route->functionName;
+            set_error_handler([__CLASS__, 'httpErrorHandle'], E_ALL);
+            $result = $route->run();
+            Http::response($result);
+        } else {
+            Http::httpErrorHandle(0, 'Route not found: {' . $this->request->path . '}', __FILE__, 1, 404);
+>>>>>>> main
         }
     }
 
-    public static function end(string $content = null, $statusCode = 200): void
+    public function response(string $content = null, $statusCode = 200): void
     {
-        header('HTTP/1.1 ' . $statusCode);
-        if (Http::$config['debug'] === true && Http::$request->ajax === false) {
-            $statistics = Launch::statistics();
+        $this->statistics->record('endTime', microtime(true));
+        if (Http::$config['debug'] === true && self::isAjax() === false) {
             $general = [
+<<<<<<< HEAD
                 'timeLength' => $statistics->endTime - $statistics->startTime,
                 'uri' => Http::$request->path,
                 'fileCount' => count($statistics->loadFiles),
                 'memory' => $statistics->memory,
                 'maxMemory' => $statistics->maxMemory
+=======
+                'timeLength' => $this->statistics->endTime - $this->statistics->startTime,
+                'uri' => $this->request->path,
+                'fileCount' => count($this->statistics->loadFiles),
+                'memory' => $this->statistics->memory,
+                'maxMemory' => $this->statistics->maxMemory
+>>>>>>> main
             ];
-            Template::define('sqls', $statistics->sqls);
-            Template::define('files', $statistics->loadFiles);
+            Template::define('sqls', $this->statistics->sqls);
+            Template::define('files', $this->statistics->loadFiles);
             Template::define('general', $general);
-            Template::define('gets', $statistics->get);
-            Template::define('posts', $statistics->post);
-            $statisticsHtml = Launch::template('statistics.html');
+            Template::define('gets', $this->request->get);
+            Template::define('posts', $this->request->post);
+            $statisticsHtml = Launch::template('statistics');
             $statisticsHtml = Template::apply($statisticsHtml);
             $content .= PHP_EOL . $statisticsHtml;
         }
-        echo $content;
+        Response::return($content, $statusCode);
     }
 
-    public static function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): void
+    public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): void
     {
-        header('HTTP/1.1 ' . $httpCode);
-        $statistics = Launch::statistics();
+        $this->statistics->record('endTime', microtime(true));
         $fileDescribe = '';
         if (is_file($errFile)) {
             $errLines = file($errFile);
@@ -101,22 +179,22 @@ class Http
                 'errLine' => $errLine,
                 'fileDescribe' => $fileDescribe
             ],
-            'timeLength' => $statistics->endTime - $statistics->startTime,
-            'fileCount' => count($statistics->loadFiles),
-            'memory' => $statistics->memory,
-            'maxMemory' => $statistics->maxMemory
+            'timeLength' => $this->statistics->endTime - $this->statistics->startTime,
+            'fileCount' => count($this->statistics->loadFiles),
+            'memory' => $this->statistics->memory,
+            'maxMemory' => $this->statistics->maxMemory
         ];
 
-        Template::define('sqls', $statistics->sqls);
-        Template::define('files', $statistics->loadFiles);
+        Template::define('sqls', $this->statistics->sqls);
+        Template::define('files', $this->statistics->loadFiles);
         Template::define('general', $general);
-        Template::define('gets', $statistics->get);
-        Template::define('posts', $statistics->post);
+        Template::define('gets', $this->request->get);
+        Template::define('posts', $this->request->post);
         Template::define('config', Config::all());
-        $html = Launch::template('error.html');
+        $html = Launch::template('error');
         $html = Template::apply($html);
 
-        die($html);
+        Response::return($html, $httpCode);
     }
 
     public static function isAjax(): bool

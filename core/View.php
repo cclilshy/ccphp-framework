@@ -12,6 +12,8 @@ namespace core;
 
 // 它只负责根据设定输出类型, 修改Header, 并返回原始内容
 
+use \core\Http\Response;
+
 class View
 {
     protected static string $content;
@@ -20,11 +22,19 @@ class View
     public static function template($template = null, $data = []): string
     {
         if (is_array($template) || $template === null) {
+<<<<<<< HEAD
             $templateFileName = Http::getMapAttribute('functionName');
             $templateFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $templateFileName));
             self::$content = file_get_contents(
                 TMP_PATH . FS
                     . strtolower(Http::getMapAttribute('controllerName')) . FS
+=======
+            $templateFileName = Http::functionName();
+            $templateFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $templateFileName));
+            self::$content = file_get_contents(
+                TMP_PATH . FS
+                    . strtolower(Http::controllerName()) . FS
+>>>>>>> main
                     . $templateFileName . '.'
                     . Config::get('http.template_extension')
             );
@@ -36,7 +46,8 @@ class View
         foreach (self::$data as $key => $value) {
             Template::define($key, $value);
         }
-        header('content-type: text/html');
+
+        Response::header('content-type', 'text/html');
         return Template::apply(self::$content);
     }
 
@@ -47,31 +58,31 @@ class View
 
     public static function html(string $code): string
     {
-        header('content-type: text/html');
+        Response::header('content-type', 'text/html');
         return $code;
     }
 
     public static function json($data): string
     {
-        header('content-type:application/json');
+        Response::header('content-type', 'application/json');
         return is_array($data) ? json_encode($data) : $data;
     }
 
     public static function xml($xml): string
     {
-        header('content-type:application/xml');
+        Response::header('content-type', 'application/xml');
         return $xml;
     }
 
     public static function javascript(string $code): string
     {
-        header('content-type: application/x-javascript');
+        Response::header('content-type', 'application/x-javascript');
         return $code;
     }
 
     public static function css(string $code): string
     {
-        header('content-type: text/html');
+        Response::header('content-type', 'text/css');
         return $code;
     }
 }

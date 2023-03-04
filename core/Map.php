@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-08 15:37:42
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/Map.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -11,6 +11,8 @@
 namespace core;
 
 // Loading layer record all routing information configured by the system
+
+use \core\Input;
 
 class Map
 {
@@ -43,7 +45,6 @@ class Map
 
     public function run($arguments = null)
     {
-        Master::rouse('Log');
         if ($arguments === null) {
             $params = array();
             foreach ($this->params as $item)
@@ -52,7 +53,12 @@ class Map
             $params = $arguments;
         }
 
-        Log::record();
+        Log::record(array(
+            'CLASS' => $this->className,
+            'ACTION' => is_callable($this->functionName) ? 'function' : $this->functionName,
+            'PARAM' => json_encode($this->params),
+        ));
+
         return call_user_func_array($this->className ? [new $this->className, $this->functionName] : $this->functionName, $params);
     }
 }

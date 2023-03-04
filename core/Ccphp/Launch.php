@@ -10,14 +10,16 @@
 
 namespace core\Ccphp;
 
-// 加载层, 整个框架的入口
+// 加载层, 整个框架的入口,只加载一次，无法重载
 // 根据不同的运行环境，启动不同的服务, 并且加载运行环境的配置文件以及初始化输入
+use core\Master;
+use core\Ccphp\Statistics;
 
 class Launch
 {
-    private static $launch;
     public static function init($config = null)
     {
+<<<<<<< HEAD
         self::load();
         switch (Launch::$launch->type) {
             case 'cli-server':
@@ -27,16 +29,26 @@ class Launch
             case 'fpm-fcgi':
                 Launch::httpLauncher();
                 break;
+=======
+    }
+>>>>>>> main
 
-            case 'cgi':
-                Launch::httpLauncher();
+    public static function start(string $app): void
+    {
+        switch ($app) {
+            case 'Http':
+                Master::rouse('Http');
                 break;
-            case 'cli':
-                \core\Master::rouse('Console')->run();
+            case 'Console':
+                Master::rouse('Console')->run();
+                break;
+            case 'build':
+                //
                 break;
         }
     }
 
+<<<<<<< HEAD
     private static function httpLauncher()
     {
         \core\Master::rouse('Http')->run();
@@ -84,5 +96,10 @@ class Launch
     public static function getPhpEnv(): string
     {
         return Launch::$launch->type === 'cli' ? 'cli' : 'http';
+=======
+    public static function template(string $name): string
+    {
+        return file_get_contents(__DIR__ . '/template/' . $name . '.tpl');
+>>>>>>> main
     }
 }

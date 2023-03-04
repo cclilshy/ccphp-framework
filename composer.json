@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "root/core.loc",
   "description": "core",
   "autoload": {
@@ -8,6 +9,18 @@
         "vendor",
         "application",
         ""
+=======
+  "name": "cclilshy/ccphp",
+  "description": "ccphp",
+  "autoload": {
+    "psr-4": {
+      "model\\": "model/",
+      "extend\\": "extend/",
+      "core\\": "core",
+      "": [
+        "vendor",
+        "application"
+>>>>>>> main
       ]
     }
   },
