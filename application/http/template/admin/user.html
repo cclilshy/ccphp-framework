@@ -51,7 +51,7 @@
                     </div>
                     <template type="text/html" id="head_toolbar">
                         <div class="layui-btn-container">
-                            <button class="layui-btn layui-btn-sm" lay-event="add">创建用户</button>
+                            <a class="layui-btn layui-btn-sm" onclick="add();">创建用户</a>
                         </div>
                     </template>
                     <teamlate type="text/html" id="cell_toolbar" style="display: none">
@@ -81,6 +81,14 @@
                     return false;
                 });
             });
+            function add() {
+                layer.open({
+                    type: 2,
+                    content: "/admin/user/edit",
+                    area: ['500px', '670px'],
+                    title: "用户管理"
+                });
+            }
         </script>
 
     </div>
