@@ -11,54 +11,27 @@ namespace core\Http;
 
 class Request
 {
+    public static Request $request;
+    private static string $env = 'ORIGIN';
     private string $original;
     private string $method;
     private string $path;
     private string $body;
     private string $cookie;
     private string $type;
+    private string $version;
     private bool $ajax;
-    private float $version;
-
     private array $header;
-    private array $get;
-    private array $post;
+    private array $get = array();
+    private array $post = array();
 
-    public static Request $request;
-
-    public static function init($original = ''): Request
+    public function __construct()
     {
-        return self::load($original);
-    }
-
-    public static function load($original = ''): Request
-    {
-        return self::$request = new Request($original);
-    }
-
-    public static function type(): string
-    {
-        return self::$request->type;
-    }
-
-    public static function get()
-    {
-        return self::$request;
-    }
-
-    public function __construct($original = '')
-    {
-        if (empty($original)) {
+        if (self::$env === 'ORIGIN') {
             $this->useCGI();
-        } else {
-            $this->original = $original;
-            $this->parse();
+        } elseif (self::$env === 'CCPHP') {
+            $this->type = 'CCPHP';
         }
-    }
-
-    public function __get($name)
-    {
-        return $this->$name;
     }
 
     public function useCGI(): void
@@ -74,28 +47,49 @@ class Request
         $this->type = 'CGI';
     }
 
-    public function parse(): void
+    public static function init($original = ''): Request
     {
+        return self::load();
+    }
+
+    public static function load(): Request
+    {
+        return self::$request = new Request;
+    }
+
+    public static function setEnv(string $env): void
+    {
+        self::$env = $env;
+    }
+
+    public static function loadHttpContext(string $context): void
+    {
+        self::$request->parse($context);
+    }
+
+    public function parse(string $context): void
+    {
+        $this->original = $context;
         // 解析HTTP请求
         $context = explode("\r\n\r\n", $this->original);
-        $header  = array_shift($context);
-        $body    = array_shift($context);
+        $header = array_shift($context);
+        $body = array_shift($context);
 
         $headerInfo = explode("\r\n", $header);
-        $httpInfo   = explode(' ', $headerInfo[0]);
+        $httpInfo = explode(' ', $headerInfo[0]);
 
         foreach ($headerInfo as $headerItem) {
             $headerItem = explode(':', $headerItem);
-            $this->header[trim($headerItem[0])] = trim($headerItem[1]);
+            $this->header[trim($headerItem[0])] = trim($headerItem[1] ?? '');
         }
 
-        $this->method  = $httpInfo[0];
-        $this->path    = trim(strtok($httpInfo[1], '?'), "/");
+        $this->method = $httpInfo[0];
+        $this->path = trim(strtok($httpInfo[1], '?'), "/");
         $this->version = floatval($httpInfo[2]);
-        $this->body    = $body ?? '';
-        $this->cookie  = $this->header['Cookie'] ?? '';
+        $this->body = $body ?? '';
+        $this->cookie = $this->header['Cookie'] ?? '';
 
-        $urlParams = parse_url($this->path);
+        $urlParams = parse_url($httpInfo[1]);
         if (isset($urlParams['query'])) {
             parse_str($urlParams['query'], $get);
         }
@@ -104,9 +98,24 @@ class Request
             parse_str($body, $post);
         }
 
-        $this->get  = $get ?? [];
+        $this->get = $get ?? [];
         $this->post = $post ?? [];
         $this->ajax = isset($this->header['X-Requested-With']) && $this->header['X-Requested-With'] === 'XMLHttpRequest';
         $this->type = 'SOCKET';
+    }
+
+    public static function type(): string
+    {
+        return self::$request->type;
+    }
+
+    public static function get(): Request
+    {
+        return self::$request;
+    }
+
+    public function __get($name)
+    {
+        return $this->$name;
     }
 }

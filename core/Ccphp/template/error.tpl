@@ -201,48 +201,48 @@
 </head>
 
 <body>
-    <div class="error-container">
-        <div class="error-title">{{ $general['info']['errstr'] }}</div>
-        <div class="error-file">{{ $general['info']['errFile'] }}({{ $general['info']['errLine'] }})</div>
-        @if(\core\Config::get('http.debug') === true)
-        <div id="detail">
-            <pre><code id="errcode">{{ $general['info']['fileDescribe'] }}</code></pre>
-            <div class="table-container">
-                <ul>
-                    <li>Files</li>
-                    @foreach($files as $item)
-                    <li class="cct-li">{{ $item }} ({{ filesize($item)/1000 }} KB)</li>
-                    @endforeach
-                </ul>
+<div class="error-container">
+    <div class="error-title">{{ $general['info']['errstr'] }}</div>
+    <div class="error-file">{{ $general['info']['errFile'] }}({{ $general['info']['errLine'] }})</div>
+    @if(\core\Config::get('http.debug') === true)
+    <div id="detail">
+        <pre><code id="errcode">{{ $general['info']['fileDescribe'] }}</code></pre>
+        <div class="table-container">
+            <ul>
+                <li>Files</li>
+                @foreach($files as $item)
+                <li class="cct-li">{{ $item }} ({{ filesize($item)/1000 }} KB)</li>
+                @endforeach
+            </ul>
 
-                <ul>
-                    <li>Input</li>
-                    @foreach($gets as $key => $get)
-                    <li class="cct-li"> (GET) {{ $key }} : {{$get}}</li>
-                    @endforeach
+            <ul>
+                <li>Input</li>
+                @foreach($gets as $key => $get)
+                <li class="cct-li"> (GET) {{ $key }} : {{$get}}</li>
+                @endforeach
 
-                    @foreach($posts as $post)
-                    <li class="cct-li"> (POST) {{ $key }} : {{$post}} </li>
-                    @endforeach
-                </ul>
-                <ul>
-                    <li>Base</li>
-                    <li class="cct-li">file Count: {{ $general['fileCount'] }}</li>
-                    <li class="cct-li">runtime: {{ $general['timeLength'] }} (second)</li>
-                    <li class="cct-li">memory: {{ $general['memory'] }}</li>
-                    <li class="cct-li">max memory: {{ $general['maxMemory'] }}</li>
-                </ul>
-                <ul>
-                    @foreach($sqls as $item)
-                    <li class="cct-li"> {{$item}} </li>
-                    @endforeach
-                </ul>
+                @foreach($posts as $post)
+                <li class="cct-li"> (POST) {{ $key }} : {{$post}} </li>
+                @endforeach
+            </ul>
+            <ul>
+                <li>Base</li>
+                <li class="cct-li">file Count: {{ $general['fileCount'] }}</li>
+                <li class="cct-li">runtime: {{ $general['timeLength'] }} (second)</li>
+                <li class="cct-li">memory: {{ $general['memory'] }}</li>
+                <li class="cct-li">max memory: {{ $general['maxMemory'] }}</li>
+            </ul>
+            <ul>
+                @foreach($sqls as $item)
+                <li class="cct-li"> {{$item}} </li>
+                @endforeach
+            </ul>
 
 
-            </div>
         </div>
-        @endif
     </div>
-    <script src="assets/js/Highlight.js"> </script>
+    @endif
+</div>
+<script src="assets/js/Highlight.js"></script>
 </body>
 </html>

@@ -5,7 +5,7 @@
     "psr-4": {
       "model\\": "model/",
       "extend\\": "extend/",
-      "core\\": "core",
+      "core\\": "core/",
       "": [
         "vendor",
         "application"
@@ -19,6 +19,7 @@
     "illuminate/database": "^10.1",
     "illuminate/pagination": "^10.1",
     "illuminate/events": "^10.1",
-    "symfony/var-dumper": "^6.2"
+    "symfony/var-dumper": "^6.2",
+    "ext-sockets": "*"
   }
 }

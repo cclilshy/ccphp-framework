@@ -38,10 +38,11 @@
         font-size: 14px;
     }
 
-    .cct-active{
+    .cct-active {
         font-weight: bold;
     }
-    .cct-button{
+
+    .cct-button {
         right: 0px;
         bottom: 0px;
         position: fixed;
@@ -50,9 +51,15 @@
         background-color: green;
         border: 0px;
     }
-    
-    .cct-panel{
-        position: fixed; right: 0px; bottom: 0px; display: block; width: 100%; height: 188px; background-color: rgb(250, 250, 250);
+
+    .cct-panel {
+        position: fixed;
+        right: 0px;
+        bottom: 0px;
+        display: block;
+        width: 100%;
+        height: 188px;
+        background-color: rgb(250, 250, 250);
     }
 </style>
 <button class="cct-button" onclick="shoDebugPanel()">Toggle Debug</button>
@@ -77,8 +84,8 @@
             <ul class="cct-ul">
                 <li class="cct-li">
                     @foreach($files as $item)
-                    <li class="cct-li">{{ $item }} ({{ filesize($item)/1000 }} Kb)</li>
-                    @endforeach
+                <li class="cct-li">{{ $item }} ({{ filesize($item)/1000 }} Kb)</li>
+                @endforeach
                 </li>
             </ul>
         </div>
@@ -104,22 +111,22 @@
 </div>
 <script>
     function shoDebugPanel() {
-            var divElement = document.querySelector("div.cct-panel");
-            if (divElement.style.display === "none") {
-                divElement.style.display = "block";
-                localStorage.setItem("ccpDebugPanelDisplayed", "true");
-            } else {
-                divElement.style.display = "none";
-                localStorage.setItem("ccpDebugPanelDisplayed", "false");
-            }
+        var divElement = document.querySelector("div.cct-panel");
+        if (divElement.style.display === "none") {
+            divElement.style.display = "block";
+            localStorage.setItem("ccpDebugPanelDisplayed", "true");
+        } else {
+            divElement.style.display = "none";
+            localStorage.setItem("ccpDebugPanelDisplayed", "false");
         }
+    }
 
-        window.addEventListener("load", function () {
-            var displayValue = localStorage.getItem("ccpDebugPanelDisplayed");
-            if (displayValue === "true") {
-                shoDebugPanel();
-            }
-        });
+    window.addEventListener("load", function () {
+        var displayValue = localStorage.getItem("ccpDebugPanelDisplayed");
+        if (displayValue === "true") {
+            shoDebugPanel();
+        }
+    });
     var boldClassName = "cct-active";
     var spanElements = document.querySelectorAll("span");
     spanElements.forEach(element => {

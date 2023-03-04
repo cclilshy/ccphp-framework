@@ -8,6 +8,7 @@
  */
 
 use core\Master;
+
 include 'configure.php';
 include 'function.php';
 include 'global.php';

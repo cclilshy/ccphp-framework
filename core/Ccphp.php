@@ -16,6 +16,6 @@ class Ccphp
 {
     public static function init(): void
     {
-        Master::rouse('Route','Cache','Config','Log','Ccphp\Launch');
+        Master::rouse('Route', 'Cache', 'Config', 'Log', 'Ccphp\Launch');
     }
 }

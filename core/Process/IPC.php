@@ -75,18 +75,18 @@ class IPC
     {
         switch ($pid = pcntl_fork()) {
             case 0:
-                set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+                $_ = set_error_handler(function ($errno, $errstr, $errfile, $errline) {
                     echo 'Err(' . $errno . ')File ' . $errfile . ' (' . $errline . ') :' . $errstr . PHP_EOL;
                     $this->common->write(serialize(false));
                     $this->to->write(strlen(serialize(false)) . PHP_EOL);
                     $this->listenr();
+                    return;
                 }, E_ALL);
                 $this->listenr();
                 break;
-            default:
-                $this->observerProcessId = $pid;
-                return $pid;
         }
+        $this->observerProcessId = $pid;
+        return $pid;
     }
 
     private function listenr(): void

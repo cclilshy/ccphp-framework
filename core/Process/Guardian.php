@@ -36,6 +36,7 @@ class Guardian
             if (count($ipc->space->processIds) === 0 && (posix_getppid() === 1 || $ipc->space->guard)) {
                 return 'quit';
             }
+            return true;
         };
         return IPC::create($handler, new self)->name;
     }

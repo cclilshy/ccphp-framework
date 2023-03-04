@@ -39,7 +39,6 @@ class DB
 
     public static function load(): void
     {
-        self::$connect = Pool::link();
     }
 
     public static function __callStatic($name, $arguments)

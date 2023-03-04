@@ -1,4 +1,11 @@
 <?php
+/*
+ * @Author: cclilshy cclilshy@163.com
+ * @Date: 2023-03-04 13:04:53
+ * @LastEditors: cclilshy cclilshy@163.com
+ * @Description: My house
+ * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
 
 namespace core;
 

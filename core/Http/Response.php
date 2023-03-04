@@ -4,13 +4,13 @@ namespace core\Http;
 
 class Response
 {
-    private $protocol = 'HTTP/1.1';
-    private $statusCode = 200;
-    private $statusText = 'OK';
-    private $headers = [];
-    private $body = '';
-
     public static Response $response;
+    private static string $env = '';
+    private string $protocol = 'HTTP/1.1';
+    private int $statusCode = 200;
+    private string $statusText = 'OK';
+    private array $headers = [];
+    private string $body = '';
 
     public static function init(): Response
     {
@@ -27,43 +27,36 @@ class Response
         return self::$response;
     }
 
-    public static function header(string $name, string $value)
+    public static function setEnv(string $env): void
+    {
+        self::$env = $env;
+    }
+
+    public static function header(string $name, string $value): void
     {
         self::$response->setHeader($name, $value);
     }
 
-    public static function return(string $content, int $httpCode = 200)
+    public function setHeader(string $name, string $value): void
+    {
+        // 设置响应头字段
+        $this->headers[$name] = $value;
+    }
+
+    public static function return(string $content, int $httpCode = 200): void
     {
         self::$response->setStatusCode($httpCode);
         self::$response->setBody($content);
         self::$response->end();
     }
 
-    public function setProtocol(string $protocol)
-    {
-        // 设置协议版本号（例如HTTP/1.0、HTTP/1.1等）
-        $this->protocol = $protocol;
-    }
-
-    public function setStatusCode(int $code)
+    public function setStatusCode(int $code): void
     {
         // 设置HTTP状态码（例如200、404、500等）
         $this->statusCode = $code;
     }
 
-    public function setStatusText(string $text)
-    {
-        // 设置HTTP状态描述（例如OK、Not Found、Internal Server Error等）
-        $this->statusText = $text;
-    }
-
-    public function setHeader(string $name, string $value)
-    {
-        // 设置响应头字段
-        $this->headers[$name] = $value;
-    }
-
-    public function setBody(string $body)
+    public function setBody(string $body): void
     {
         // 设置响应体内容
         $this->body = $body;
@@ -81,17 +74,32 @@ class Response
         }
     }
 
+    public function setProtocol(string $protocol): void
+    {
+        // 设置协议版本号（例如HTTP/1.0、HTTP/1.1等）
+        $this->protocol = $protocol;
+    }
+
+    public function setStatusText(string $text): void
+    {
+        // 设置HTTP状态描述（例如OK、Not Found、Internal Server Error等）
+        $this->statusText = $text;
+    }
+
     public function __toString()
     {
-        if (Request::type() === 'SOCKET') {
+        return $this->getContents();
+    }
+
+    public function getContents(): string
+    {
+        if (Request::type() === 'CCPHP') {
             // 生成HTTP响应报文
-            $headers = '';
+            $headers = 'Content-Type: text/html;charset=utf-8;';
             foreach ($this->headers as $name => $value) {
                 $headers .= "{$name}: {$value}\r\n";
             }
-
-            $message = "{$this->protocol} {$this->statusCode} {$this->statusText}\r\n{$headers}\r\n{$this->body}";
-            return $message;
+            return "{$this->protocol} {$this->statusCode} {$this->statusText}\r\n{$headers}\r\n{$this->body}";
         } else {
             header('HTTP/1.1 ' . $this->statusCode);
         }

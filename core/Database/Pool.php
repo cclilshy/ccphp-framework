@@ -9,38 +9,17 @@
 
 namespace core\Database;
 
-use core\Process\ProcessMirroring;
-use Illuminate\Database\Connection;
-use core\Process\IPC;
-use core\Server\Server;
-use core\DB;
-use core\Console;
 use core\Config;
-use core\Process\Process;
+use core\Console;
+use core\DB;
+use core\Process\IPC;
+use core\Process\ProcessMirroring;
+use core\Server\Server;
 
 class Pool
 {
     private static IPC $dispatcher;
     private array $flow = array();
-
-    private static function dispatcher()
-    {
-        self::$dispatcher = IPC::create(function ($action, $name, $ipc) {
-            Console::pdebug('[Pool][' . \microtime(true) . ']' . $name . '->' . $action);
-            switch ($action) {
-                case 'new':
-                    for ($i = 0; $i < Config::get('server.database_pool_max'); $i++) {
-                        $ipc->space[] = $name;
-                    }
-                    break;
-                case 'get':
-                    return array_shift($ipc->space);
-                case 'back':
-                    $ipc->space[] = $name;
-                    break;
-            }
-        }, array());
-    }
 
     public static function launch(): void
     {
@@ -79,24 +58,26 @@ class Pool
         }
     }
 
-    public static function stop()
+    private static function dispatcher(): void
     {
-        if ($server = Server::load('DatabasePool')) {
-            $info = $server->info();
-            $dispatcherName = $info['dispatcher_name'];
-            $connectNames = $info['connect_names'];
-            foreach ($connectNames as $connectName) {
-                IPC::link($connectName)->stop();
+        self::$dispatcher = IPC::create(function ($action, $name, $ipc) {
+            Console::pdebug('[Pool][' . \microtime(true) . ']' . $name . '->' . $action);
+            switch ($action) {
+                case 'new':
+                    for ($i = 0; $i < Config::get('server.database_pool_max'); $i++) {
+                        $ipc->space[] = $name;
+                    }
+                    break;
+                case 'get':
+                    return array_shift($ipc->space);
+                case 'back':
+                    $ipc->space[] = $name;
+                    break;
             }
-            IPC::link($dispatcherName)->stop();
-            $server->release();
-            Console::pgreen('[Database-Pool-Server] stoped!');
-        } else {
-            Console::pred('[Database-Pool-Server] stop failed : it\'s stop');
-        }
+        }, array());
     }
 
-    public static function get(): ProcessMirroring | false
+    public static function get(): ProcessMirroring|false
     {
         if ($server = Server::load('DatabasePool')) {
             $info = $server->info();
@@ -118,5 +99,22 @@ class Pool
             }
         }
         return false;
+    }
+
+    public static function stop(): void
+    {
+        if ($server = Server::load('DatabasePool')) {
+            $info = $server->info();
+            $dispatcherName = $info['dispatcher_name'];
+            $connectNames = $info['connect_names'];
+            foreach ($connectNames as $connectName) {
+                IPC::link($connectName)->stop();
+            }
+            IPC::link($dispatcherName)->stop();
+            $server->release();
+            Console::pgreen('[Database-Pool-Server] stoped!');
+        } else {
+            Console::pred('[Database-Pool-Server] stop failed : it\'s stop');
+        }
     }
 }

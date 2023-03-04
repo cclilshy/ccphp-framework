@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-04 00:19:25
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy cclilshy@163.com
  * @FilePath: /ccphp/vendor/core/Session.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -19,7 +19,7 @@ class Session
 
     public static function init(): void
     {
-        if (!session_id()) @ session_start() && self::$PHPSESSID = session_id();
+        if (!session_id()) @session_start() && self::$PHPSESSID = session_id();
     }
 
     public static function set(string $key, $value = null): bool

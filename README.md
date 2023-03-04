@@ -41,15 +41,15 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 ### 目录结构
 
 * application 应用根目录
-  * http 网站
-  * console 终端
-  * route 路由
+    * http 网站
+    * console 终端
+    * route 路由
 * cache 临时文件目录
 * extend 外部插件目录
 * model 模型目录
 * resource 资源目录
-  * config 配置文件
-  * logs 日志文件
+    * config 配置文件
+    * logs 日志文件
 * vendor 框架核心
 
 ### 框架核心类空间

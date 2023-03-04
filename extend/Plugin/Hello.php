@@ -8,7 +8,7 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-namespace extend\Plugin;
+namespace Plugin;
 
 class Hello
 {

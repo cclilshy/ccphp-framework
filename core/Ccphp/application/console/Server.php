@@ -6,15 +6,18 @@
  * @Description: My house
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
+
 namespace core\console;
 
 class Server
 {
-    public function register(){
+    public function register(): string
+    {
         return 'As a service';
     }
-    
-    public function main($argv,$console){
+
+    public function main($argv, $console): void
+    {
 
     }
 }

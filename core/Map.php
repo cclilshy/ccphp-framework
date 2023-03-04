@@ -12,8 +12,6 @@ namespace core;
 
 // Loading layer record all routing information configured by the system
 
-use \core\Input;
-
 class Map
 {
     protected string $className;

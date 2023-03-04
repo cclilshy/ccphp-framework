@@ -14,7 +14,7 @@ namespace core;
 
 class Master
 {
-    private static $record = [];
+    private static array $record = [];
 
     public static function rouse()
     {

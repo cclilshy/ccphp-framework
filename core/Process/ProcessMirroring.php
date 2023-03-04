@@ -14,34 +14,38 @@ class ProcessMirroring
     public $func;
     public array $flow = array();
     public object $space;
-    public function __construct(callable $func,object $space = null){
+
+    public function __construct(callable $func, object $space = null)
+    {
         $this->func = $func;
-        if($space !== null){
+        if ($space !== null) {
             $this->space = $space;
         }
     }
 
-    public function __get($name){
+    public static function production(object $main, $flow = null)
+    {
+        foreach ($flow as $k => $item) {
+            $main = call_user_func_array([$main, $item['m']], $item['a']);
+        }
+        return $main;
+    }
+
+    public function __get($name)
+    {
         return $this->name;
     }
 
-    public function __call($name,$arguments = array()) : ProcessMirroring
+    public function __call($name, $arguments = array()): ProcessMirroring
     {
-        $this->flow[] = array('m'=>$name,'a'=>$arguments);
+        $this->flow[] = array('m' => $name, 'a' => $arguments);
         return $this;
     }
 
-    public function go(){
-        $result =  call_user_func($this->func,$this);
+    public function go()
+    {
+        $result = call_user_func($this->func, $this);
         $this->flow = [];
         return $result;
-    }
-
-    public static function production(object $main,$flow = null)
-    {
-        foreach($flow as $k => $item){
-            $main = call_user_func_array([$main,$item['m']],$item['a']);
-        }
-        return $main;
     }
 }

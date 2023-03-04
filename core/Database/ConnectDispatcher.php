@@ -9,8 +9,6 @@
 
 namespace core\Database;
 
-use Illuminate\Database\Connection;
-
 class ConnectDispatcher
 {
     private $connect;
@@ -21,7 +19,7 @@ class ConnectDispatcher
         $this->connect = $connect;
     }
 
-    public function release()
+    public function release(): void
     {
 
     }

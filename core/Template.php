@@ -14,10 +14,6 @@
 
 namespace core;
 
-use function htmlspecialchars;
-use function is_string;
-use function substr;
-
 // 应用层级, 用于模板的解析, 以及模板的渲染
 
 class Template

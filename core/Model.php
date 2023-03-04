@@ -17,6 +17,5 @@ class Model
 {
     public static function init(): void
     {
-        return;
     }
 }

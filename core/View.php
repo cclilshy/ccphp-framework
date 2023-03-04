@@ -12,7 +12,7 @@ namespace core;
 
 // 它只负责根据设定输出类型, 修改Header, 并返回原始内容
 
-use \core\Http\Response;
+use core\Http\Response;
 
 class View
 {
@@ -26,9 +26,9 @@ class View
             $templateFileName = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $templateFileName));
             self::$content = file_get_contents(
                 TMP_PATH . FS
-                    . strtolower(Http::controllerName()) . FS
-                    . $templateFileName . '.'
-                    . Config::get('http.template_extension')
+                . strtolower(Http::controllerName()) . FS
+                . $templateFileName . '.'
+                . Config::get('http.template_extension')
             );
             self::$data = $template ?? [];
         } else {

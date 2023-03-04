@@ -11,9 +11,9 @@
 namespace core;
 
 use core\Ccphp\Launch;
-use core\Http\Response;
-use core\Http\Request;
 use core\Ccphp\Statistics;
+use core\Http\Request;
+use core\Http\Response;
 
 // Load The Running Http Information 
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
@@ -29,7 +29,14 @@ class Http
     private string $controllerName;
     private $functionName;
 
-    public static function init($config = null): void
+    private function __construct()
+    {
+        $this->request = Request::get();
+        $this->response = Response::get();
+        $this->statistics = Statistics::get();
+    }
+
+    public static function init($config = null): Http
     {
         Http::$config = $config;
         Master::rouse(
@@ -43,34 +50,20 @@ class Http
             'Template',         //  唤醒模板类
             'Log'   // 唤醒日志类
         );
+        return self::$http = new self;
+    }
+
+    public static function load(): void
+    {
         self::$http = new self;
+    }
+
+    public static function go(): void
+    {
         self::$http->executeStream();
     }
 
-    public static function load()
-    {
-        self::$http = new self;
-        self::$http->executeStream();
-    }
-
-    public static function isAjax(): bool
-    {
-        return self::$http->request->ajax;
-    }
-
-    public static function __callStatic($name, $arguments)
-    {
-        return self::$http->$name;
-    }
-
-    private function __construct()
-    {
-        $this->request = Request::get();
-        $this->response = Response::get();
-        $this->statistics = Statistics::get();
-    }
-
-    public function executeStream()
+    public function executeStream(): void
     {
         Log::setEnv('HTTP');
         Log::setConstant([
@@ -78,10 +71,10 @@ class Http
             'QUEST' => json_encode(array_merge($this->request->get, $this->request->post)),
         ]);
 
-        if ($route  = Route::guide($this->request->path, $this->request->method)) {
+        if ($route = Route::guide($this->request->path, $this->request->method)) {
             $this->controllerName = $route->controllerName;
             $this->functionName = is_callable($route->functionName) ? 'funcion' : $route->functionName;
-            set_error_handler([__CLASS__, 'httpErrorHandle'], E_ALL);
+            $_ = set_error_handler([__CLASS__, 'httpErrorHandle'], E_ALL);
             $result = $route->run();
             Http::response($result);
         } else {
@@ -110,6 +103,11 @@ class Http
             $content .= PHP_EOL . $statisticsHtml;
         }
         Response::return($content, $statusCode);
+    }
+
+    public static function isAjax(): bool
+    {
+        return self::$http->request->ajax;
     }
 
     public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): void
@@ -149,5 +147,10 @@ class Http
         $html = Template::apply($html);
 
         Response::return($html, $httpCode);
+    }
+
+    public static function __callStatic($name, $arguments)
+    {
+        return self::$http->$name;
     }
 }

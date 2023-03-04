@@ -11,6 +11,7 @@ namespace core\Ccphp;
 
 class Statistics
 {
+    private static Statistics $statistics;
     private array $loadFiles = array();
     private array $posts = array();
     private array $gets = array();
@@ -19,7 +20,12 @@ class Statistics
     private float $maxMemory;
     private float $startTime;
     private float $endTime;
-    private static Statistics $statistics;
+
+    public function __construct()
+    {
+        $this->startTime = microtime(true);
+    }
+
     public static function init(): Statistics
     {
         return self::$statistics = new self;
@@ -30,17 +36,23 @@ class Statistics
         self::$statistics->reset();
     }
 
+    public function reset()
+    {
+        $this->sqls = array();
+        $this->loadFiles = array();
+        $this->startTime = microtime(true);
+        $this->endTime = 0;
+        $this->memory = 0;
+        $this->maxMemory = 0;
+    }
+
     public static function get(): Statistics
     {
         return self::$statistics;
     }
 
-    public function __construct()
+    public function __get($name)
     {
-        $this->startTime = microtime(true);
-    }
-
-    public function __get($name){
         return $this->$name;
     }
 
@@ -55,15 +67,5 @@ class Statistics
         $this->endTime = microtime(true);
         $this->memory = memory_get_usage();
         $this->maxMemory = memory_get_peak_usage();
-    }
-
-    public function reset()
-    {
-        $this->sqls = array();
-        $this->loadFiles = array();
-        $this->startTime = microtime(true);
-        $this->endTime = 0;
-        $this->memory = 0;
-        $this->maxMemory = 0;
     }
 }

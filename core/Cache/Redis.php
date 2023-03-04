@@ -7,31 +7,32 @@
  * @Description: My house
  * Copyright (c) 2023 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
-namespace core\Cache;
 
-use \core\Config;
+namespace core\Cache;
 
 class Redis
 {
-    protected $connect;
     protected static $config;
+    protected \core\Database\Redis $connect;
 
-    public static function init($config){
+    public function __construct()
+    {
+        $this->connect = \core\Database\Redis::connect(self::$config);
+    }
+
+    public static function init($config): void
+    {
         self::$config = $config;
     }
 
     public static function __callStatic($name, $arguments)
     {
-        return call_user_func_array([new self(),$name],$arguments);
+        return call_user_func_array([new self(), $name], $arguments);
     }
 
-
-    public function __call($name,$arguments){
-        return call_user_func_array([$this->connect,$name],$arguments);
-    }
-
-    public function __construct(){
-        $this->connect = \core\Database\Redis::connect((object)self::$config);
+    public function __call($name, $arguments)
+    {
+        return call_user_func_array([$this->connect, $name], $arguments);
     }
 
     public function __destruct()

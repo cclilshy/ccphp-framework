@@ -9,30 +9,32 @@
 
 namespace core\Server;
 
-use \core\Route;
-use \core\Process\Process;
+use core\Process\Process;
+use core\Route;
 
 class Cron
 {
     private static $tasks;
+
     public static function start()
     {
         return Process::fork(function () {
-                    while (true) {
-                        foreach (self::$tasks as $name => $task) {
-                            if (time() - $task['lasttime'] >= $task['interval']) {
-                                self::$tasks[$name]['lasttime'] = time();
-                                Process::fork(function () use ($name) {
-                                    Route::simulation($name, 'cron');
-                                });
-                            }
-                        }
-                        sleep(1);
+            while (true) {
+                foreach (self::$tasks as $name => $task) {
+                    if (time() - $task['lasttime'] >= $task['interval']) {
+                        self::$tasks[$name]['lasttime'] = time();
+                        Process::fork(function () use ($name) {
+                            Route::simulation($name, 'cron');
+                        });
                     }
-                });
+                }
+                sleep(1);
+            }
+        });
     }
 
-    public static function stop(){
+    public static function stop()
+    {
         return Server::release();
     }
 

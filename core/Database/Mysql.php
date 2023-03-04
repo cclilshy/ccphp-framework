@@ -1,16 +1,17 @@
 <?php
+
 namespace core\Database;
 class Mysql
 {
-    const OPERS = ['IS','LIKE','NOT','IS NOT','<','>','<>','='];
+    const OPERS = ['IS', 'LIKE', 'NOT', 'IS NOT', '<', '>', '<>', '='];
     protected $config;
-    protected $mysqli;
+    protected \mysqli $mysqli;
     protected $table;
-    protected $where = [];
-    protected $whereOr = [];
+    protected array $where = [];
+    protected array $whereOr = [];
     protected $order = null;
-    protected $field = '*';
-    protected $data = [];
+    protected string $field = '*';
+    protected array $data = [];
     protected $limit = null;
     protected $action;
     protected $command;
@@ -30,17 +31,72 @@ class Mysql
         if (is_object($this->mysqli)) $this->mysqli->close();
     }
 
-    public function setConnect($connect)
+    public function setConnect($connect): void
     {
         $this->mysqli = $connect;
     }
 
-    public function table($table){
+    public function table($table): static
+    {
         $this->table = $table;
         return $this;
     }
 
-    public function data($data)
+    public function where($key, $compare = null, $value = null): static
+    {
+        if ($value === null) {
+            $value = in_array($compare, self::OPERS) ? $value : $compare;
+            $compare = in_array($compare, self::OPERS) ? $compare : '=';
+        }
+        if (!empty($key))
+            array_push($this->where, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
+        return $this;
+    }
+
+    protected static function paserWhereArray($wheres): array
+    {
+        $array = array();
+        foreach ($wheres as $k => $v) {
+            $item = is_array($v) && is_int($k) ? $v : $wheres;
+            foreach ($item as $jk => $jv) {
+                if (is_int($jk)) {
+                    $tempKey = $item[0];
+                    $tempCompare = count($item) === 3 ? $item[1] : '=';
+                    $tempValue = count($item) === 3 ? $item[2] : $item[1];
+                } else {
+                    $tempKey = $jk;
+                    $tempCompare = '=';
+                    $tempValue = $jv;
+                }
+                array_push($array, [$tempKey, $tempCompare, $tempValue]);
+                break;
+            }
+            if (!is_array($v)) {
+                break;
+            }
+        }
+        return $array;
+    }
+
+    public function whereOr($key, $compare = null, $value = null): static
+    {
+        if ($value === null) {
+            $value = in_array($compare, self::OPERS) ? $value : $compare;
+            $compare = in_array($compare, self::OPERS) ? $compare : '=';
+        }
+        array_push($this->whereOr, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
+        return $this;
+    }
+
+    public function insert($data = null): int
+    {
+        $this->action = 'INSERT';
+        $this->data($data);
+        $this->paserAndExec();
+        return mysqli_affected_rows($this->mysqli);
+    }
+
+    public function data($data): static
     {
         if ($data !== null) {
             $this->data = $data;
@@ -55,138 +111,9 @@ class Mysql
         return $this;
     }
 
-    public function where($key, $compare = null, $value = null)
+    protected function paserAndExec(): \mysqli_result|bool|static
     {
-        if ($value === null) {
-            $value = in_array($compare,self::OPERS) ? $value : $compare;
-            $compare = in_array($compare,self::OPERS) ? $compare : '=';
-        }
-        if (!empty($key))
-        array_push($this->where, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);    
-        return $this;
-    }
 
-    public function whereOr($key, $compare = null, $value = null)
-    {
-        if ($value === null) {
-            $value = in_array($compare,self::OPERS) ? $value : $compare;
-            $compare = in_array($compare,self::OPERS) ? $compare : '=';
-        }
-        array_push($this->whereOr, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
-        return $this;
-    }
-
-    public function insert($data = null): int
-    {
-        $this->action = 'INSERT';
-        $this->data($data);
-        $this->paserAndExec();
-        return mysqli_affected_rows($this->mysqli);
-    }
-
-    public function update($data = null): int
-    {
-        $this->action = 'UPDATE';
-        $this->data($data);
-        $this->paserAndExec();
-        return mysqli_affected_rows($this->mysqli);
-    }
-
-    public function delete(): int
-    {
-        $this->action = 'DELETE';
-        $this->paserAndExec();
-        return mysqli_affected_rows($this->mysqli);
-    }
-
-    public function select(): ?array
-    {
-        $this->action = 'SELECT';
-        $this->paserAndExec();
-        if ($this->execr) {
-            $result = mysqli_fetch_all($this->execr, MYSQLI_ASSOC);
-            return $result;
-        }
-        return null;
-    }
-
-    public function count(): int
-    {
-        $this->action = 'SELECT';
-        $this->field = 'count(*)';
-        $this->paserAndExec();
-        if ($this->execr) {
-            $result = mysqli_fetch_row($this->execr);
-            return (int)$result[0];
-        }
-        return 0;
-    }
-
-    public function field()
-    {
-        $this->field = '';
-        $arguments = func_get_args();
-        while ($item = array_shift($arguments)) {
-            $this->field .= "`{$item}`";
-            $this->field .= count($arguments) > 0 ? ',' : '';
-        }
-        return $this;
-    }
-
-    public function order($field, $sort)
-    {
-        $this->order = "`{$field}` {$sort}";
-        return $this;
-    }
-
-    public function first() : ?array
-    {
-        $this->action = 'SELECT';
-        $this->paserAndExec();
-        if ($this->execr) {
-            $result = mysqli_fetch_assoc($this->execr);
-            mysqli_free_result($this->execr);
-            return $result;
-        }
-        return null;
-    }
-    
-    public function page(int $page, int $limit)
-    {
-        $start = ($page - 1) * $limit;
-        $end = ($page * $limit) - 1;
-        $this->limit($start, $end);
-        return $this;
-    }
-
-    public function limit(int $start, int $end)
-    {
-        $this->limit = "$start,$end";
-        return $this;
-    }
-
-    public function query($command)
-    {
-        $this->command = $command;
-        $this->paserAndExec();
-        return $this->execr;
-    }
-
-    public function queryArray(string $command) : array
-    {
-        $this->command = $command;
-        $this->paserAndExec();
-        if ($this->execr !== false) {
-            $result = mysqli_fetch_all($this->execr);
-            mysqli_free_result($this->execr);
-            return $result;
-        }
-        return [];
-    }
-
-    protected function paserAndExec()
-    {
-        
         if ($this->command && $this->action === '') {
             return $this->execr = $this->mysqli->query($this->command);
         }
@@ -272,7 +199,14 @@ class Mysql
         return $this;
     }
 
-    protected static function parseInsertArray($data)
+    public function query($command)
+    {
+        $this->command = $command;
+        $this->paserAndExec();
+        return $this->execr;
+    }
+
+    protected static function parseInsertArray($data): string
     {
         $i = 0;
         $j = 0;
@@ -302,28 +236,96 @@ class Mysql
         return "{$field} VALUES {$values}";
     }
 
-    protected static function paserWhereArray($wheres)
+    public function update($data = null): int
     {
-        $array = array();
-        foreach ($wheres as $k => $v) {
-            $item = is_array($v) && is_int($k) ? $v : $wheres;
-            foreach ($item as $jk => $jv) {
-                if (is_int($jk)) {
-                    $tempKey = $item[0];
-                    $tempCompare = count($item) === 3 ? $item[1] : '=';
-                    $tempValue = count($item) === 3 ? $item[2] : $item[1];
-                } else {
-                    $tempKey = $jk;
-                    $tempCompare = '=';
-                    $tempValue = $jv;
-                }
-                array_push($array, [$tempKey, $tempCompare, $tempValue]);
-                break;
-            }
-            if (!is_array($v)) {
-                break;
-            }
+        $this->action = 'UPDATE';
+        $this->data($data);
+        $this->paserAndExec();
+        return mysqli_affected_rows($this->mysqli);
+    }
+
+    public function delete(): int
+    {
+        $this->action = 'DELETE';
+        $this->paserAndExec();
+        return mysqli_affected_rows($this->mysqli);
+    }
+
+    public function select(): ?array
+    {
+        $this->action = 'SELECT';
+        $this->paserAndExec();
+        if ($this->execr) {
+            $result = mysqli_fetch_all($this->execr, MYSQLI_ASSOC);
+            return $result;
         }
-        return $array;
+        return null;
+    }
+
+    public function count(): int
+    {
+        $this->action = 'SELECT';
+        $this->field = 'count(*)';
+        $this->paserAndExec();
+        if ($this->execr) {
+            $result = mysqli_fetch_row($this->execr);
+            return (int)$result[0];
+        }
+        return 0;
+    }
+
+    public function field(): static
+    {
+        $this->field = '';
+        $arguments = func_get_args();
+        while ($item = array_shift($arguments)) {
+            $this->field .= "`{$item}`";
+            $this->field .= count($arguments) > 0 ? ',' : '';
+        }
+        return $this;
+    }
+
+    public function order($field, $sort): static
+    {
+        $this->order = "`{$field}` {$sort}";
+        return $this;
+    }
+
+    public function first(): ?array
+    {
+        $this->action = 'SELECT';
+        $this->paserAndExec();
+        if ($this->execr) {
+            $result = mysqli_fetch_assoc($this->execr);
+            mysqli_free_result($this->execr);
+            return $result;
+        }
+        return null;
+    }
+
+    public function page(int $page, int $limit): static
+    {
+        $start = ($page - 1) * $limit;
+        $end = ($page * $limit) - 1;
+        $this->limit($start, $end);
+        return $this;
+    }
+
+    public function limit(int $start, int $end): static
+    {
+        $this->limit = "$start,$end";
+        return $this;
+    }
+
+    public function queryArray(string $command): array
+    {
+        $this->command = $command;
+        $this->paserAndExec();
+        if ($this->execr !== false) {
+            $result = mysqli_fetch_all($this->execr);
+            mysqli_free_result($this->execr);
+            return $result;
+        }
+        return [];
     }
 }
