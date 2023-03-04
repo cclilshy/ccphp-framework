@@ -29,7 +29,6 @@ class Input
     {
         Input::$get = Request::$request->get;
         Input::$post = Request::$request->post;
-        Launch::record('input');
     }
 
     /** @noinspection DuplicatedCode */
@@ -73,6 +72,5 @@ class Input
     public static function set(string $type, string $key, $value): void
     {
         Input::${$type}[$key] = $value;
-        Launch::record('input');
     }
 }

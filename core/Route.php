@@ -12,6 +12,8 @@ namespace core;
 
 // 加载层, 用于记录用户请求的路由, 并提供对应的方法
 
+use core\Input;
+
 class Route
 {
     const METHODS = array('get', 'post', 'put', 'patch', 'delete', 'options', 'console', 'cron');
@@ -71,12 +73,9 @@ class Route
 
     public static function guide($entrance, $method)
     {
-<<<<<<< HEAD
-=======
         if($index = strpos($entrance,strstr($entrance, '?'))){
             $entrance = substr($entrance,0,$index);
         }
->>>>>>> 8ae1a4e (http)
         self::$entrance = $entrance;
         $method = strtolower($method);
         if (isset(self::$map[$method][$entrance])) {
@@ -105,18 +104,13 @@ class Route
                 }
             }
         }
-
+            
         return self::$guide;
     }
 
     public static function consoles()
     {
         return self::$map['console'];
-    }
-
-    public static function entrance(): array
-    {
-        return [self::$entrance, self::$guide];
     }
 
     public static function simulator($method, $target)

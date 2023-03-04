@@ -25,6 +25,10 @@ class ComposerStaticInit60944a74844f458d25e8d2a2c6af6162
         array (
             'model\\' => 6,
         ),
+        'e' => 
+        array (
+            'extend\\' => 7,
+        ),
         'c' => 
         array (
             'core\\' => 5,
@@ -75,6 +79,10 @@ class ComposerStaticInit60944a74844f458d25e8d2a2c6af6162
         'model\\' => 
         array (
             0 => __DIR__ . '/../..' . '/model',
+        ),
+        'extend\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/extend',
         ),
         'core\\' => 
         array (
@@ -160,7 +168,6 @@ class ComposerStaticInit60944a74844f458d25e8d2a2c6af6162
     public static $fallbackDirsPsr4 = array (
         0 => __DIR__ . '/../..' . '/vendor',
         1 => __DIR__ . '/../..' . '/application',
-        2 => __DIR__ . '/../..' . '/core/Extend',
     );
 
     public static $classMap = array (

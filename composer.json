@@ -1,0 +1,24 @@
+{
+  "name": "cclilshy/ccphp",
+  "description": "ccphp",
+  "autoload": {
+    "psr-4": {
+      "model\\": "model/",
+      "extend\\": "extend/",
+      "core\\": "core",
+      "": [
+        "vendor",
+        "application"
+      ]
+    }
+  },
+  "require": {
+    "ext-pcntl": "*",
+    "ext-posix": "*",
+    "psr/container": "^1.1.1",
+    "illuminate/database": "^10.1",
+    "illuminate/pagination": "^10.1",
+    "illuminate/events": "^10.1",
+    "symfony/var-dumper": "^6.2"
+  }
+}
