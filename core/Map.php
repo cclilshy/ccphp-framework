@@ -14,49 +14,33 @@ namespace core;
 
 class Map
 {
-    protected string $className;
-    protected $functionName;
-    protected string|false $controllerName;
-    protected array $params = array();
+    private object $object;
+    private string $action;
+    private string $type;
+    private $callable;
 
-    public function __construct($className, $functionName, $params = array())
+    public function __construct(string $type,  string $className, string $action, callable $callable = null)
     {
-        $this->className = $className;
-        $this->functionName = $functionName;
-        $this->params = $params;
-        if (($index = strrpos($className, '\\')) !== false) {
-            $this->controllerName = substr($className, $index + 1);
+        $this->type = $type;
+        if ($type == 'controller') {
+            $this->object = new $className();
+            $this->action = $action;
         } else {
-            $this->controllerName = $className;
+            $this->callable = $callable;
         }
     }
 
-    public static function create($className, $functionName, $params = array()): Map
+    public function run()
     {
-        return new self($className, $functionName, $params);
-    }
-
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    public function run($arguments = null)
-    {
-        if ($arguments === null) {
-            $params = array();
-            foreach ($this->params as $item)
-                $params[] = Input::get($item);
+        if ($this->type == 'controller') {
+            return call_user_func_array([$this->object, $this->action], func_get_args());
         } else {
-            $params = $arguments;
+            return call_user_func_array($this->callable, func_get_args());
         }
+    }
 
-        Log::record(array(
-            'CLASS' => $this->className,
-            'ACTION' => is_callable($this->functionName) ? 'function' : $this->functionName,
-            'PARAM' => json_encode($this->params),
-        ));
-
-        return call_user_func_array($this->className ? [new $this->className, $this->functionName] : $this->functionName, $params);
+    public function __call($name, $arguments)
+    {
+        return call_user_func_array([$this->object, $name], $arguments);
     }
 }

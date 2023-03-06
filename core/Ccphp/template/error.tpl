@@ -243,6 +243,6 @@
     </div>
     @endif
 </div>
-<script src="assets/js/Highlight.js"></script>
+<script src="/assets/js/Highlight.js"></script>
 </body>
 </html>

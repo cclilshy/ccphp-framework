@@ -11,10 +11,11 @@
 namespace http\controller;
 
 use core\View;
+use core\Http\Request;
 
 class Index
 {
-    public function index(): string
+    public function index(Request $request): string
     {
         return View::template();
     }

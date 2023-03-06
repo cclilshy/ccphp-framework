@@ -24,12 +24,12 @@ class Launch
     {
         switch ($app) {
             case 'Http':
-                Master::rouse('Http')->executeStream();
+                Master::rouse('Http')::run('PROXY');
                 break;
             case 'Console':
                 Master::rouse('Console')->run();
                 break;
-            case 'build':
+            case 'Build':
                 //
                 break;
         }

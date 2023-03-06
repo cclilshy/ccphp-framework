@@ -36,7 +36,7 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
 * 终端/HTTP端分离,可单独使用
 * 多进程全局通信/管控
 
-## 文档(未完善)
+## 文档
 
 ### 目录结构
 
@@ -219,12 +219,11 @@ $link->call($a,$b,$c,$d,$e);
  * @ string 附加参数名(与参数1的冒号取值对应)
  */
 use \core\Route;
-Route::get('hello/:name','/http/controller/Hello@index','name');
-Route::get('hello/:name',function($name){ echo "$name"; },'name');
+Route::get('hello','/http/controller/Hello@index');
 
 // Class Hello
-public function index($name){
-    echo "hello,$name";
+public function index(Request $request){
+    return \core\View::template();
 }
 ```
 
@@ -235,8 +234,8 @@ public function index($name){
 # controller #控制器目录
 # template #模板文件目录
 # public #根目录
-\core\Input::get('id'); //获取GET请求中的 id 项目
-\core\Input::post('content'); //获取POST中的 content 项
+$request->get['id'];
+$request->post['keywords'];
 ```
 
 ### 终端应用

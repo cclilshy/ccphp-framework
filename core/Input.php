@@ -16,28 +16,33 @@ use core\Http\Request;
 
 class Input
 {
-    private static $get;
-    private static $post;
+    private $get;
+    private $post;
+    private static Input $input;
 
-    public static function init(): void
+    public static function load(array $get, array $post)
     {
-        self::load();
+        return self::$input = new self($get, $post);
     }
 
-    public static function load(): void
+    public static function __callStatic($name, $arguments)
     {
-        Input::$get = Request::$request->get;
-        Input::$post = Request::$request->post;
+        return call_user_func_array([self::$input, $name], $arguments);
     }
 
+    public function  __construct(array $get, array $post)
+    {
+        $this->get = $get;
+        $this->post = $post;
+    }
     /** @noinspection DuplicatedCode */
     public static function get(string $key = null)
     {
         if ($key === null) {
-            return Input::$get;
+            return Input::$input->get;
         } else {
             $index = explode('.', $key);
-            $current = Input::$get;
+            $current = Input::$input->get;
             foreach ($index as $item) {
                 if (isset($current[$item])) {
                     $current = $current[$item];
@@ -53,10 +58,10 @@ class Input
     public static function post(string $key = null)
     {
         if ($key === null) {
-            return Input::$post;
+            return Input::$input->post;
         } else {
             $index = explode('.', $key);
-            $current = Input::$post;
+            $current = Input::$input->post;
             foreach ($index as $item) {
                 if (isset($current[$item])) {
                     $current = $current[$item];
@@ -70,6 +75,6 @@ class Input
 
     public static function set(string $type, string $key, $value): void
     {
-        Input::${$type}[$key] = $value;
+        Input::$input->{$type}[$key] = $value;
     }
 }

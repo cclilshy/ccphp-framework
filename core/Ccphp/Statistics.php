@@ -31,12 +31,13 @@ class Statistics
         return self::$statistics = new self;
     }
 
-    public static function load(): void
+    public static function load(): Statistics
     {
-        self::$statistics->reset();
+        
+        return self::$statistics->reset();
     }
 
-    public function reset()
+    public function reset() : Statistics
     {
         $this->sqls = array();
         $this->loadFiles = array();
@@ -44,6 +45,7 @@ class Statistics
         $this->endTime = 0;
         $this->memory = 0;
         $this->maxMemory = 0;
+        return $this;
     }
 
     public static function get(): Statistics
@@ -56,7 +58,7 @@ class Statistics
         return $this->$name;
     }
 
-    public function record(string $type, $data)
+    public function record(string $type, $data) : Statistics
     {
         switch ($type) {
             case 'sql':
@@ -67,5 +69,6 @@ class Statistics
         $this->endTime = microtime(true);
         $this->memory = memory_get_usage();
         $this->maxMemory = memory_get_peak_usage();
+        return $this;
     }
 }

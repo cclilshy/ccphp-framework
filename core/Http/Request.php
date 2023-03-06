@@ -9,9 +9,14 @@
 
 namespace core\Http;
 
+use core\Input;
+use core\Ccphp\FlowController;
+use Socket;
+/**
+ * 
+ */
 class Request
 {
-    public static Request $request;
     private static string $env = 'ORIGIN';
     private string $original;
     private string $method;
@@ -24,94 +29,48 @@ class Request
     private array $header;
     private array $get = array();
     private array $post = array();
+    private $stream = null;
 
-    public function __construct()
+    private FlowController $flowController;
+
+
+    public static function init(){
+        return new self;
+    }
+    
+    public function build(FlowController $flowController)
     {
-        if (self::$env === 'ORIGIN') {
-            $this->useCGI();
-        } elseif (self::$env === 'CCPHP') {
-            $this->type = 'CCPHP';
-        }
+        $this->flowController = $flowController;
     }
 
-    public function useCGI(): void
+    public function initialization(string $type, $stream = null): Request
     {
-        $this->method = $_SERVER['REQUEST_METHOD'];
-        $this->path = trim($_SERVER['REQUEST_URI'], "/");
-        $this->version = floatval($_SERVER['SERVER_PROTOCOL']);
-        $this->body = file_get_contents('php://input');
-        $this->header = $_SERVER;
-        $this->get = $_GET;
-        $this->post = $_POST;
-        $this->ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
-        $this->type = 'CGI';
-    }
-
-    public static function init($original = ''): Request
-    {
-        return self::load();
-    }
-
-    public static function load(): Request
-    {
-        return self::$request = new Request;
-    }
-
-    public static function setEnv(string $env): void
-    {
-        self::$env = $env;
-    }
-
-    public static function loadHttpContext(string $context): void
-    {
-        self::$request->parse($context);
-    }
-
-    public function parse(string $context): void
-    {
-        $this->original = $context;
-        // 解析HTTP请求
-        $context = explode("\r\n\r\n", $this->original);
-        $header = array_shift($context);
-        $body = array_shift($context);
-
-        $headerInfo = explode("\r\n", $header);
-        $httpInfo = explode(' ', $headerInfo[0]);
-
-        foreach ($headerInfo as $headerItem) {
-            $headerItem = explode(':', $headerItem);
-            $this->header[trim($headerItem[0])] = trim($headerItem[1] ?? '');
+        switch ($type) {
+            case 'PROXY':
+                $this->method = $_SERVER['REQUEST_METHOD'];
+                $this->path = trim($_SERVER['REQUEST_URI'], "/");
+                $this->version = floatval($_SERVER['SERVER_PROTOCOL']);
+                $this->body = file_get_contents('php://input');
+                $this->header = $_SERVER;
+                $this->get = $_GET;
+                $this->post = $_POST;
+                $this->ajax = isset($_SERVER['HTTP_X_REQUESTED_WITH']) && $_SERVER['HTTP_X_REQUESTED_WITH'] === 'XMLHttpRequest';
+                $this->type = 'PROXY';
+                break;
+            case 'SERVER':
+                $this->stream = $stream;
         }
 
-        $this->method = $httpInfo[0];
-        $this->path = trim(strtok($httpInfo[1], '?'), "/");
-        $this->version = floatval($httpInfo[2]);
-        $this->body = $body ?? '';
-        $this->cookie = $this->header['Cookie'] ?? '';
-
-        $urlParams = parse_url($httpInfo[1]);
-        if (isset($urlParams['query'])) {
-            parse_str($urlParams['query'], $get);
-        }
-
-        if ($this->method === 'POST') {
-            parse_str($body, $post);
-        }
-
-        $this->get = $get ?? [];
-        $this->post = $post ?? [];
-        $this->ajax = isset($this->header['X-Requested-With']) && $this->header['X-Requested-With'] === 'XMLHttpRequest';
-        $this->type = 'SOCKET';
+        return $this;
     }
 
-    public static function type(): string
+    public function return(string $context): void
     {
-        return self::$request->type;
-    }
-
-    public static function get(): Request
-    {
-        return self::$request;
+        if ($this->type === 'PROXY') {
+            echo $context;
+        } elseif ($this->type === 'SERVER') {
+            socket_write($this->stream, $context);
+        }
     }
 
     public function __get($name)
