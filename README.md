@@ -10,18 +10,14 @@
 ### Linux
 
 ```bash
-git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && php -S 127.0.0.1:8080 -t application/http/public 
+git clone https://github.com/cclilshy/ccphp-framework.git
 ```
 
 ```bash
 ./master server start # 启动服务(包括数据库连接池和进程管理服务)
 ```
 
-### Windows(不建议)
-
-```bash
-git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework && php -S 127.0.0.1:8080 -t application/http/public 
-```
+### Windows(不支持)
 
 ## 简介
 
@@ -52,7 +48,7 @@ git clone https://github.com/cclilshy/ccphp-framework.git && cd ccphp-framework 
     * logs 日志文件
 * vendor 框架核心
 
-### 框架核心类空间
+## 框架核心类空间
 
 ```php
 namespace core;
@@ -65,7 +61,7 @@ namespace core;
 ### 加载器 Master
 
 > 所有扩展和服务必须从加载器加载(兼容内存常驻)
-> APP类保留 `init`,`load` 方法,
+> APP类保留 `initialization`,~~`reload`~~ 方法
 > 初次加载时会执行init方法,该方法内的数据内存常驻(如数据库配置,日志流文件,路由等)
 > load方法在每次访问时会在用户自己的内存块执行, 重置初始化参数
 
@@ -206,7 +202,7 @@ $link = IPC::link($name);
 $link->call($a,$b,$c,$d,$e);
 ```
 
-### 路由
+## 路由
 
 > 所有路由规则写在 application/route/ 中
 
@@ -219,28 +215,11 @@ $link->call($a,$b,$c,$d,$e);
  * @ string 附加参数名(与参数1的冒号取值对应)
  */
 use core\Route\Route;
-Route::get('hello','/http/controller/Hello@index');
-
-// Class Hello
-public function index(Request $request){
-    return \core\Http\View::template();
-}
 ```
 
-### HTTP应用
+## 终端应用
 
-```php
-# application/http/
-# controller #控制器目录
-# template #模板文件目录
-# public #根目录
-$request->get['id'];
-$request->post['keywords'];
-```
-
-### 终端应用
-
-#### 路由规则
+### 路由规则
 
 ```php
 Route::console('handle','console/Handle');
@@ -268,6 +247,55 @@ class Handle
         $console::printn("hello,world");
     }
 }
+```
+
+## 数据库
+
+> 还没写,暂时使用`Illuminate`数据库引擎(同Laravel数据库引擎)替代, [文档](https://github.com/illuminate/database)
+
+```php
+use core\Database\DatabasePool;use core\Database\DB;use core\Database\Pool;
+
+DB::name('user')->where('id',1)->first(); // 查询
+DB::getConnect($config); // 获取一个新连接,config留空则使用默认配置
+
+// 数据库连接池,目前只能队列请求,
+// 错位调度开发中(后续考虑在http入口自动连接池子而不是直接连接数据库)
+Pool::launch(); //启动连接池服务
+Pool::stop(); //关闭连接池
+// 例子
+$con = Pool::link();
+
+// 该方法和直接调用的效果一致,但返回的是反序化之后的内容,而不是查询事件的主体也就是说不可操作对象或数组
+// 支持LevelORM所有语法
+$con->table('user')->where('id',1)->first()->go();
+```
+
+## 缓存
+
+> 还没开始写,暂时用Redis替代,依赖PHPRedis
+
+```php
+//支持Redis所有命令,如:
+\core\Cache\Cache::set('count',1);
+\core\Cache\Cache::get('count'); 
+```
+
+## 日志
+
+```php
+\core\Log::record($msg); //记录一段日志
+```
+
+## HTTP应用
+>以下内容看看就行,因为还没写完，不太稳定
+```php
+# application/http/
+# controller #控制器目录
+# template #模板文件目录
+# public #根目录
+$request->get['id'];
+$request->post['keywords'];
 ```
 
 ### 模板
@@ -305,42 +333,4 @@ return \core\Http\View::template();
 
 <!-- 模板包含以`TEMPLATE_PATH为`根向下索引的模板文件-->
 @embed("index/common") @endembed
-```
-
-### 数据库
-
-> 还没写,暂时使用`Illuminate`数据库引擎(同Laravel数据库引擎)替代, [文档](https://github.com/illuminate/database)
-
-```php
-use core\Database\DatabasePool;use core\Database\DB;use core\Database\Pool;
-
-DB::name('user')->where('id',1)->first(); // 查询
-DB::getConnect($config); // 获取一个新连接,config留空则使用默认配置
-
-// 数据库连接池,目前只能队列请求,
-// 错位调度开发中(后续考虑在http入口自动连接池子而不是直接连接数据库)
-Pool::launch(); //启动连接池服务
-Pool::stop(); //关闭连接池
-// 例子
-$con = Pool::link();
-
-// 该方法和直接调用的效果一致,但返回的是反序化之后的内容,而不是查询事件的主体也就是说不可操作对象或数组
-// 支持LevelORM所有语法
-$con->table('user')->where('id',1)->first()->go();
-```
-
-### 缓存
-
-> 还没开始写,暂时用Redis替代,依赖PHPRedis
-
-```php
-//支持Redis所有命令,如:
-\core\Cache\Cache::set('count',1);
-\core\Cache\Cache::get('count'); 
-```
-
-## 日志
-
-```php
-\core\Log::record($msg); //记录一段日志
 ```
