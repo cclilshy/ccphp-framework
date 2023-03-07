@@ -7,10 +7,9 @@
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
-namespace core;
+namespace core\Http;
 
-use core\Http\Request;
-use core\Http\Response;
+use core\Master;
 
 class HttpServer
 {

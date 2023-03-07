@@ -9,62 +9,40 @@
 
 namespace core\Ccphp;
 
+// 在协程运行时，这个类必须对象方式调用，用于统计当前进程的调用栈和信息
 class Statistics
 {
-    private static Statistics $statistics;
-    private array $loadFiles = array();
-    private array $posts = array();
-    private array $gets = array();
-    private array $sqls = array();
-    private float $memory;
-    private float $maxMemory;
-    private float $startTime;
-    private float $endTime;
+    public array $loadFiles = array(); // 加载的文件
+    public array $posts = array(); // 所有POST内容
+    public array $gets = array();  // 所有GET内容
+    public array $sqls = array();  // SQL查询记录
+    public float $memory;  // 内存用量
+    public float $maxMemory;   // 内存峰值
+    public float $startTime = 0;   // 运行时时间，在对象创建时会自动创建
+    public float $endTime = 0; // 结尾时间
 
     public function __construct()
     {
         $this->startTime = microtime(true);
     }
 
-    public static function init(): Statistics
-    {
-        return self::$statistics = new self;
-    }
-
-    public static function load(): Statistics
-    {
-        
-        return self::$statistics->reset();
-    }
-
-    public function reset() : Statistics
-    {
-        $this->sqls = array();
-        $this->loadFiles = array();
-        $this->startTime = microtime(true);
-        $this->endTime = 0;
-        $this->memory = 0;
-        $this->maxMemory = 0;
-        return $this;
-    }
-
-    public static function get(): Statistics
-    {
-        return self::$statistics;
-    }
-
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    public function record(string $type, $data) : Statistics
+    /**
+     * 记录指定数据
+     * @param string $type
+     * @param $data
+     * @return $this
+     */
+    public function record(string $type, $data): Statistics
     {
         switch ($type) {
             case 'sql':
                 $this->sqls[] = $data;
                 break;
+            case 'file':
+                break;
         }
+
+        // 每次记录时会重新载入这些值
         $this->loadFiles = get_included_files();
         $this->endTime = microtime(true);
         $this->memory = memory_get_usage();

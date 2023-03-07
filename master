@@ -12,6 +12,7 @@
 use core\Ccphp\Launch;
 use core\Master;
 
-include __DIR__ . '/core/base/ccload.php';
-Master::rouse('Ccphp');
-Launch::start('Console');
+include __DIR__ . '/core/Base/ccload.php';
+Master::rouse('Ccphp\Ccphp');
+Master::rouse('Route\Route');
+Master::rouse('Console')->run();

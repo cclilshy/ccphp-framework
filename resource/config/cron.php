@@ -9,6 +9,6 @@
 
 use core\Server\Cron;
 
-Cron::timer('test', function () {
-    echo 'is cron task' . PHP_EOL;
-}, 10);
+//Cron::timer('test', function () {
+//    echo 'is cron task' . PHP_EOL;
+//}, 10);

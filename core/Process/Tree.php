@@ -12,11 +12,13 @@ namespace core\Process;
 use core\Console;
 use core\Server\Server;
 
+// 进程🌲
 class Tree
 {
-    private Node $root;
-    private Node $orphanProcess;
+    private Node $root; // 根节点
+    private Node $orphanProcess;    // 孤儿根节点
     private array $map = array();
+
 
     private function __construct()
     {
@@ -24,6 +26,10 @@ class Tree
         $this->orphanProcess = new Node(1, 0, 'undefined');
     }
 
+    /**
+     * 启用这树服务
+     * @return bool
+     */
     public static function launch(): bool
     {
         if ($server = Server::create('Tree')) {
@@ -41,6 +47,13 @@ class Tree
         }
     }
 
+    /**
+     * 树主函数
+     * @param $ipc
+     * @param $action
+     * @param $data
+     * @return void
+     */
     public function handler($ipc, $action, $data): void
     {
         Console::pdebug('[MESSAGE] ' . json_encode(func_get_args()));
@@ -76,6 +89,11 @@ class Tree
         }
     }
 
+    /**
+     * 搜索指定ID的节点引用指针
+     * @param $pid
+     * @return Node|null
+     */
     private function find($pid): Node|null
     {
         if ($pid === 1) {
@@ -99,7 +117,8 @@ class Tree
         return $node ?? null;
     }
 
-    /** 处理退出的成员，并重新维护树结构
+    /**
+     * 处理退出的成员，并重新维护树结构
      * @param $pid
      * @return void
      */
@@ -122,6 +141,11 @@ class Tree
         }
     }
 
+    /**
+     * 销毁一个进程，通知其守护者服务
+     * @param Node $node
+     * @return void
+     */
     private function kill(Node $node): void
     {
         $childrenNodes = $node->kill();
@@ -131,6 +155,11 @@ class Tree
         }
     }
 
+    /**
+     * 销毁一棵树的进程
+     * @param Node $node
+     * @return void
+     */
     private function killAll(Node $node): void
     {
         foreach ($node->children as $childrenNode) {
@@ -140,6 +169,10 @@ class Tree
         unset($this->map[$node->pid]);
     }
 
+    /**
+     * 关闭树服务
+     * @return bool
+     */
     public static function stop(): bool
     {
         if ($server = Server::load('Tree')) {

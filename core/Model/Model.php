@@ -8,14 +8,15 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-namespace core;
+namespace core\Model;
 
 /**
  * @property string $table
  */
 class Model
 {
-    public static function init(): void
+    public static function initialization(): void
     {
+        // 没什么用
     }
 }

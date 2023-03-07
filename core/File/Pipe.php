@@ -7,7 +7,7 @@
  * @Last Modified time: 2023-02-28 17:30:12
  */
 
-namespace core;
+namespace core\File;
 
 class Pipe
 {

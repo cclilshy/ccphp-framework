@@ -1,44 +1,45 @@
 <?php
 /*
- * @Author: cclilshy jingnigg@163.com
- * @Date: 2022-12-06 16:15:21
+ * @Author: cclilshy cclilshy@163.com
+ * @Date: 2023-03-06 16:40:23
  * @LastEditors: cclilshy cclilshy@163.com
- * @FilePath: /ccphp/vendor/core/Master.php
  * @Description: My house
- * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
+ * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
 namespace core;
 
-// The Leader Of The Entire Framework Is Used To Start Each Module
-
 class Master
 {
-    private static array $record = [];
+    private static array $record;
+    private static string $modulePath = __NAMESPACE__;
 
-    public static function rouse()
+    /**
+     * @throws \Exception
+     */
+    public static function rouse(string $name, array $args = [])
     {
-        $arguments = func_get_args();
-        $modules = array_map(function ($item) {
-            self::$record[] = $item;
-            return call_user_func([__NAMESPACE__ . '\\' . $item, 'init'], Config::get(strtolower($item)));
-        }, $arguments);
-        return count($modules) === 1 ? current($modules) : $modules;
-    }
-
-    public static function flush(): void
-    {
-        foreach (self::$record as $item) {
-            if (in_array($item, self::$record)) {
-                if (method_exists(__NAMESPACE__ . '\\' . $item, 'load')) {
-                    call_user_func([__NAMESPACE__ . '\\' . $item, 'load']);
-                }
-            }
+        $class = self::$modulePath . '\\' . ucfirst($name);
+        if (class_exists($class)) {
+            self::$record[] = $name;
+            return call_user_func_array([$class, 'initialization'], $args);
+        }else{
+            throw new \Exception("Class $class not found");
         }
     }
 
-    public static function list(): array
+    public static function reload(string $name = null): array
     {
-        return self::$record;
+        $result = array();
+        foreach (self::$record as $name) {
+            $class = self::$modulePath . '\\' . ucfirst($name);
+            $result[$name] = call_user_func([$class, 'reload']);
+        }
+        return $result;
+    }
+
+    public static function setModulePath(string $path): void
+    {
+        self::$modulePath = $path;
     }
 }

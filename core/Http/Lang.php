@@ -11,7 +11,7 @@
  * Write A Php Language Package
  */
 
-namespace core;
+namespace core\Http;
 
 use Exception;
 
@@ -37,7 +37,7 @@ class Lang
      */
     public static function get(string $name, string $lang = ''): string
     {
-        $lang = $lang ?: config('default_lang');
+        $lang = $lang ?: \core\Config::get('lang.default_lang');
         $lang = self::load($lang);
         return $lang[$name] ?? $name;
     }

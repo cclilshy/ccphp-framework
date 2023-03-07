@@ -10,8 +10,8 @@
 
 namespace http\controller;
 
-use core\View;
 use core\Http\Request;
+use core\Http\View;
 
 class Index
 {

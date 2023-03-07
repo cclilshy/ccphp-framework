@@ -11,6 +11,6 @@
 use core\Ccphp\Launch;
 use core\Master;
 
-include __DIR__ . '/../../../core/base/ccload.php';
-Master::rouse('Ccphp');
-Launch::start('Http');
+include __DIR__ . '/../../../core/Base/ccload.php';
+Master::rouse('Ccphp\Ccphp');
+Launch::start('Ccphp\Http');

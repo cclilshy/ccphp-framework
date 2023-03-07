@@ -2,7 +2,7 @@
 
 namespace model;
 
-use core\Model;
+use core\Model\Model;
 
 class User extends Model
 {

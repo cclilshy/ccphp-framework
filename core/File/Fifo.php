@@ -7,7 +7,7 @@
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
 
-namespace core;
+namespace core\File;
 
 class Fifo
 {
@@ -15,6 +15,9 @@ class Fifo
     private string $name;
     private string $path;
 
+    /**
+     * @param string $name
+     */
     public function __construct(string $name)
     {
         $this->name = $name;
@@ -22,6 +25,10 @@ class Fifo
         $this->stream = fopen($this->path, 'r+');
     }
 
+    /**
+     * @param string $name
+     * @return Fifo|false
+     */
     public static function create(string $name): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
@@ -34,6 +41,10 @@ class Fifo
         }
     }
 
+    /**
+     * @param string $name
+     * @return Fifo|false
+     */
     public static function link(string $name): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
@@ -44,26 +55,43 @@ class Fifo
         }
     }
 
+    /**
+     * @param string $context
+     * @return int
+     */
     public function write(string $context): int
     {
         return fwrite($this->stream, $context);
     }
 
+    /**
+     * @return string
+     */
     public function fgets(): string
     {
         return fgets($this->stream);
     }
 
+    /**
+     * @param int $length
+     * @return string
+     */
     public function read(int $length): string
     {
         return fread($this->stream, $length);
     }
 
+    /**
+     * @return string
+     */
     public function full(): string
     {
         return stream_get_contents($this->stream);
     }
 
+    /**
+     * @return void
+     */
     public function release(): void
     {
         $this->close();
@@ -72,6 +100,9 @@ class Fifo
         }
     }
 
+    /**
+     * @return void
+     */
     public function close(): void
     {
         if (get_resource_type($this->stream) !== 'Unknown') {

@@ -10,7 +10,7 @@
 
 namespace http\controller;
 
-use core\View;
+use core\Http\View;
 
 class Admin
 {

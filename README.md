@@ -82,8 +82,8 @@ namespace core;
 ### 管道安全
 
 ```php
-$pipe = \core\Pipe::create('name'); // 创建管道空间
-$pipe = \core\Pipe::link('name'); // 连接管道
+$pipe = \core\File\Pipe::create('name'); // 创建管道空间
+$pipe = \core\File\Pipe::link('name'); // 连接管道
 $spipe = $pipe->clone(); // 克隆一个管道(不共用流和指针,因此锁互斥,可以给子进程使用)
 $wait = false;           // 是否堵塞
 $pipe->lock($wait);      // 多个进程之间,对同一个名称管道的调用,只有一个进程能上锁成功
@@ -218,12 +218,12 @@ $link->call($a,$b,$c,$d,$e);
  * @ string/callback 控制器@方法名 / 函数体
  * @ string 附加参数名(与参数1的冒号取值对应)
  */
-use \core\Route;
+use core\Route\Route;
 Route::get('hello','/http/controller/Hello@index');
 
 // Class Hello
 public function index(Request $request){
-    return \core\View::template();
+    return \core\Http\View::template();
 }
 ```
 
@@ -273,10 +273,10 @@ class Handle
 ### 模板
 
 ```php
-\core\View::define('arr',array());
-\core\View::define('name','cclilshy');
-\core\View::define('descrite',$describe);
-return \core\View::template();
+\core\Http\View::define('arr',array());
+\core\Http\View::define('name','cclilshy');
+\core\Http\View::define('descrite',$describe);
+return \core\Http\View::template();
 ```
 
 ```html
@@ -312,15 +312,13 @@ return \core\View::template();
 > 还没写,暂时使用`Illuminate`数据库引擎(同Laravel数据库引擎)替代, [文档](https://github.com/illuminate/database)
 
 ```php
-use \core\DB;
-use \core\Database\DatabasePool;
+use core\Database\DatabasePool;use core\Database\DB;use core\Database\Pool;
 
 DB::name('user')->where('id',1)->first(); // 查询
 DB::getConnect($config); // 获取一个新连接,config留空则使用默认配置
 
 // 数据库连接池,目前只能队列请求,
 // 错位调度开发中(后续考虑在http入口自动连接池子而不是直接连接数据库)
-use \core\Database\Pool;
 Pool::launch(); //启动连接池服务
 Pool::stop(); //关闭连接池
 // 例子
@@ -337,8 +335,8 @@ $con->table('user')->where('id',1)->first()->go();
 
 ```php
 //支持Redis所有命令,如:
-\core\Cache::set('count',1);
-\core\Cache::get('count'); 
+\core\Cache\Cache::set('count',1);
+\core\Cache\Cache::get('count'); 
 ```
 
 ## 日志

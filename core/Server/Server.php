@@ -9,7 +9,7 @@
 
 namespace core\Server;
 
-use core\Pipe;
+use core\File\Pipe;
 
 // record server Server
 // 支持查询任意服务信息,包括未注册的服务信息

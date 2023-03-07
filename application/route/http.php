@@ -8,7 +8,7 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-use core\Route;
+use core\Route\Route;
 
 Route::get('/', 'http\controller\Index@index');
 Route::get('/func', function () {

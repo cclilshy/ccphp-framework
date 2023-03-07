@@ -22,7 +22,7 @@ class Log
     private static $env = '';
     private static $constant = [];
 
-    public static function init(): void
+    public static function initialization(): void
     {
         self::$logFile = fopen(RES_PATH . '/logs/' . date("Y-m-d", time()) . '-initial' . '.log', 'a+');
     }

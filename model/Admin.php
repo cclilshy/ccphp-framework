@@ -10,7 +10,7 @@
 
 namespace model;
 
-use core\Model;
+use core\Model\Model;
 
 class Admin extends Model
 {

@@ -16,10 +16,20 @@ use core\Master;
 
 class Launch
 {
-    public static function init($config = null): void
+    /**
+     * @param $config
+     * @return void
+     */
+    public static function initialization($config = null): void
     {
     }
 
+    /**
+     * 运行指定应用
+     * @param string $app
+     * @return void
+     * @throws \Exception
+     */
     public static function start(string $app): void
     {
         switch ($app) {
@@ -33,10 +43,5 @@ class Launch
                 //
                 break;
         }
-    }
-
-    public static function template(string $name): string
-    {
-        return file_get_contents(__DIR__ . '/template/' . $name . '.tpl');
     }
 }

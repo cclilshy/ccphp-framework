@@ -8,8 +8,7 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-use core\Route;
-
+use core\Route\Route;
 Route::console('handle', 'console\Handle');
 Route::console('server', 'console\Server');
 Route::console('debug', 'console\Debug');

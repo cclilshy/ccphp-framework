@@ -31,7 +31,7 @@ class Config
         return $rest;
     }
 
-    public static function init(): void
+    public static function initialization(): void
     {
         $files = scandir(CONF_PATH);
         foreach ($files as $item) {

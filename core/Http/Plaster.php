@@ -12,7 +12,7 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-namespace core\Template;
+namespace core\Http;
 
 use function htmlspecialchars;
 use function is_string;
@@ -30,41 +30,40 @@ class Plaster
         'embed' => '/@embed[\s]*\((.*){1}\)[\s]*@endembed/'
     );
 
+    /**
+     * 使用静态方法渲染
+     * @param string $content
+     * @param array $defined
+     * @return string
+     */
+    public static function draw(string $content, array $defined): string
+    {
+        return call_user_func([new self($defined), 'apply'], $content);
+    }
+
+    /**
+     * 模板变量暂存区
+     * @var array|mixed
+     */
     private $arguments = array();
 
-    public function define(string $key, mixed $value): void
+    /**
+     * 允许在实例时直接定义变量
+     * @param $defined
+     */
+    public function __construct($defined = null)
     {
-        $this->arguments = array_merge($this->arguments, [$key => $value]);
+        if ($defined) {
+            $this->arguments = $defined;
+        }
     }
 
-    private function executeForeach(array $arguments, array $tempArgv = array()): string
-    {
-        extract(array_merge($this->arguments, $tempArgv));
-        $originContent = $arguments[0];
-        $templateFrammentArrayName = $arguments[1];
-        $templateFrammentKeyName = $arguments[2];
-        $templateFrammentItemName = $arguments[3];
-        $templateFrammentContent = $arguments[4];
-        if ($templateFrammentItemName === '') $templateFrammentItemName = $templateFrammentKeyName;
-        foreach ($this->arguments as $applyForeachAssignmentKey => $applyForeachAssignmentValue)
-            $$applyForeachAssignmentKey = $applyForeachAssignmentValue;
-        $templateFrammentHtml = '';
-        try {
-            $templateFrammentArray = eval('return ' . $templateFrammentArrayName . ';');
-        } catch (\Throwable $e) {
-            \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
-        }
-        $templateFrammentIndex = 0;
-        foreach ($templateFrammentArray as $templateFrammentKey => $templateFrammentValue) {
-            $templateFrammentHtml .= self::apply($templateFrammentContent, [
-                substr($templateFrammentKeyName, 1) => $templateFrammentKey,
-                substr($templateFrammentItemName, 1) => $templateFrammentValue,
-            ]);
-            $templateFrammentIndex++;
-        }
-        return $templateFrammentHtml;
-    }
-
+    /**
+     * 渲染的递归入口
+     * @param string $applyTemplateText
+     * @param array $tempArguments
+     * @return string
+     */
     public function apply(string $applyTemplateText, array $tempArguments = array()): string
     {
         //定义变量
@@ -107,7 +106,7 @@ class Plaster
                 try {
                     $applyBracecExecResult = eval("return {$applyBraceMatchResult[1][$applyBracecExecIndex]};");
                 } catch (\Throwable $e) {
-                    \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+                    // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
                 }
 
                 if ($applyBracecExecResult !== false)
@@ -125,7 +124,7 @@ class Plaster
             try {
                 eval($phpFrammentMatchResult[1][$phpFrammentMatchIndex]);
             } catch (\Throwable $e) {
-                \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+                // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
             }
             $output = ob_get_clean();
             $applyTemplateText = str_replace($phpFrammentMatchResult[0][$phpFrammentMatchIndex], $output, $applyTemplateText);
@@ -133,6 +132,13 @@ class Plaster
         return $applyTemplateText;
     }
 
+    /**
+     * 区段类型调度
+     * @param string $content
+     * @param string $tag
+     * @param array $arguments
+     * @return string|false
+     */
     private function execute(string $content, string $tag, array $arguments): string|false
     {
         $matchc = preg_match(self::$regexs[$tag], $content, $matchs);
@@ -142,6 +148,11 @@ class Plaster
         return false;
     }
 
+    /**
+     * @param array $executeForArguments
+     * @param array $tempArgv
+     * @return string
+     */
     private function executeFor(array $executeForArguments, array $tempArgv = array()): string
     {
         foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
@@ -159,12 +170,17 @@ class Plaster
                 eval("{$executeForEnd};");
             }
         } catch (\Throwable $e) {
-            \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
         }
 
         return str_replace($executeForArguments[0], $templateFramment, $executeForArguments[0]);
     }
 
+    /**
+     * @param array $arguments
+     * @param array $tempArgv
+     * @return string
+     */
     private function executeWhile(array $arguments, array $tempArgv = array()): string
     {
         foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
@@ -176,11 +192,17 @@ class Plaster
                 $executeWhileFarmment .= self::apply($arguments[2], get_defined_vars());
             }
         } catch (\Throwable $e) {
-            \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
         }
         return $executeWhileFarmment;
     }
 
+    /**
+     * @param array $arguments
+     * @param array $tempArgv
+     * @param bool $end
+     * @return string
+     */
     private function executeIf(array $arguments, array $tempArgv = array(), bool $end = false): string
     {
         foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
@@ -203,14 +225,54 @@ class Plaster
                 return '';
             }
         } catch (\Throwable $e) {
-            \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
         }
     }
 
+    /**
+     * 处理foreach区段
+     * @param array $arguments
+     * @param array $tempArgv
+     * @return string
+     */
+    private function executeForeach(array $arguments, array $tempArgv = array()): string
+    {
+        extract(array_merge($this->arguments, $tempArgv));
+        $originContent = $arguments[0];
+        $templateFrammentArrayName = $arguments[1];
+        $templateFrammentKeyName = $arguments[2];
+        $templateFrammentItemName = $arguments[3];
+        $templateFrammentContent = $arguments[4];
+        if ($templateFrammentItemName === '') $templateFrammentItemName = $templateFrammentKeyName;
+        foreach ($this->arguments as $applyForeachAssignmentKey => $applyForeachAssignmentValue)
+            $$applyForeachAssignmentKey = $applyForeachAssignmentValue;
+        $templateFrammentHtml = '';
+        try {
+            $templateFrammentArray = eval('return ' . $templateFrammentArrayName . ';');
+        } catch (\Throwable $e) {
+            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+        }
+        $templateFrammentIndex = 0;
+        foreach ($templateFrammentArray as $templateFrammentKey => $templateFrammentValue) {
+            $templateFrammentHtml .= self::apply($templateFrammentContent, [
+                substr($templateFrammentKeyName, 1) => $templateFrammentKey,
+                substr($templateFrammentItemName, 1) => $templateFrammentValue,
+            ]);
+            $templateFrammentIndex++;
+        }
+        return $templateFrammentHtml;
+    }
+
+    /**
+     * 模板包涵
+     * @param array $arguments
+     * @param array $tempArgv
+     * @return string
+     */
     private function executeEmbed(array $arguments, array $tempArgv = array()): string
     {
         $executeEmbedTemplateFile = trim($arguments[1], '"\'');
         //        $executeEmbedTemplateContent
-        return file_get_contents(TMP_PATH . FS . $executeEmbedTemplateFile . '.' . \core\Config::get('http.template_extension'));
+        return file_get_contents(TMP_PATH . FS . $executeEmbedTemplateFile . '.' . \Cclilshy\Modules\Config::get('http.template_extension'));
     }
 }

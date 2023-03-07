@@ -10,13 +10,15 @@
 
 namespace core;
 
+use core\Route\Route;
+
 class Console
 {
     const RESERVED = ['help', 'list', 'run'];
     private static array $commands = array();
     private static array $argv;
 
-    public static function init(): Console
+    public static function initialization(): Console
     {
         $list = Route::consoles();
         foreach ($list as $key => $item) {

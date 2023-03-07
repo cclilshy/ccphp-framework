@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * ！！！！！！！！！！！不用这个类
+ */
+
 namespace core\Database;
 class Mysql
 {

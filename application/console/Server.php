@@ -11,7 +11,9 @@ namespace console;
 
 // Start The Service Class Perform Timing Tasks And Socket Services
 
-use core\HttpServer;
+use core\Config;
+use core\Database\Pool;
+use core\Process\Tree;
 
 class Server
 {
@@ -27,14 +29,16 @@ class Server
             return;
         }
         if ($argv[1] == 'start') {
-            // if(Config::get('server.database_pool') === true){
-            //      Tree::launch();
-            // }
-            // Pool::launch();
-            HttpServer::launch();
+            if (Config::get('server.database_pool') === true) {
+                Tree::launch();
+            }
+            Pool::launch();
+
+            // 下面这个用不了
+            // HttpServer::launch();
         } elseif ($argv[1] === 'stop') {
-            // Tree::stop();
-            // Pool::stop();
+            Pool::stop();
+            Tree::stop();
         }
     }
 }

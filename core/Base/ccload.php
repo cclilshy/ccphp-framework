@@ -13,4 +13,7 @@ include 'configure.php';
 include 'function.php';
 include 'global.php';
 include ROOT_PATH . '/vendor/autoload.php';
-Master::rouse('Config', 'Route', 'DB', 'Cache');
+try {
+    Master::rouse('Config');
+} catch (Exception $e) {
+}

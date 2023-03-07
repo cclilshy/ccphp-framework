@@ -9,8 +9,8 @@
 
 namespace core\Process;
 
-use core\Fifo;
-use core\Pipe;
+use core\File\Fifo;
+use core\File\Pipe;
 
 class IPC
 {
@@ -30,6 +30,12 @@ class IPC
         $this->name = $name;
     }
 
+    /**
+     * @param callable $observer 监视者方法
+     * @param $space // 自定义暂存空间
+     * @param string|null $name 自定义名称
+     * @return IPC|false  // 返回IPC信息
+     */
     public static function create(callable $observer, $space = null, string $name = null): IPC|false
     {
         $name = $name ?? posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
@@ -53,6 +59,11 @@ class IPC
         }
     }
 
+    /**
+     * 根据IPC名称连接到监视者
+     * @param string $name
+     * @return IPC|false
+     */
     public static function link(string $name): IPC|false
     {
         $name = $name ?? posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
@@ -71,6 +82,10 @@ class IPC
         return $ipc;
     }
 
+    /**
+     * 开始监视进程
+     * @return int
+     */
     private function ob(): int
     {
         switch ($pid = pcntl_fork()) {
@@ -89,6 +104,10 @@ class IPC
         return $pid;
     }
 
+    /**
+     * 开始监听
+     * @return void
+     */
     private function listenr(): void
     {
         $this->me = Fifo::link($this->name . '_s');
@@ -115,6 +134,9 @@ class IPC
         }
     }
 
+    /**
+     * 关闭连接
+     */
     public function close(): void
     {
         $this->me->close();
@@ -123,6 +145,10 @@ class IPC
         $this->lock->close();
     }
 
+    /**
+     * 关闭连接并删除管道
+     * @return void
+     */
     private function release(): void
     {
         $this->close();
@@ -132,11 +158,19 @@ class IPC
         $this->lock->release();
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     */
     public function __get($name)
     {
         return $this->$name;
     }
 
+    /**
+     * 通知监视者销毁并自释放空间
+     * @return void
+     */
     public function stop(): void
     {
         if ($this->call('quit') === 'quit') {
@@ -144,6 +178,10 @@ class IPC
         }
     }
 
+    /**
+     * 通过此方法可以调用监视者
+     * @return mixed
+     */
     public function call(): mixed
     {
         $lock = $this->lock->clone();
