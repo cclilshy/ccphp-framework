@@ -10,8 +10,6 @@
 
 namespace core\Database;
 
-use \Redis as RedisPeclPecl;
-
 // 封装一个Redis连接
 class Redis
 {
@@ -31,7 +29,7 @@ class Redis
     {
         $redis = new \RedisPecl();
         $redis->connect($config->host, $config->port, 1);
-        if (!empty($config->password)){
+        if (!empty($config->password)) {
             $redis->auth($config->password);
         }
         $redis->setOption(\RedisPecl::OPT_READ_TIMEOUT, -1);

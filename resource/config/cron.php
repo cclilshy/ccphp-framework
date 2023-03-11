@@ -7,8 +7,6 @@
  * Copyright (c) 2023 by cclilshy email: cclilshy@163.com, All Rights Reserved.
  */
 
-use core\Server\Cron;
-
 //Cron::timer('test', function () {
 //    echo 'is cron task' . PHP_EOL;
 //}, 10);

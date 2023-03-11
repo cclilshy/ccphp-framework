@@ -29,18 +29,6 @@ class Plaster
         'if' => '/@?(?:if|elseif)[\s\t]*\(([\s\S]*?)\)\R([\s\S]*?)\R[\s\t]*(@else([\s\S]*?)\R)?[\s\t]*@endif/',
         'embed' => '/@embed[\s]*\((.*){1}\)[\s]*@endembed/'
     );
-
-    /**
-     * 使用静态方法渲染
-     * @param string $content
-     * @param array $defined
-     * @return string
-     */
-    public static function draw(string $content, array $defined): string
-    {
-        return call_user_func([new self($defined), 'apply'], $content);
-    }
-
     /**
      * 模板变量暂存区
      * @var array|mixed
@@ -59,12 +47,62 @@ class Plaster
     }
 
     /**
+     * 使用静态方法渲染
+     * @param string $content
+     * @param array $defined
+     * @return string
+     */
+    public static function draw(string $content, array $defined): string
+    {
+        return call_user_func([new self($defined), 'apply'], $content);
+    }
+
+    /**
+     * @param string $key
+     * @param $value
+     * @return void
+     */
+    public function assign(string $key, $value): void
+    {
+        $this->arguments[$key] = $value;
+    }
+
+    /**
+     * @param array $executeForArguments
+     * @param array $tempArgv
+     * @return string
+     */
+    private function executeFor(array $executeForArguments, array $tempArgv = array()): string
+    {
+        foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
+            $$executeIfForeachKey = $executeIfForeachValue;
+        }
+        $executeForStart = $executeForArguments[1];
+        $executeForCondition = $executeForArguments[2];
+        $executeForEnd = $executeForArguments[3];
+        $executeForFarmment = $executeForArguments[4];
+        $templateFramment = '';
+        try {
+            eval("{$executeForStart};");
+            while (eval("return {$executeForCondition};")) {
+                $templateFramment .= self::apply($executeForFarmment, get_defined_vars());
+                eval("{$executeForEnd};");
+            }
+        } catch (\Throwable $e) {
+            return $e;
+            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+        }
+
+        return str_replace($executeForArguments[0], $templateFramment, $executeForArguments[0]);
+    }
+
+    /**
      * 渲染的递归入口
      * @param string $applyTemplateText
      * @param array $tempArguments
      * @return string
      */
-    public function apply(string $applyTemplateText, array $tempArguments = array()): string
+    public function apply(string $applyTemplateText, array $tempArguments = array()): string|Throwable
     {
         //定义变量
         extract(array_merge($this->arguments, $tempArguments));
@@ -106,6 +144,7 @@ class Plaster
                 try {
                     $applyBracecExecResult = eval("return {$applyBraceMatchResult[1][$applyBracecExecIndex]};");
                 } catch (\Throwable $e) {
+                    return $e;
                     // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
                 }
 
@@ -124,6 +163,7 @@ class Plaster
             try {
                 eval($phpFrammentMatchResult[1][$phpFrammentMatchIndex]);
             } catch (\Throwable $e) {
+                return $e;
                 // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
             }
             $output = ob_get_clean();
@@ -149,34 +189,6 @@ class Plaster
     }
 
     /**
-     * @param array $executeForArguments
-     * @param array $tempArgv
-     * @return string
-     */
-    private function executeFor(array $executeForArguments, array $tempArgv = array()): string
-    {
-        foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
-            $$executeIfForeachKey = $executeIfForeachValue;
-        }
-        $executeForStart = $executeForArguments[1];
-        $executeForCondition = $executeForArguments[2];
-        $executeForEnd = $executeForArguments[3];
-        $executeForFarmment = $executeForArguments[4];
-        $templateFramment = '';
-        try {
-            eval("{$executeForStart};");
-            while (eval("return {$executeForCondition};")) {
-                $templateFramment .= self::apply($executeForFarmment, get_defined_vars());
-                eval("{$executeForEnd};");
-            }
-        } catch (\Throwable $e) {
-            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
-        }
-
-        return str_replace($executeForArguments[0], $templateFramment, $executeForArguments[0]);
-    }
-
-    /**
      * @param array $arguments
      * @param array $tempArgv
      * @return string
@@ -192,6 +204,7 @@ class Plaster
                 $executeWhileFarmment .= self::apply($arguments[2], get_defined_vars());
             }
         } catch (\Throwable $e) {
+            return $e;
             // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
         }
         return $executeWhileFarmment;
@@ -225,6 +238,7 @@ class Plaster
                 return '';
             }
         } catch (\Throwable $e) {
+            return $e;
             // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
         }
     }
@@ -250,6 +264,7 @@ class Plaster
         try {
             $templateFrammentArray = eval('return ' . $templateFrammentArrayName . ';');
         } catch (\Throwable $e) {
+            return $e;
             // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
         }
         $templateFrammentIndex = 0;
@@ -273,6 +288,6 @@ class Plaster
     {
         $executeEmbedTemplateFile = trim($arguments[1], '"\'');
         //        $executeEmbedTemplateContent
-        return file_get_contents(TMP_PATH . FS . $executeEmbedTemplateFile . '.' . \Cclilshy\Modules\Config::get('http.template_extension'));
+        return file_get_contents(TMP_PATH . FS . $executeEmbedTemplateFile . '.' . \core\Config::get('http.template_extension'));
     }
 }

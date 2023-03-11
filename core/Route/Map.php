@@ -44,10 +44,10 @@ class Map
     public function run(...$vars): mixed
     {
         if ($this->type == 'controller') {
-            return call_user_func([new $this->className(...$vars), $this->action],...$vars);
-        } elseif($this->type === 'static'){
-            return call_user_func([$this->className, $this->action],...$vars);
-        }else {
+            return call_user_func([new $this->className(...$vars), $this->action], ...$vars);
+        } elseif ($this->type === 'static') {
+            return call_user_func([$this->className, $this->action], ...$vars);
+        } else {
             return call_user_func_array($this->callable, ...$vars);
         }
     }
@@ -57,7 +57,8 @@ class Map
         return call_user_func_array([$this->className, $name], $arguments);
     }
 
-    public function __get($name){
+    public function __get($name)
+    {
         return $this->$name;
     }
 }

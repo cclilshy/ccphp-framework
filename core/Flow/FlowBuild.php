@@ -32,7 +32,7 @@ class FlowBuild
      */
     public function load(string $name, $object): void
     {
-       $this->modules[$name] = $object;
+        $this->modules[$name] = $object;
     }
 
     /**
@@ -53,7 +53,7 @@ class FlowBuild
      * @param $name
      * @return mixed
      */
-    public function __get($name) : callable
+    public function __get($name): callable
     {
         return $this->$name;
     }

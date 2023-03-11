@@ -3,18 +3,19 @@
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-04 00:13:15
  * @LastEditors: cclilshy cclilshy@163.com
- * @FilePath: /ccphp/vendor/Cclilshy\Flowphp/Http.php
+ * @FilePath: /ccphp/vendor/Cclilshy\Flow-php/Http.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
 namespace core\Http;
 
-use core\Flow\FlowBuild;
-use core\Flow\FlowController;
-use core\Master;
 use core\Ccphp\Statistics;
 use core\Config;
+use core\Flow\FlowController;
+use core\Master;
+use core\Route\Route;
+
 
 // Load The Running Http Information
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
@@ -26,11 +27,17 @@ class Http
     public Statistics $statistics;  // 统计
     public Request $request;        // 请求信息
     public Response $response;      // 响应信息
-
-    public function __construct()
+    /**
+     * Http constructor.
+     */
+    public function __construct(?Request $request = null)
     {
         $this->statistics = new Statistics;
-        $this->request = new Request;
+        if ($request) {
+            $this->request = $request;
+        } else {
+            $this->request = new Request;
+        }
     }
 
     /**
@@ -38,44 +45,67 @@ class Http
      * @return Http
      * @throws \Exception
      */
-    public static function initialization() : Http
+    public static function initialization(): Http
     {
         // 加载路由
-        self::$config = Config::get('http');
-        Master::rouse('Route');
+        self::$config = Config::get('http') ?? [];
+        Master::rouse('Route\Route');
         return new self;
     }
 
     /**
-     * 返回一个实体
+     * 返回一个实体,允许自定义请求对象,如不自定义则主动创建
+     * @param Request|null $request
      * @return Http
      */
-    public static function build(): Http
+    public static function build(?Request $request = null): Http
     {
-        return new self;
+        return new self($request);
     }
 
     /**
-     * 选定指定类型解析
-     * @param ...$_
-     * @return $this
+     * @param string $type
+     * @param  ?array $data
+     * @return void
      */
-    public function go(...$_)
+    public function go(string $type, ?array $data = []): void
     {
-        $this->request->setClient($_[0]);
+        $this->request->setType($type);
         $this->request->parse();
         $this->response = $this->request->response;
-        if ($route = Route::guide($this->request->method, $this->request->path)) {
-            $context = $route->run((object)[
-                'request' => $this->request,
-                'response' => $this->response,
-                'http' => $this,
-                'template' => new Template
-            ]);
-            echo $context;
+
+        if ($map = Route::guide($this->request->method, $this->request->path)) {
+            switch ($map->type) {
+                case 'controller':
+                    $t = (object)[
+                        'request' => $this->request,
+                        'response' => $this->response,
+                        'http' => $this,
+                        'plaster' => new Plaster
+                    ];
+                    $_ = new $map->className($t);
+                    $t = call_user_func([$_, $map->action], $t);
+                    $t = $this->statistics($t, $this->statistics);
+                    $this->request->return($t);
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            // 判断静态资源
+            $filePath = HTTP_PATH . '/public' . $this->request->path;
+            if(file_exists($filePath)){
+                $fileInfo = pathinfo($filePath);
+                if(strtoupper($fileInfo['extension']) !== 'PHP'){
+                    $this->request->return(file_get_contents($filePath));
+                        return;
+                }
+            }
+            $this->request->return($this->httpErrorHandle(404, 'Route not defined : ' . $this->request->path, __FILE__, 1));
+            return;
         }
         $this->statistics->record('endTime', microtime(true));
-        return $this;
+        return;
     }
 
     /**
@@ -86,24 +116,25 @@ class Http
      */
     public function statistics(string $content, Statistics $statistics): string
     {
-        $this->statistics = $statistics;
-        if (Http::$config['debug'] === true && $this->flow->Request->ajax === false) {
+        if (Http::$config['debug'] === true && $this->request->ajax === false) {
+            $this->statistics->record('endTime', microtime(true));
             $general = [
                 'timeLength' => $statistics->endTime - $statistics->startTime,
-                'uri' => $this->flow->Request->path,
+                'uri' => $this->request->path,
                 'fileCount' => count($statistics->loadFiles),
                 'memory' => $statistics->memory,
                 'maxMemory' => $statistics->maxMemory
             ];
-            $template = new core\Http\Template;
-            $template->define('sqls', $statistics->sqls);
-            $template->define('files', $statistics->loadFiles);
-            $template->define('general', $general);
-            $template->define('gets', $this->flow->Request->get);
-            $template->define('posts', $this->flow->Request->post);
+            $plaster = new \core\Http\Plaster();
+            $plaster->assign('sqls', $statistics->sqls);
+            $plaster->assign('files', $statistics->loadFiles);
+            $plaster->assign('general', $general);
+            $plaster->assign('gets', $this->request->get);
+            $plaster->assign('posts', $this->request->post);
 
-            $statisticsHtml = file_get_contents(RES_PATH . '/template/statistics.html');
-            return $content .= PHP_EOL . $template->apply($statisticsHtml);
+            $statisticsHtml = \core\Ccphp\Ccphp::template('statistics');
+
+            return $content .= PHP_EOL . $plaster->apply($statisticsHtml);
         }
         return $content;
     }
@@ -117,7 +148,7 @@ class Http
      * @param int $httpCode
      * @return void
      */
-    public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): void
+    public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): string
     {
         $this->statistics->record('endTime', microtime(true));
         $fileDescribe = '';
@@ -132,7 +163,7 @@ class Http
         }
 
         $general = [
-            'uri' => $this->flow->Request->path,
+            'uri' => $this->request->path,
             'info' => [
                 'errno' => $errno,
                 'errstr' => $errstr,
@@ -146,16 +177,15 @@ class Http
             'maxMemory' => $this->statistics->maxMemory
         ];
 
-        $template = new core\Http\Template;
-        $template->define('sqls', $this->statistics->sqls);
-        $template->define('files', $this->statistics->loadFiles);
-        $template->define('general', $general);
-        $template->define('gets', $this->flow->Request->get);
-        $template->define('posts', $this->flow->Request->post);
-        $template->define('config', Config::all());
+        $plaster = new \core\Http\Plaster();
+        $plaster->assign('sqls', $this->statistics->sqls);
+        $plaster->assign('files', $this->statistics->loadFiles);
+        $plaster->assign('general', $general);
+        $plaster->assign('gets', $this->request->get);
+        $plaster->assign('posts', $this->request->post);
+        $plaster->assign('config', Config::all());
 
-        $html = file_get_contents(RES_PATH . '/template/error.html');
-        $html = $template->apply($html);
-        $this->flow->Request->return($html);
+        $html = \core\Ccphp\Ccphp::template('error');
+        return $plaster->apply($html);
     }
 }

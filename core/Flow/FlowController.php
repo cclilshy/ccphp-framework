@@ -78,7 +78,7 @@ class FlowController
      * @param string $key
      * @return mixed|null
      */
-    public function working(string $key) : mixed
+    public function working(string $key): mixed
     {
         return $this->working[$key] ?? null;
     }
@@ -88,7 +88,7 @@ class FlowController
      * @param $name
      * @return mixed
      */
-    public function __get($name) : mixed
+    public function __get($name): mixed
     {
         return $this->flowBuild->modules[$name];
     }

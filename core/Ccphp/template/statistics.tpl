@@ -73,7 +73,7 @@
     <div class="cct-ssc">
         <div id="General">
             <ul class="cct-ul">
-                <li class="cct-li">uri: /{{ $general['uri'] }}</li>
+                <li class="cct-li">uri: {{ $general['uri'] }}</li>
                 <li class="cct-li">file Count: {{ $general['fileCount'] }}</li>
                 <li class="cct-li">runtime: {{ $general['timeLength'] }} (second)</li>
                 <li class="cct-li">memory: {{ $general['memory'] }}</li>

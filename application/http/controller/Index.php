@@ -10,14 +10,19 @@
 
 namespace http\controller;
 
-use core\Http\Request;
-use core\Http\View;
+use core\Http\Controller;
 
-class Index
+class Index extends Controller
 {
-    public function index(Request $request): string
+
+    public function __construct(\stdClass $base)
     {
-        return View::template();
+        parent::__construct($base);
+    }
+
+    public function index(): string
+    {
+        return $this;
     }
 
     public function hello(string $name): string

@@ -204,7 +204,6 @@
 <div class="error-container">
     <div class="error-title">{{ $general['info']['errstr'] }}</div>
     <div class="error-file">{{ $general['info']['errFile'] }}({{ $general['info']['errLine'] }})</div>
-    @if(\core\Config::get('http.debug') === true)
     <div id="detail">
         <pre><code id="errcode">{{ $general['info']['fileDescribe'] }}</code></pre>
         <div class="table-container">
@@ -214,7 +213,7 @@
                 <li class="cct-li">{{ $item }} ({{ filesize($item)/1000 }} KB)</li>
                 @endforeach
             </ul>
-
+            @if(count(array_merge($gets,$posts)) > 0)
             <ul>
                 <li>Input</li>
                 @foreach($gets as $key => $get)
@@ -225,6 +224,7 @@
                 <li class="cct-li"> (POST) {{ $key }} : {{$post}} </li>
                 @endforeach
             </ul>
+            @endif
             <ul>
                 <li>Base</li>
                 <li class="cct-li">file Count: {{ $general['fileCount'] }}</li>
@@ -232,16 +232,16 @@
                 <li class="cct-li">memory: {{ $general['memory'] }}</li>
                 <li class="cct-li">max memory: {{ $general['maxMemory'] }}</li>
             </ul>
+            @if(count($sqls) > 0)
             <ul>
                 @foreach($sqls as $item)
                 <li class="cct-li"> {{$item}} </li>
                 @endforeach
             </ul>
-
+            @endif
 
         </div>
     </div>
-    @endif
 </div>
 <script src="/assets/js/Highlight.js"></script>
 </body>

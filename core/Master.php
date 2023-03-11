@@ -23,7 +23,7 @@ class Master
         if (class_exists($class)) {
             self::$record[] = $name;
             return call_user_func_array([$class, 'initialization'], $args);
-        }else{
+        } else {
             throw new \Exception("Class $class not found");
         }
     }

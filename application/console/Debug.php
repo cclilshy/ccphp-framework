@@ -9,7 +9,6 @@
 
 namespace console;
 
-use core\Database\Pool;
 use core\Process\Process;
 
 class Debug
@@ -21,25 +20,26 @@ class Debug
 
     public function main($argv, $console): void
     {
-        Process::init();
+        Process::initialization();
 
+        // 创建100个进程
         for ($i = 0; $i < 100; $i++) {
             Process::fork(function () {
-                if ($link = Pool::link()) {
-                    for ($i = 0; $i < 10; $i++) {
-                        $result = $link->table('area')
-                            ->where('id', '=', mt_rand(1049112, 1050111))
-                            ->first()
-                            ->go();
-
-                        echo json_encode($result);
-                    }
-                    $link->close();
+                // 子进程3个进程
+                for ($i = 0; $i < 3; $i++) {
+                    Process::fork(function () {
+                        echo posix_getpid() . PHP_EOL;
+                        sleep(1000);//堵死
+                    });
                 }
+                sleep(1000);//堵死
             });
-        }
-        sleep(1);
-        Process::guard();
 
+        }
+
+        sleep(5);
+        // 按树销毁
+        Process::killAll(posix_getpid());
+        Process::guard();
     }
 }

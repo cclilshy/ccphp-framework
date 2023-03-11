@@ -8,9 +8,8 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-use core\Ccphp\Launch;
 use core\Master;
 
 include __DIR__ . '/../../../core/Base/ccload.php';
 Master::rouse('Ccphp\Ccphp');
-Launch::start('Ccphp\Http');
+Master::rouse('Http\Http')->go("PROXY");

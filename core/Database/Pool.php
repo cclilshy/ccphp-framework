@@ -89,7 +89,7 @@ class Pool
                     }
                     break;
 
-                    // 获取一个连接数据库IPC，不堵塞但可能返回`null`(没有连接时)
+                // 获取一个连接数据库IPC，不堵塞但可能返回`null`(没有连接时)
                 case 'get':
                     return array_shift($ipc->space);
                 case 'back':
