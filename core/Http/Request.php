@@ -67,12 +67,6 @@ class Request
         return $this;
     }
 
-    public function setBody(string $body): Request
-    {
-        $this->body = $body;
-        return $this;
-    }
-
     public function setCookie(string $key, string $value): Request
     {
         $this->cookie[$key] = $value;
@@ -111,6 +105,12 @@ class Request
         } else {
             echo $this->response->setBody($context);
         }
+    }
+
+    public function setBody(string $body): Request
+    {
+        $this->body = $body;
+        return $this;
     }
 
     public function __get($name)

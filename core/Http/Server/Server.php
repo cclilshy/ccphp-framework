@@ -2,9 +2,8 @@
 
 namespace core\Http\Server;
 
-use core\Http\Server\Client;
-use core\Http\Request;
 use core\Http\Http;
+use core\Http\Request;
 use core\Master;
 
 /**
@@ -15,31 +14,6 @@ class Server
     private static $server; // 服务套接字
     private static array $tasks = array(); // 任务队列
     private static array $clients = array(); // 客户端套接字
-    private static array $clientsInfo = array(); // 客户端信息
-
-    private static function addClient($socket)
-    {
-        self::$clients[spl_object_hash($socket)] = array(
-            'socket' => $socket,
-            'context' => false,
-            'header_context' => '',
-            'body_context' => '',
-            'method' => 'undefined',
-            'path' => '',
-            'verstion' => '',
-            'data' => '',
-            'header' => array(),
-            'complete' => false,
-            'createTime' => time(),
-            'faildCount' => 0,
-        );
-    }
-
-    private static function removeClient($socket): void
-    {
-        // 移除客户端
-        unset(self::$clients[spl_object_hash($socket)]);
-    }
 
     /**
      * Summary of launch
@@ -53,7 +27,7 @@ class Server
 
         // 创建连接
         self::$server = socket_create(AF_INET, SOCK_STREAM, 0);
-        socket_bind(self::$server, '127.0.0.1', 2222);
+        socket_bind(self::$server, '127.0.0.1', 2111);
         socket_listen(self::$server);
 
         // 开始循环监听
@@ -77,7 +51,7 @@ class Server
                     if (empty(socket_read($socket, 1024))) {
                         // 断开连接,移除客户端
                         self::removeClient($socket);
-                        if($index = array_search($readList,$socket) !== false){
+                        if ($index = array_search($readList, $socket) !== false) {
                             unset($readList[$index]);
                         }
                     }
@@ -156,12 +130,38 @@ class Server
                         }
 
                         if ($client['complete'] === true) {
-                            Http::build(new Request($client))->go('SERVER');
-                            self::removeClient($socket);
+                            echo '当前客户端总数' . count(self::$clients) . PHP_EOL;
+                            $_ = Http::build(new Request($client))->go('SERVER');
+                            unset($_);
+//                          self::removeClient($socket);
                         }
                     }
                 }
             }
         }
+    }
+
+    private static function removeClient($socket): void
+    {
+        // 移除客户端
+        unset(self::$clients[spl_object_hash($socket)]);
+    }
+
+    private static function addClient($socket)
+    {
+        self::$clients[spl_object_hash($socket)] = array(
+            'socket' => $socket,
+            'context' => false,
+            'header_context' => '',
+            'body_context' => '',
+            'method' => 'undefined',
+            'path' => '',
+            'verstion' => '',
+            'data' => '',
+            'header' => array(),
+            'complete' => false,
+            'createTime' => time(),
+            'faildCount' => 0,
+        );
     }
 }

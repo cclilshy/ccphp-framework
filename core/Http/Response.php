@@ -82,7 +82,7 @@ class Response
 
     public function send()
     {
-       
+
         socket_write($this->client, $this);
     }
 

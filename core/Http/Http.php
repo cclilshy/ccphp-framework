@@ -27,6 +27,7 @@ class Http
     public Statistics $statistics;  // 统计
     public Request $request;        // 请求信息
     public Response $response;      // 响应信息
+
     /**
      * Http constructor.
      */
@@ -66,9 +67,9 @@ class Http
     /**
      * @param string $type
      * @param  ?array $data
-     * @return void
+     * @return Http
      */
-    public function go(string $type, ?array $data = []): void
+    public function go(string $type, ?array $data = []): Http
     {
         $this->request->setType($type);
         $this->request->parse();
@@ -94,18 +95,18 @@ class Http
         } else {
             // 判断静态资源
             $filePath = HTTP_PATH . '/public' . $this->request->path;
-            if(file_exists($filePath)){
+            if (file_exists($filePath)) {
                 $fileInfo = pathinfo($filePath);
-                if(strtoupper($fileInfo['extension']) !== 'PHP'){
+                if (strtoupper($fileInfo['extension']) !== 'PHP') {
+                    $this->response->setHeader('Content-Type', mime_content_type($filePath));
                     $this->request->return(file_get_contents($filePath));
-                        return;
+                    return $this;
                 }
             }
             $this->request->return($this->httpErrorHandle(404, 'Route not defined : ' . $this->request->path, __FILE__, 1));
-            return;
         }
         $this->statistics->record('endTime', microtime(true));
-        return;
+        return $this;
     }
 
     /**
