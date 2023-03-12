@@ -26,8 +26,9 @@ class FlowBuild
 
     /**
      * 保存一个对象到流程中
+     *
      * @param string $name
-     * @param $object
+     * @param        $object
      * @return void
      */
     public function load(string $name, $object): void
@@ -37,6 +38,7 @@ class FlowBuild
 
     /**
      * 流程打包为流程控制器
+     *
      * @param callable $flow
      * @param callable $errorHandler
      * @return FlowController
@@ -50,6 +52,7 @@ class FlowBuild
 
     /**
      * 访问属性接口
+     *
      * @param $name
      * @return mixed
      */

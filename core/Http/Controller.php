@@ -2,8 +2,8 @@
 
 namespace core\Http;
 
-use core\Config;
 use stdClass;
+use core\Config;
 
 class Controller
 {
@@ -48,19 +48,10 @@ class Controller
         $function = $templateInfo['function'];
         $controllerName = strtolower(substr($class, strrpos($class, '\\') + 1));
         $functionToTemplateFileName = strtolower(preg_replace('/([A-Z])/', "$0_", $function));
-        $template = file_get_contents(TMP_PATH
-            . FS . $controllerName
-            . FS . $functionToTemplateFileName
-            . '.' . Config::get('http.template_extension')
-        );
+        $template = file_get_contents(TMP_PATH . FS . $controllerName . FS . $functionToTemplateFileName . '.' . Config::get('http.template_extension'));
         $template = $this->plaster->apply($template, $this->assign);
         if (!is_string($template)) {
-            return $this->http->httpErrorHandle(
-                $template->getcode(),
-                $template->getMessage(),
-                $template->getFile(),
-                $template->getLine(),
-                503);
+            return $this->http->httpErrorHandle($template->getcode(), $template->getMessage(), $template->getFile(), $template->getLine(), 503);
         }
         return $template;
     }

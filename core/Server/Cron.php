@@ -41,10 +41,7 @@ class Cron
     public static function timer($name, $callback, $interval)
     {
         if (is_callable($callback)) {
-            self::$tasks[$name] = array(
-                'interval' => $interval,
-                'lasttime' => 0,
-            );
+            self::$tasks[$name] = array('interval' => $interval, 'lasttime' => 0,);
         }
         Route::cron($name, $callback);
     }

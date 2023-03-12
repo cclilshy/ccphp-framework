@@ -14,7 +14,7 @@ class Request
     private $client;
     private string $type;
     private string $method;
-    private string $verstion;
+    private string $version;
     private string $path;
     private string $cookie;
     private string $body;
@@ -30,7 +30,7 @@ class Request
             $this->client = $config['socket'];
             $this->type = 'SERVER';
             $this->method = $config['method'];
-            $this->verstion = $config['verstion'];
+            $this->version = $config['version'];
             $this->path = $config['path'];
             $this->cookie = $config['header']['COOKIE'] ?? '';
             $this->get = [];
@@ -85,7 +85,6 @@ class Request
     public function parse(): Request
     {
         if ($this->type === 'SERVER') {
-
         } elseif ($this->type === 'PROXY') {
             $this->path = '/' . trim($_SERVER['REQUEST_URI'], '/');
             $this->method = $_SERVER['REQUEST_METHOD'];
@@ -116,5 +115,10 @@ class Request
     public function __get($name)
     {
         return $this->$name;
+    }
+
+    public function __destruct()
+    {
+        unset($this->response);
     }
 }

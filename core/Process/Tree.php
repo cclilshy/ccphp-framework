@@ -28,6 +28,7 @@ class Tree
 
     /**
      * 启用这树服务
+     *
      * @return bool
      */
     public static function launch(): bool
@@ -48,7 +49,28 @@ class Tree
     }
 
     /**
+     * 关闭树服务
+     *
+     * @return bool
+     */
+    public static function stop(): bool
+    {
+        if ($server = Server::load('Tree')) {
+            $ipcName = $server->data['tree_name'];
+            if ($IPC = IPC::link($ipcName)) {
+                $IPC->stop();
+                $server->release();
+                Console::pgreen('[TreeServer] stopped!');
+                return true;
+            }
+        }
+        Console::pred('[TreeServer] stop failed may not run');
+        return false;
+    }
+
+    /**
      * 树主函数
+     *
      * @param $ipc
      * @param $action
      * @param $data
@@ -82,7 +104,8 @@ class Tree
                 }
                 break;
             case 'killAll':
-                if ($node = $this->find($data['ppid'])) $this->killAll($node);
+                if ($node = $this->find($data['ppid']))
+                    $this->killAll($node);
                 break;
             default:
                 break;
@@ -91,6 +114,7 @@ class Tree
 
     /**
      * 搜索指定ID的节点引用指针
+     *
      * @param $pid
      * @return Node|null
      */
@@ -111,7 +135,8 @@ class Tree
             $path[] = $parentProcessId;
         }
         while ($parentProcessId = array_pop($path)) {
-            if (!$node) break;
+            if (!$node)
+                break;
             $node = $node->get($parentProcessId);
         }
         return $node ?? null;
@@ -119,6 +144,7 @@ class Tree
 
     /**
      * 处理退出的成员，并重新维护树结构
+     *
      * @param $pid
      * @return void
      */
@@ -143,6 +169,7 @@ class Tree
 
     /**
      * 销毁一个进程，通知其守护者服务
+     *
      * @param Node $node
      * @return void
      */
@@ -157,6 +184,7 @@ class Tree
 
     /**
      * 销毁一棵树的进程
+     *
      * @param Node $node
      * @return void
      */
@@ -167,24 +195,5 @@ class Tree
         }
         $node->kill();
         unset($this->map[$node->pid]);
-    }
-
-    /**
-     * 关闭树服务
-     * @return bool
-     */
-    public static function stop(): bool
-    {
-        if ($server = Server::load('Tree')) {
-            $ipcName = $server->data['tree_name'];
-            if ($IPC = IPC::link($ipcName)) {
-                $IPC->stop();
-                $server->release();
-                Console::pgreen('[TreeServer] stopped!');
-                return true;
-            }
-        }
-        Console::pred('[TreeServer] stop failed may not run');
-        return false;
     }
 }

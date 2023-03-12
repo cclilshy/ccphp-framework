@@ -30,33 +30,6 @@ class Mysql
         defined('ASC') || define('ASC', 'ASC');
     }
 
-    public function __destruct()
-    {
-        if (is_object($this->mysqli)) $this->mysqli->close();
-    }
-
-    public function setConnect($connect): void
-    {
-        $this->mysqli = $connect;
-    }
-
-    public function table($table): static
-    {
-        $this->table = $table;
-        return $this;
-    }
-
-    public function where($key, $compare = null, $value = null): static
-    {
-        if ($value === null) {
-            $value = in_array($compare, self::OPERS) ? $value : $compare;
-            $compare = in_array($compare, self::OPERS) ? $compare : '=';
-        }
-        if (!empty($key))
-            array_push($this->where, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
-        return $this;
-    }
-
     protected static function paserWhereArray($wheres): array
     {
         $array = array();
@@ -80,6 +53,64 @@ class Mysql
             }
         }
         return $array;
+    }
+
+    protected static function parseInsertArray($data): string
+    {
+        $i = 0;
+        $j = 0;
+        $field = '';
+        $values = '';
+        foreach ($data as $key => $value) {
+            $item = is_int($key) ? $value : $data;
+            foreach ($item as $ik => $iv) {
+                $values .= $i === 0 ? '(' : '';
+                $values .= "'{$iv}'";
+                $values .= $i === count($item) - 1 ? ') ' : ',';
+                if ($i !== 0 || $j !== 0) {
+                    continue;
+                }
+                $field .= $i === 0 ? '(' : '';
+                $field .= "`{$ik}`";
+                $field .= $i === count($item) - 1 ? ') ' : ',';
+                $i++;
+            }
+            if (!is_int($key)) {
+                break;
+            }
+            $values .= $j === count($data) - 1 ? ';' : ',';
+            $j++;
+            $i = 0;
+        }
+        return "{$field} VALUES {$values}";
+    }
+
+    public function __destruct()
+    {
+        if (is_object($this->mysqli))
+            $this->mysqli->close();
+    }
+
+    public function setConnect($connect): void
+    {
+        $this->mysqli = $connect;
+    }
+
+    public function table($table): static
+    {
+        $this->table = $table;
+        return $this;
+    }
+
+    public function where($key, $compare = null, $value = null): static
+    {
+        if ($value === null) {
+            $value = in_array($compare, self::OPERS) ? $value : $compare;
+            $compare = in_array($compare, self::OPERS) ? $compare : '=';
+        }
+        if (!empty($key))
+            array_push($this->where, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
+        return $this;
     }
 
     public function whereOr($key, $compare = null, $value = null): static
@@ -115,129 +146,11 @@ class Mysql
         return $this;
     }
 
-    protected function paserAndExec(): \mysqli_result|bool|static
-    {
-
-        if ($this->command && $this->action === '') {
-            return $this->execr = $this->mysqli->query($this->command);
-        }
-        $i = 0;
-        switch ($this->action) {
-            case 'SELECT':
-                $this->command = "SELECT {$this->field} FROM  `{$this->table}` ";
-                break;
-            case 'DELETE':
-                $this->command = "DELETE FROM `{$this->table}` ";
-                foreach ($this->data as $key => $value) {
-                    $this->command .= "`{$key}` = '{$value}' ";
-                    if ($i !== count($this->data) - 1) {
-                        $this->command .= ',';
-                    }
-                    $i++;
-                }
-                break;
-            case 'INSERT':
-                $this->command = "INSERT INTO `{$this->table}` ";
-                $this->command .= self::parseInsertArray($this->data);
-                break;
-            case 'UPDATE':
-                $this->command = "UPDATE `{$this->table}` SET ";
-                foreach ($this->data as $key => $value) {
-                    $this->command .= "`{$key}` = '{$value}' ";
-                    if ($i !== count($this->data) - 1) {
-                        $this->command .= ',';
-                    }
-                    $i++;
-                }
-                break;
-        }
-        for ($i = 0; $i < count($this->where); $i++) {
-            for ($j = 0; $j < count($this->where[$i]); $j++) {
-                if ($j === 0 && $i === 0) {
-                    $this->command .= "WHERE (";
-                } elseif ($j === 0) {
-                    $this->command .= "AND (";
-                } else {
-                    $this->command .= "AND ";
-                }
-
-                $key = "`{$this->where[$i][$j][0]}`";
-                $compare = $this->where[$i][$j][1];
-                $value = $this->where[$i][$j][2] ? "'{$this->where[$i][$j][2]}'" : 'NULL';
-                $this->command .= "{$key} {$compare} {$value} ";
-                if ($j === count($this->where[$i]) - 1) {
-                    $this->command .= ') ';
-                }
-            }
-        }
-
-        for ($i = 0; $i < count($this->whereOr); $i++) {
-            for ($j = 0; $j < count($this->whereOr[$i]); $j++) {
-                if ($j === 0 && $i === 0) {
-                    $this->command .= "OR (";
-                } elseif ($j === 0) {
-                    $this->command .= "OR (";
-                } else {
-                    $this->command .= "AND ";
-                }
-                $key = "`{$this->whereOr[$i][$j][0]}`";
-                $compare = $this->whereOr[$i][$j][1];
-                $value = $this->whereOr[$i][$j][2] ? "'{$this->whereOr[$i][$j][2]}'" : 'NULL';
-                $this->command .= "{$key} {$compare} {$value} ";
-                if ($j === count($this->whereOr[$i]) - 1) {
-                    $this->command .= ') ';
-                }
-            }
-        }
-
-        if ($this->limit) {
-            $this->command .= "LIMIT {$this->limit}";
-        }
-
-        if ($this->order) {
-            $this->command .= "ORDER BY {$this->order}";
-        }
-
-        \core\Ccphp\Launch::record('sql', $this->command);
-        $this->execr = $this->mysqli->query($this->command);
-        return $this;
-    }
-
     public function query($command)
     {
         $this->command = $command;
         $this->paserAndExec();
         return $this->execr;
-    }
-
-    protected static function parseInsertArray($data): string
-    {
-        $i = 0;
-        $j = 0;
-        $field = '';
-        $values = '';
-        foreach ($data as $key => $value) {
-            $item = is_int($key) ? $value : $data;
-            foreach ($item as $ik => $iv) {
-                $values .= $i === 0 ? '(' : '';
-                $values .= "'{$iv}'";
-                $values .= $i === count($item) - 1 ? ') ' : ',';
-                if ($i !== 0 || $j !== 0) {
-                    continue;
-                }
-                $field .= $i === 0 ? '(' : '';
-                $field .= "`{$ik}`";
-                $field .= $i === count($item) - 1 ? ') ' : ',';
-                $i++;
-            }
-            if (!is_int($key)) {
-                break;
-            }
-            $values .= $j === count($data) - 1 ? ';' : ',';
-            $j++;
-            $i = 0;
-        }
-        return "{$field} VALUES {$values}";
     }
 
     public function update($data = null): int
@@ -331,5 +244,93 @@ class Mysql
             return $result;
         }
         return [];
+    }
+
+    protected function paserAndExec(): \mysqli_result|bool|static
+    {
+
+        if ($this->command && $this->action === '') {
+            return $this->execr = $this->mysqli->query($this->command);
+        }
+        $i = 0;
+        switch ($this->action) {
+            case 'SELECT':
+                $this->command = "SELECT {$this->field} FROM  `{$this->table}` ";
+                break;
+            case 'DELETE':
+                $this->command = "DELETE FROM `{$this->table}` ";
+                foreach ($this->data as $key => $value) {
+                    $this->command .= "`{$key}` = '{$value}' ";
+                    if ($i !== count($this->data) - 1) {
+                        $this->command .= ',';
+                    }
+                    $i++;
+                }
+                break;
+            case 'INSERT':
+                $this->command = "INSERT INTO `{$this->table}` ";
+                $this->command .= self::parseInsertArray($this->data);
+                break;
+            case 'UPDATE':
+                $this->command = "UPDATE `{$this->table}` SET ";
+                foreach ($this->data as $key => $value) {
+                    $this->command .= "`{$key}` = '{$value}' ";
+                    if ($i !== count($this->data) - 1) {
+                        $this->command .= ',';
+                    }
+                    $i++;
+                }
+                break;
+        }
+        for ($i = 0; $i < count($this->where); $i++) {
+            for ($j = 0; $j < count($this->where[$i]); $j++) {
+                if ($j === 0 && $i === 0) {
+                    $this->command .= "WHERE (";
+                } elseif ($j === 0) {
+                    $this->command .= "AND (";
+                } else {
+                    $this->command .= "AND ";
+                }
+
+                $key = "`{$this->where[$i][$j][0]}`";
+                $compare = $this->where[$i][$j][1];
+                $value = $this->where[$i][$j][2] ? "'{$this->where[$i][$j][2]}'" : 'NULL';
+                $this->command .= "{$key} {$compare} {$value} ";
+                if ($j === count($this->where[$i]) - 1) {
+                    $this->command .= ') ';
+                }
+            }
+        }
+
+        for ($i = 0; $i < count($this->whereOr); $i++) {
+            for ($j = 0; $j < count($this->whereOr[$i]); $j++) {
+                if ($j === 0 && $i === 0) {
+                    $this->command .= "OR (";
+                } elseif ($j === 0) {
+                    $this->command .= "OR (";
+                } else {
+                    $this->command .= "AND ";
+                }
+                $key = "`{$this->whereOr[$i][$j][0]}`";
+                $compare = $this->whereOr[$i][$j][1];
+                $value = $this->whereOr[$i][$j][2] ? "'{$this->whereOr[$i][$j][2]}'" : 'NULL';
+                $this->command .= "{$key} {$compare} {$value} ";
+                if ($j === count($this->whereOr[$i]) - 1) {
+                    $this->command .= ') ';
+                }
+            }
+        }
+
+        if ($this->limit) {
+            $this->command .= "LIMIT {$this->limit}";
+        }
+
+        if ($this->order) {
+            $this->command .= "ORDER BY {$this->order}";
+        }
+
+        \core\Ccphp\Launch::record('sql', $this->command);
+        $this->execr = $this->mysqli->query($this->command);
+        return $this;
     }
 }

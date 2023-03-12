@@ -23,8 +23,9 @@ class Node
     private string $IPCName;
 
     /** 创建一个节点，储存其基本信息
-     * @param int $pid
-     * @param int $ppid
+     *
+     * @param int    $pid
+     * @param int    $ppid
      * @param string $IPCName
      */
     public function __construct(int $pid, int $ppid, string $IPCName)
@@ -34,19 +35,6 @@ class Node
         $this->children = [];
         $this->IPCName = $IPCName;
         $this->call('new', ['pid' => $pid]);
-    }
-
-    /** 与IPC建立一次性连接，并发送遗传自定义命令
-     * @return mixed
-     */
-    private function call(): mixed
-    {
-        if ($ipc = IPC::link($this->IPCName)) {
-            $res = call_user_func_array([$ipc, 'call'], func_get_args());
-            $ipc->close();
-            return $res;
-        }
-        return false;
     }
 
     public function __get($name): mixed
@@ -64,6 +52,7 @@ class Node
     }
 
     /** 移除一个子成员
+     *
      * @param $pid
      * @return bool
      */
@@ -78,8 +67,9 @@ class Node
     }
 
     /** new一个子成员
-     * @param int $pid
-     * @param int $ppid
+     *
+     * @param int    $pid
+     * @param int    $ppid
      * @param string $IPCName
      * @return void
      */
@@ -90,6 +80,7 @@ class Node
     }
 
     /** 发送指定信号
+     *
      * @param int $signNo
      * @return bool
      */
@@ -99,6 +90,7 @@ class Node
     }
 
     /** 指定一个继承人
+     *
      * @param int $pid
      * @return Node|void
      */
@@ -109,6 +101,7 @@ class Node
     }
 
     /** 明确杀死子进程
+     *
      * @return array
      */
     public function kill(): array
@@ -118,6 +111,7 @@ class Node
     }
 
     /** 将子进程交与调用者处理，并通知守护者自身结束
+     *
      * @return array
      */
     public function exit(): array
@@ -127,11 +121,26 @@ class Node
     }
 
     /** 获取一个子节点
+     *
      * @param $pid
      * @return void
      */
     public function get($pid)
     {
         return $this->children[$pid] ?? null;
+    }
+
+    /** 与IPC建立一次性连接，并发送遗传自定义命令
+     *
+     * @return mixed
+     */
+    private function call(): mixed
+    {
+        if ($ipc = IPC::link($this->IPCName)) {
+            $res = call_user_func_array([$ipc, 'call'], func_get_args());
+            $ipc->close();
+            return $res;
+        }
+        return false;
     }
 }

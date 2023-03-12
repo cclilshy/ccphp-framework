@@ -10,5 +10,7 @@
 return [
     'debug' => true,
     'template_extension' => 'html',
-    'auto_routing' => true
+    'auto_routing' => true,
+    'server_port' => 2222,
+    'server_handle_count' => 1
 ];

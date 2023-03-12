@@ -31,17 +31,15 @@ class IPC
     }
 
     /**
-     * @param callable $observer 监视者方法
-     * @param $space // 自定义暂存空间
-     * @param string|null $name 自定义名称
+     * @param callable    $observer 监视者方法
+     * @param             $space    // 自定义暂存空间
+     * @param string|null $name     自定义名称
      * @return IPC|false  // 返回IPC信息
      */
     public static function create(callable $observer, $space = null, string $name = null): IPC|false
     {
         $name = $name ?? posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
-        if (1 && (Fifo::link($name . '_p')
-                || Fifo::link($name . '_s')
-                || Fifo::link($name . '_c')))
+        if (1 && (Fifo::link($name . '_p') || Fifo::link($name . '_s') || Fifo::link($name . '_c')))
             return false;
 
         $ipc = new self($name);
@@ -59,19 +57,21 @@ class IPC
         }
     }
 
+    public static function async(): void
+    {
+
+    }
+
     /**
      * 根据IPC名称连接到监视者
+     *
      * @param string $name
      * @return IPC|false
      */
     public static function link(string $name): IPC|false
     {
         $name = $name ?? posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
-        if (
-            !Fifo::link($name . '_p')
-            || !Fifo::link($name . '_s')
-            || !Fifo::link($name . '_c')
-        )
+        if (!Fifo::link($name . '_p') || !Fifo::link($name . '_s') || !Fifo::link($name . '_c'))
             return false;
 
         $ipc = new self($name);
@@ -83,7 +83,58 @@ class IPC
     }
 
     /**
+     * 关闭连接
+     */
+    public function close(): void
+    {
+        $this->me->close();
+        $this->to->close();
+        $this->common->close();
+        $this->lock->close();
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->$name;
+    }
+
+    /**
+     * 通知监视者销毁并自释放空间
+     *
+     * @return void
+     */
+    public function stop(): void
+    {
+        if ($this->call('quit') === 'quit') {
+            $this->release();
+        }
+    }
+
+    /**
+     * 通过此方法可以调用监视者
+     *
+     * @return mixed
+     */
+    public function call(): mixed
+    {
+        $lock = $this->lock->clone();
+        $lock->lock();
+        $context = serialize(func_get_args());
+        $this->common->write($context);
+        $this->to->write(strlen($context) . PHP_EOL);
+        $length = $this->me->fgets();
+        $context = unserialize($this->common->read($length));
+        $lock->unlock();
+        return $context;
+    }
+
+    /**
      * 开始监视进程
+     *
      * @return int
      */
     private function ob(): int
@@ -106,6 +157,7 @@ class IPC
 
     /**
      * 开始监听
+     *
      * @return void
      */
     private function listenr(): void
@@ -135,18 +187,8 @@ class IPC
     }
 
     /**
-     * 关闭连接
-     */
-    public function close(): void
-    {
-        $this->me->close();
-        $this->to->close();
-        $this->common->close();
-        $this->lock->close();
-    }
-
-    /**
      * 关闭连接并删除管道
+     *
      * @return void
      */
     private function release(): void
@@ -156,42 +198,5 @@ class IPC
         $this->to->release();
         $this->common->release();
         $this->lock->release();
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    /**
-     * 通知监视者销毁并自释放空间
-     * @return void
-     */
-    public function stop(): void
-    {
-        if ($this->call('quit') === 'quit') {
-            $this->release();
-        }
-    }
-
-    /**
-     * 通过此方法可以调用监视者
-     * @return mixed
-     */
-    public function call(): mixed
-    {
-        $lock = $this->lock->clone();
-        $lock->lock();
-        $context = serialize(func_get_args());
-        $this->common->write($context);
-        $this->to->write(strlen($context) . PHP_EOL);
-        $length = $this->me->fgets();
-        $context = unserialize($this->common->read($length));
-        $lock->unlock();
-        return $context;
     }
 }

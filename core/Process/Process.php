@@ -20,6 +20,7 @@ class Process
 
     /**
      * 初始化
+     *
      * @return void
      */
     public static function initialization(): void
@@ -37,15 +38,18 @@ class Process
 
     /**
      * 创建一个分叉
+     *
      * @param callable $handler
-     * @param string $group
+     * @param string   $group
      * @return int
      */
     public static function fork(callable $handler, string $group = ''): int
     {
-        if (!self::$inited) return -1;
+        if (!self::$inited)
+            return -1;
         // 创建守护进程
-        if (!self::$GuardIPCName) self::$GuardIPCName = Guardian::create();
+        if (!self::$GuardIPCName)
+            self::$GuardIPCName = Guardian::create();
 
         switch ($pid = pcntl_fork()) {
             case -1:
@@ -80,6 +84,7 @@ class Process
 
     /**
      * 销毁任意进程
+     *
      * @param int $pid
      * @return bool
      */
@@ -93,6 +98,7 @@ class Process
 
     /**
      * 销毁一整棵树的进程，提供根节点
+     *
      * @param int $ppid
      * @return bool
      */
@@ -106,6 +112,7 @@ class Process
 
     /**
      * 开始守护，当前进程将不再创建子进程
+     *
      * @return void
      */
     public static function guard(): void

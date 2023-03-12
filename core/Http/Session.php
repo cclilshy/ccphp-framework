@@ -22,16 +22,18 @@ class Session
 
     /**
      * 以Proxy形式加载时初始化
+     *
      * @return void
      */
     public function __construct()
     {
-        if (!session_id()) @session_start() && $this->PHPSESSID = session_id();
+        if (!session_id())
+            @session_start() && $this->PHPSESSID = session_id();
     }
 
     /**
      * @param string $key
-     * @param $value
+     * @param        $value
      * @return bool
      */
     public function set(string $key, $value = null): bool
@@ -49,7 +51,7 @@ class Session
 
     /**
      * @param string $key
-     * @param $value
+     * @param        $value
      * @return mixed|null
      */
     public function get(string $key, $value = null)
@@ -64,6 +66,7 @@ class Session
 
     /**
      * 获取ID
+     *
      * @return string
      */
     public function id(): string

@@ -58,11 +58,6 @@ class Server
         }
     }
 
-    private function record(): void
-    {
-        $this->pipe->write(serialize($this));
-    }
-
     public static function load(string $name = ''): object|false
     {
         $name = empty($name) ? str_replace('/', '_', debug_backtrace()[0]['file']) : $name;
@@ -73,8 +68,6 @@ class Server
         }
     }
 
-    // 创建一个服务,并自动储存该类的信息, 返回创建成功与否
-
     public function info($data = null)
     {
         if ($data === null) {
@@ -84,10 +77,17 @@ class Server
         $this->record();
     }
 
-    // 加载一个服务的信息
+    // 创建一个服务,并自动储存该类的信息, 返回创建成功与否
 
     public function release(): void
     {
         $this->pipe->release();
+    }
+
+    // 加载一个服务的信息
+
+    private function record(): void
+    {
+        $this->pipe->write(serialize($this));
     }
 }

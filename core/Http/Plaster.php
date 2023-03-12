@@ -14,29 +14,25 @@
 
 namespace core\Http;
 
-use function htmlspecialchars;
-use function is_string;
 use function substr;
+use function is_string;
+use function htmlspecialchars;
 
 // 应用层级, 用于模板的解析, 以及模板的渲染
 
 class Plaster
 {
-    private static $regexs = array(
-        'foreach' => '/@foreach[\t\s]*\([\t\s]*(?:(?:(\$\w+(?:\[(?:\$*\w+|(?:"(?:[^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|\'(?:[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'))\])?)[\t\s]+as[\t\s]+(\$\w+))(?:[\t\s]*=>[\t\s]*(\g<1>))?[\t\s]*\))\R((?:\g<0>|(?!(@foreach|@endforeach))[\s\S]*?)+\R)?[\t\s]*@endforeach/',
-        'for' => '/@for[\s\t]*\(([\s\S]*?)?\;([\s\S]*?)\;([\s\S]*?)\)[\s\t]*((?:\g<0>|(?!(@for|@endfor))[\s\S]*?)+\R)[\t\s]*@endfor/',
-        'while' => '/@while[\s\t]*\(([\s\S]*?)\)\R+((?:\g<0>|(?!(@while|@endwhile))[\s\S]*?)+\R)?[\t\s]*@endwhile/',
-        'if' => '/@?(?:if|elseif)[\s\t]*\(([\s\S]*?)\)\R([\s\S]*?)\R[\s\t]*(@else([\s\S]*?)\R)?[\s\t]*@endif/',
-        'embed' => '/@embed[\s]*\((.*){1}\)[\s]*@endembed/'
-    );
+    private static $regexs = array('foreach' => '/@foreach[\t\s]*\([\t\s]*(?:(?:(\$\w+(?:\[(?:\$*\w+|(?:"(?:[^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|\'(?:[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'))\])?)[\t\s]+as[\t\s]+(\$\w+))(?:[\t\s]*=>[\t\s]*(\g<1>))?[\t\s]*\))\R((?:\g<0>|(?!(@foreach|@endforeach))[\s\S]*?)+\R)?[\t\s]*@endforeach/', 'for' => '/@for[\s\t]*\(([\s\S]*?)?\;([\s\S]*?)\;([\s\S]*?)\)[\s\t]*((?:\g<0>|(?!(@for|@endfor))[\s\S]*?)+\R)[\t\s]*@endfor/', 'while' => '/@while[\s\t]*\(([\s\S]*?)\)\R+((?:\g<0>|(?!(@while|@endwhile))[\s\S]*?)+\R)?[\t\s]*@endwhile/', 'if' => '/@?(?:if|elseif)[\s\t]*\(([\s\S]*?)\)\R([\s\S]*?)\R[\s\t]*(@else([\s\S]*?)\R)?[\s\t]*@endif/', 'embed' => '/@embed[\s]*\((.*){1}\)[\s]*@endembed/');
     /**
      * 模板变量暂存区
+     *
      * @var array|mixed
      */
     private $arguments = array();
 
     /**
      * 允许在实例时直接定义变量
+     *
      * @param $defined
      */
     public function __construct($defined = null)
@@ -48,8 +44,9 @@ class Plaster
 
     /**
      * 使用静态方法渲染
+     *
      * @param string $content
-     * @param array $defined
+     * @param array  $defined
      * @return string
      */
     public static function draw(string $content, array $defined): string
@@ -59,7 +56,7 @@ class Plaster
 
     /**
      * @param string $key
-     * @param $value
+     * @param        $value
      * @return void
      */
     public function assign(string $key, $value): void
@@ -68,38 +65,10 @@ class Plaster
     }
 
     /**
-     * @param array $executeForArguments
-     * @param array $tempArgv
-     * @return string
-     */
-    private function executeFor(array $executeForArguments, array $tempArgv = array()): string
-    {
-        foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
-            $$executeIfForeachKey = $executeIfForeachValue;
-        }
-        $executeForStart = $executeForArguments[1];
-        $executeForCondition = $executeForArguments[2];
-        $executeForEnd = $executeForArguments[3];
-        $executeForFarmment = $executeForArguments[4];
-        $templateFramment = '';
-        try {
-            eval("{$executeForStart};");
-            while (eval("return {$executeForCondition};")) {
-                $templateFramment .= self::apply($executeForFarmment, get_defined_vars());
-                eval("{$executeForEnd};");
-            }
-        } catch (\Throwable $e) {
-            return $e;
-            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
-        }
-
-        return str_replace($executeForArguments[0], $templateFramment, $executeForArguments[0]);
-    }
-
-    /**
      * 渲染的递归入口
+     *
      * @param string $applyTemplateText
-     * @param array $tempArguments
+     * @param array  $tempArguments
      * @return string
      */
     public function apply(string $applyTemplateText, array $tempArguments = array()): string|Throwable
@@ -114,7 +83,8 @@ class Plaster
             if ($applyTemplateTextPointChar === '@') {
                 foreach (self::$regexs as $applyForeachAssignmentKey => $applyForeachAssignmentValue) {
                     if (strpos($applyTemplateText, $applyForeachAssignmentKey, $applyTemplateTextPoint) === $applyTemplateTextPoint) {
-                        if ($applyLableCircuitStackCount === 0) $startIndex = $applyTemplateTextPoint - 1;
+                        if ($applyLableCircuitStackCount === 0)
+                            $startIndex = $applyTemplateTextPoint - 1;
                         $applyLableName = $applyForeachAssignmentKey;
                         $applyLableCircuitStack[] = $applyForeachAssignmentKey;
                         break;
@@ -173,10 +143,40 @@ class Plaster
     }
 
     /**
+     * @param array $executeForArguments
+     * @param array $tempArgv
+     * @return string
+     */
+    private function executeFor(array $executeForArguments, array $tempArgv = array()): string
+    {
+        foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
+            $$executeIfForeachKey = $executeIfForeachValue;
+        }
+        $executeForStart = $executeForArguments[1];
+        $executeForCondition = $executeForArguments[2];
+        $executeForEnd = $executeForArguments[3];
+        $executeForFarmment = $executeForArguments[4];
+        $templateFramment = '';
+        try {
+            eval("{$executeForStart};");
+            while (eval("return {$executeForCondition};")) {
+                $templateFramment .= self::apply($executeForFarmment, get_defined_vars());
+                eval("{$executeForEnd};");
+            }
+        } catch (\Throwable $e) {
+            return $e;
+            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+        }
+
+        return str_replace($executeForArguments[0], $templateFramment, $executeForArguments[0]);
+    }
+
+    /**
      * 区段类型调度
+     *
      * @param string $content
      * @param string $tag
-     * @param array $arguments
+     * @param array  $arguments
      * @return string|false
      */
     private function execute(string $content, string $tag, array $arguments): string|false
@@ -213,7 +213,7 @@ class Plaster
     /**
      * @param array $arguments
      * @param array $tempArgv
-     * @param bool $end
+     * @param bool  $end
      * @return string
      */
     private function executeIf(array $arguments, array $tempArgv = array(), bool $end = false): string
@@ -245,6 +245,7 @@ class Plaster
 
     /**
      * 处理foreach区段
+     *
      * @param array $arguments
      * @param array $tempArgv
      * @return string
@@ -257,7 +258,8 @@ class Plaster
         $templateFrammentKeyName = $arguments[2];
         $templateFrammentItemName = $arguments[3];
         $templateFrammentContent = $arguments[4];
-        if ($templateFrammentItemName === '') $templateFrammentItemName = $templateFrammentKeyName;
+        if ($templateFrammentItemName === '')
+            $templateFrammentItemName = $templateFrammentKeyName;
         foreach ($this->arguments as $applyForeachAssignmentKey => $applyForeachAssignmentValue)
             $$applyForeachAssignmentKey = $applyForeachAssignmentValue;
         $templateFrammentHtml = '';
@@ -269,10 +271,7 @@ class Plaster
         }
         $templateFrammentIndex = 0;
         foreach ($templateFrammentArray as $templateFrammentKey => $templateFrammentValue) {
-            $templateFrammentHtml .= self::apply($templateFrammentContent, [
-                substr($templateFrammentKeyName, 1) => $templateFrammentKey,
-                substr($templateFrammentItemName, 1) => $templateFrammentValue,
-            ]);
+            $templateFrammentHtml .= self::apply($templateFrammentContent, [substr($templateFrammentKeyName, 1) => $templateFrammentKey, substr($templateFrammentItemName, 1) => $templateFrammentValue,]);
             $templateFrammentIndex++;
         }
         return $templateFrammentHtml;
@@ -280,6 +279,7 @@ class Plaster
 
     /**
      * 模板包涵
+     *
      * @param array $arguments
      * @param array $tempArgv
      * @return string

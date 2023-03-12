@@ -35,13 +35,15 @@ class Route
 
     /**
      * 在允许的方法内定义路由
+     *
      * @param $name
      * @param $arguments
      * @return void
      */
     public static function __callStatic($name, $arguments): void
     {
-        if (!in_array($name, self::METHODS)) return;
+        if (!in_array($name, self::METHODS))
+            return;
 
         $method = strtoupper($name);
         $entrance = '/' . trim($arguments[0], '/');
@@ -56,6 +58,7 @@ class Route
 
     /**
      * 组合方法定义路由
+     *
      * @param $methods
      * @param $uri
      * @param $callback
@@ -70,6 +73,7 @@ class Route
 
     /**
      * 模拟访问执行
+     *
      * @param $method
      * @param $entrance
      * @return void
@@ -82,6 +86,7 @@ class Route
 
     /**
      * 根据入口匹配路由Map
+     *
      * @param string $method
      * @param string $entrance
      * @return Map|null
@@ -98,6 +103,7 @@ class Route
 
     /**
      * 获取所有Console路由
+     *
      * @return array
      */
     public static function consoles(): array

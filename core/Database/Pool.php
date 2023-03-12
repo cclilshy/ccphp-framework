@@ -12,8 +12,8 @@ namespace core\Database;
 use core\Config;
 use core\Console;
 use core\Process\IPC;
-use core\Process\ProcessMirroring;
 use core\Server\Server;
+use core\Process\ProcessMirroring;
 
 // 数据库内存常驻的
 class Pool
@@ -23,6 +23,7 @@ class Pool
 
     /**
      * 启动调度服务器
+     *
      * @return void
      */
     public static function launch(): void
@@ -43,7 +44,8 @@ class Pool
                         return ProcessMirroring::production($ipc->space, $flow);
                     }, DB::getConnect());
 
-                    if ($ipc === false) throw new \Exception('IPC服务启动失败');
+                    if ($ipc === false)
+                        throw new \Exception('IPC服务启动失败');
 
                     // 通知调度服务器
                     self::$dispatcher->call('new', $ipc->name);
@@ -62,10 +64,7 @@ class Pool
             }
 
             // 保存所有连接IPC名称
-            $server->info([
-                'dispatcher_name' => self::$dispatcher->name,
-                'connect_names' => $connectNames,
-            ]);
+            $server->info(['dispatcher_name' => self::$dispatcher->name, 'connect_names' => $connectNames,]);
 
             // 输出
             Console::pgreen('[Database-Pool-Server] started!');
@@ -74,34 +73,9 @@ class Pool
         }
     }
 
-    private static function dispatcher(): void
-    {
-        // 创建调度服务
-        self::$dispatcher = IPC::create(function ($action, $name, $ipc) {
-            // 接收到的消息进行处理
-            Console::pdebug('[Pool][' . \microtime(true) . ']' . $name . '->' . $action);
-            switch ($action) {
-                // 新的数据库常驻服务
-                case 'new':
-                    // 分配指定数量
-                    for ($i = 0; $i < Config::get('server.database_pool_max'); $i++) {
-                        $ipc->space[] = $name;
-                    }
-                    break;
-
-                // 获取一个连接数据库IPC，不堵塞但可能返回`null`(没有连接时)
-                case 'get':
-                    return array_shift($ipc->space);
-                case 'back':
-                    // 归还一个连接
-                    $ipc->space[] = $name;
-                    break;
-            }
-        }, array());
-    }
-
     /**
      * 获取一个连接镜像
+     *
      * @return ProcessMirroring|false
      */
     public static function get(): ProcessMirroring|null
@@ -138,6 +112,7 @@ class Pool
 
     /**
      * 停止数据库连接池服务
+     *
      * @return void
      */
     public static function stop(): void
@@ -163,5 +138,31 @@ class Pool
         } else {
             Console::pred('[Database-Pool-Server] stop failed : it\'s stop');
         }
+    }
+
+    private static function dispatcher(): void
+    {
+        // 创建调度服务
+        self::$dispatcher = IPC::create(function ($action, $name, $ipc) {
+            // 接收到的消息进行处理
+            Console::pdebug('[Pool][' . \microtime(true) . ']' . $name . '->' . $action);
+            switch ($action) {
+                // 新的数据库常驻服务
+                case 'new':
+                    // 分配指定数量
+                    for ($i = 0; $i < Config::get('server.database_pool_max'); $i++) {
+                        $ipc->space[] = $name;
+                    }
+                    break;
+
+                // 获取一个连接数据库IPC，不堵塞但可能返回`null`(没有连接时)
+                case 'get':
+                    return array_shift($ipc->space);
+                case 'back':
+                    // 归还一个连接
+                    $ipc->space[] = $name;
+                    break;
+            }
+        }, array());
     }
 }

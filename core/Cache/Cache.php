@@ -18,6 +18,7 @@ class Cache
 
     /**
      * 访问指定缓存器的静态方法
+     *
      * @param $name
      * @param $arguments
      * @return mixed
@@ -29,6 +30,7 @@ class Cache
 
     /**
      * 初始化并实例连接
+     *
      * @param $config
      * @return void
      */
@@ -42,6 +44,7 @@ class Cache
 
     /**
      * 将一个模板文件放入临时文件夹中并返回其哈希
+     *
      * @param string $hash
      * @param string $content
      * @return string

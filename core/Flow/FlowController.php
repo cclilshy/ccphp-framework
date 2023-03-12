@@ -26,10 +26,11 @@ class FlowController
 
     /**
      * 处理主动抛出的错误
-     * @param int $code
+     *
+     * @param int    $code
      * @param string $msg
      * @param string $file
-     * @param int $line
+     * @param int    $line
      * @return void
      */
     public function error(int $code, string $msg, string $file, int $line): void
@@ -39,10 +40,11 @@ class FlowController
 
     /**
      * 执行某项任务
+     *
      * @param string $module
      * @param string $action
-     * @param array $arguments
-     * @param $result
+     * @param array  $arguments
+     * @param        $result
      * @return $this
      */
     public function handle(string $module, string $action, array $arguments, &$result): FlowController
@@ -53,6 +55,7 @@ class FlowController
 
     /**
      * 按照预定流程执行
+     *
      * @return mixed
      */
     public function go()
@@ -64,8 +67,9 @@ class FlowController
 
     /**
      * 暂存区存放数据
+     *
      * @param string $key
-     * @param $value
+     * @param        $value
      * @return void
      */
     public function work(string $key, $value): void
@@ -75,6 +79,7 @@ class FlowController
 
     /**
      * 取栈存区数据
+     *
      * @param string $key
      * @return mixed|null
      */
@@ -85,6 +90,7 @@ class FlowController
 
     /**
      * 访问模块实体接口
+     *
      * @param $name
      * @return mixed
      */

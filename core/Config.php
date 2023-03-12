@@ -35,7 +35,8 @@ class Config
     {
         $files = scandir(CONF_PATH);
         foreach ($files as $item) {
-            if ($item === '.' || $item === '..') continue;
+            if ($item === '.' || $item === '..')
+                continue;
             self::$config[pathinfo($item)['filename']] = require CONF_PATH . FS . $item;
         }
 

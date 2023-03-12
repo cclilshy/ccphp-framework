@@ -27,6 +27,7 @@ class Redis
 
     /**
      * 加载时加载连接配置
+     *
      * @param $config
      * @return void
      */
@@ -37,6 +38,7 @@ class Redis
 
     /**
      * 创建一个新的连接并执行指定方法返回
+     *
      * @param $name
      * @param $arguments
      * @return mixed
@@ -47,7 +49,6 @@ class Redis
     }
 
     /**
-     *
      * @param $name
      * @param $arguments
      * @return mixed

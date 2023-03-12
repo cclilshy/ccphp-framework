@@ -21,9 +21,10 @@ class Map
 
     /**
      * 创建一个导向，支持类::静态函数/类名->方法/匿名函数
-     * @param string $type
-     * @param string $className
-     * @param string $action
+     *
+     * @param string        $type
+     * @param string        $className
+     * @param string        $action
      * @param callable|null $callable
      */
     public function __construct(string $type, string $className, string $action, callable $callable = null)

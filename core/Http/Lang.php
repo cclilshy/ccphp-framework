@@ -19,6 +19,7 @@ class Lang
 {
     /**
      * 语言包
+     *
      * @var array
      */
     private static array $lang = [];
@@ -30,6 +31,7 @@ class Lang
 
     /**
      * 获取语言包
+     *
      * @param string $name 语言包名称
      * @param string $lang 语言包
      * @return string
@@ -44,6 +46,7 @@ class Lang
 
     /**
      * 加载语言包
+     *
      * @param string $lang 语言包名称
      * @return array
      * @throws Exception

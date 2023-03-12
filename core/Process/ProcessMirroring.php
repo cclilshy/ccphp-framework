@@ -17,7 +17,7 @@ class ProcessMirroring
     public object $space;
 
     /**
-     * @param callable $func
+     * @param callable    $func
      * @param object|null $space
      */
     public function __construct(callable $func, object $space = null)
@@ -30,8 +30,9 @@ class ProcessMirroring
 
     /**
      * 由指定程序反序列化处理栈序请求
+     *
      * @param object $main
-     * @param $flow
+     * @param        $flow
      * @return mixed|object
      */
     public static function production(object $main, $flow = null): mixed
@@ -50,6 +51,7 @@ class ProcessMirroring
 
     /**
      * 接受任意方法，并将参数入栈
+     *
      * @param $name
      * @param $arguments
      * @return $this

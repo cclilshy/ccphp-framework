@@ -29,6 +29,7 @@ class Client
 
     /**
      * 返回写入数据是否有效
+     *
      * @param string $context
      * @return bool
      */
@@ -89,6 +90,7 @@ class Client
 
     /**
      * 返回客户端数据是否完整
+     *
      * @return bool
      */
     public function complete(): bool

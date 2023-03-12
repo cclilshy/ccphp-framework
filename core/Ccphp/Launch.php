@@ -26,6 +26,7 @@ class Launch
 
     /**
      * 运行指定应用
+     *
      * @param string $app
      * @return void
      * @throws \Exception

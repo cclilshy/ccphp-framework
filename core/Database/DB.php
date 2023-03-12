@@ -10,8 +10,8 @@
 
 namespace core\Database;
 
-use Illuminate\Database\Capsule\Manager as Capsule;
 use Illuminate\Database\Connection;
+use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DB
 {
@@ -23,6 +23,7 @@ class DB
 
     /**
      * 初始化时会载入配置并创建一个全局连接
+     *
      * @param $config
      * @return void
      */
@@ -38,6 +39,7 @@ class DB
 
     /**
      * 获取一个ORM连接实体
+     *
      * @return Connection
      */
     public static function getConnect(): Connection
@@ -47,6 +49,7 @@ class DB
 
     /**
      * 把请求转接到全局连接实体
+     *
      * @param $name
      * @param $arguments
      * @return mixed

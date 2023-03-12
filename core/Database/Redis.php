@@ -22,6 +22,7 @@ class Redis
 
     /**
      * 长连接并获取一个连接
+     *
      * @param \stdClass $config
      * @return RedisPecl
      */
@@ -38,6 +39,7 @@ class Redis
 
     /**
      * 获取一个常规连接
+     *
      * @param \stdClass $config
      * @return Redis
      */
@@ -45,7 +47,8 @@ class Redis
     {
         $redis = new \RedisPecl();
         $redis->pconnect($config->host, $config->port, 1);
-        if ($config->password !== '') $redis->auth($config->password);
+        if ($config->password !== '')
+            $redis->auth($config->password);
 
         return new self($redis);
     }
@@ -60,6 +63,7 @@ class Redis
 
     /**
      * 转发请求
+     *
      * @param $name
      * @param $arguments
      * @return mixed

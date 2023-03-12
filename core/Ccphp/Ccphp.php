@@ -18,6 +18,7 @@ class Ccphp
 {
     /**
      * 加载框架必要的依赖
+     *
      * @return void
      */
     public static function initialization(): void
@@ -33,6 +34,7 @@ class Ccphp
 
     /**
      * 获取框架自带模板内容
+     *
      * @param string $name
      * @return string
      */

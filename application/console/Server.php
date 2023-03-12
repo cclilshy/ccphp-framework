@@ -13,6 +13,7 @@ namespace console;
 
 use core\Config;
 use core\Process\Tree;
+use core\Http\Server\Server as HttpServer;
 
 class Server
 {
@@ -29,15 +30,13 @@ class Server
         }
         if ($argv[1] == 'start') {
             if (Config::get('server.database_pool') === true) {
-                Tree::launch();
+//                Pool::launch();//需要先初始化数据库
             }
-
-//            Pool::launch();//需要先初始化数据库
-
-            // 下面这个用不了
-            // HttpServer::launch();
+            Tree::launch();
+            HttpServer::launch();
         } elseif ($argv[1] === 'stop') {
 //            Pool::stop();
+            HttpServer::stop();
             Tree::stop();
         }
     }

@@ -10,11 +10,11 @@
 
 namespace core\Http;
 
-use core\Ccphp\Statistics;
 use core\Config;
-use core\Flow\FlowController;
 use core\Master;
 use core\Route\Route;
+use core\Ccphp\Statistics;
+use core\Flow\FlowController;
 
 
 // Load The Running Http Information
@@ -27,13 +27,15 @@ class Http
     public Statistics $statistics;  // 统计
     public Request $request;        // 请求信息
     public Response $response;      // 响应信息
+    protected bool $box;
 
     /**
      * Http constructor.
      */
-    public function __construct(?Request $request = null)
+    public function __construct(?Request $request = null, ?bool $box = false)
     {
         $this->statistics = new Statistics;
+        $this->box = $box;
         if ($request) {
             $this->request = $request;
         } else {
@@ -43,6 +45,7 @@ class Http
 
     /**
      * 初始化配置并返回一个Http实体
+     *
      * @return Http
      * @throws \Exception
      */
@@ -56,20 +59,27 @@ class Http
 
     /**
      * 返回一个实体,允许自定义请求对象,如不自定义则主动创建
+     *
      * @param Request|null $request
      * @return Http
      */
-    public static function build(?Request $request = null): Http
+    public static function build(?Request $request = null, ?bool $box = false): Http
     {
-        return new self($request);
+        return new self($request, $box);
+    }
+
+    public function __destruct()
+    {
+        unset($this->request);
+        unset($this->statistics);
     }
 
     /**
-     * @param string $type
+     * @param string  $type
      * @param  ?array $data
      * @return Http
      */
-    public function go(string $type, ?array $data = []): Http
+    public function go(string $type, ?array $data = []): ?string
     {
         $this->request->setType($type);
         $this->request->parse();
@@ -78,16 +88,16 @@ class Http
         if ($map = Route::guide($this->request->method, $this->request->path)) {
             switch ($map->type) {
                 case 'controller':
-                    $t = (object)[
-                        'request' => $this->request,
-                        'response' => $this->response,
-                        'http' => $this,
-                        'plaster' => new Plaster
-                    ];
+                    $t = (object)['request' => $this->request, 'response' => $this->response, 'http' => $this, 'plaster' => new Plaster];
                     $_ = new $map->className($t);
                     $t = call_user_func([$_, $map->action], $t);
                     $t = $this->statistics($t, $this->statistics);
-                    $this->request->return($t);
+                    if ($this->box) {
+                        return $t;
+                    } else {
+                        $this->request->return($t);
+                    }
+
                     break;
                 default:
                     break;
@@ -99,19 +109,29 @@ class Http
                 $fileInfo = pathinfo($filePath);
                 if (strtoupper($fileInfo['extension']) !== 'PHP') {
                     $this->response->setHeader('Content-Type', mime_content_type($filePath));
-                    $this->request->return(file_get_contents($filePath));
-                    return $this;
+                    if ($this->box) {
+                        return file_get_contents($filePath);
+                    } else {
+                        $this->request->return(file_get_contents($filePath));
+                    }
+                    // return $this;
                 }
             }
-            $this->request->return($this->httpErrorHandle(404, 'Route not defined : ' . $this->request->path, __FILE__, 1));
+            $_ = $this->httpErrorHandle(404, 'Route not defined : ' . $this->request->path, __FILE__, 1);
+            if ($this->box) {
+                return $_;
+            } else {
+                $this->request->return($_);
+            }
         }
         $this->statistics->record('endTime', microtime(true));
-        return $this;
+        return '';
     }
 
     /**
      * 响应模板插入调试面板
-     * @param string $content
+     *
+     * @param string     $content
      * @param Statistics $statistics
      * @return string
      */
@@ -119,13 +139,7 @@ class Http
     {
         if (Http::$config['debug'] === true && $this->request->ajax === false) {
             $this->statistics->record('endTime', microtime(true));
-            $general = [
-                'timeLength' => $statistics->endTime - $statistics->startTime,
-                'uri' => $this->request->path,
-                'fileCount' => count($statistics->loadFiles),
-                'memory' => $statistics->memory,
-                'maxMemory' => $statistics->maxMemory
-            ];
+            $general = ['timeLength' => $statistics->endTime - $statistics->startTime, 'uri' => $this->request->path, 'fileCount' => count($statistics->loadFiles), 'memory' => $statistics->memory, 'maxMemory' => $statistics->maxMemory];
             $plaster = new \core\Http\Plaster();
             $plaster->assign('sqls', $statistics->sqls);
             $plaster->assign('files', $statistics->loadFiles);
@@ -142,11 +156,12 @@ class Http
 
     /**
      * 由错误模板接手请求
-     * @param int $errno
+     *
+     * @param int    $errno
      * @param string $errstr
      * @param string $errFile
-     * @param int $errLine
-     * @param int $httpCode
+     * @param int    $errLine
+     * @param int    $httpCode
      * @return void
      */
     public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): string
@@ -163,20 +178,7 @@ class Http
             }
         }
 
-        $general = [
-            'uri' => $this->request->path,
-            'info' => [
-                'errno' => $errno,
-                'errstr' => $errstr,
-                'errFile' => $errFile,
-                'errLine' => $errLine,
-                'fileDescribe' => $fileDescribe
-            ],
-            'timeLength' => $this->statistics->endTime - $this->statistics->startTime,
-            'fileCount' => count($this->statistics->loadFiles),
-            'memory' => $this->statistics->memory,
-            'maxMemory' => $this->statistics->maxMemory
-        ];
+        $general = ['uri' => $this->request->path, 'info' => ['errno' => $errno, 'errstr' => $errstr, 'errFile' => $errFile, 'errLine' => $errLine, 'fileDescribe' => $fileDescribe], 'timeLength' => $this->statistics->endTime - $this->statistics->startTime, 'fileCount' => count($this->statistics->loadFiles), 'memory' => $this->statistics->memory, 'maxMemory' => $this->statistics->maxMemory];
 
         $plaster = new \core\Http\Plaster();
         $plaster->assign('sqls', $this->statistics->sqls);

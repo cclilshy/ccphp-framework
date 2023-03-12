@@ -25,11 +25,7 @@ class Response
     {
         $this->version = 1.1;
         $this->statusCode = 200;
-        $this->header = array(
-            'Server' => 'Buildphp',
-            'Connection' => 'keep-alive',
-            'Content-Type' => "{$this->contentType}; charset={$this->charset}",
-        );
+        $this->header = array('Server' => 'Buildphp', 'Connection' => 'keep-alive', 'Content-Type' => "{$this->contentType}; charset={$this->charset}",);
         $this->request = $request;
     }
 

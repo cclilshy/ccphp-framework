@@ -28,8 +28,9 @@ class Statistics
 
     /**
      * 记录指定数据
+     *
      * @param string $type
-     * @param $data
+     * @param        $data
      * @return $this
      */
     public function record(string $type, $data): Statistics
