@@ -1,13 +1,20 @@
 <?php
+/*
+ * @Author: cclilshy jingnigg@gmail.com
+ * @Date: 2023-03-12 11:15:47
+ * @LastEditors: cclilshy jingnigg@gmail.com
+ * @Description: My house
+ * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
+ */
 
 namespace core\Http\Server;
 
 use Exception;
-use core\Process\Process;
-use core\File\Fifo;
 use core\Config;
+use core\File\Fifo;
 use core\Http\Http;
 use core\Http\Request;
+use core\Process\Process;
 
 class EventHandler
 {
@@ -60,8 +67,7 @@ class EventHandler
                     $result = Http::build(new Request($request), true)->go('SERVER');
 
                     $len = strlen($result);
-                    socket_write($socket, $result);
-                    echo "@{$info[0]}#{$len}#{$result}";
+                    socket_write($socket, "@{$info[0]}#{$len}#{$result}");
                     $info = array();
                     $context = '';
                 }
@@ -95,5 +101,4 @@ class EventHandler
 
         $this->fifo->write("{$name}#{$len}#{$context}");
     }
-
 }

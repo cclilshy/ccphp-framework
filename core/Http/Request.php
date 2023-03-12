@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy cclilshy@163.com
  * @Date: 2023-03-06 16:48:58
- * @LastEditors: cclilshy cclilshy@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @Description: My house
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
@@ -97,7 +97,7 @@ class Request
         return $this;
     }
 
-    public function return(string $context)
+    public function send(string $context)
     {
         if ($this->type === 'SERVER') {
             $this->response->setBody($context)->send();
@@ -110,6 +110,11 @@ class Request
     {
         $this->body = $body;
         return $this;
+    }
+
+    public function result(string $context)
+    {
+        return $this->response->setBody($context)->result();
     }
 
     public function __get($name)

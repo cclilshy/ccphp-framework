@@ -2,7 +2,7 @@
 /*
  * @Author: error: error: git config user.name & please set dead value or install git && error: git config user.email & please set dead value or install git & please set dead value or install git
  * @Date: 2023-02-07 22:54:36
- * @LastEditors: cclilshy cclilshy@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @Description: My house
  * Copyright (c) 2023 by ${git_name} email: ${git_email}, All Rights Reserved.
  */
@@ -56,6 +56,13 @@ class Process
                 return -1;
 
             case 0:
+                $errHandler = function () {
+                    self::$TreeIPC->call('exit', ['pid' => posix_getpid()]);
+                    exit;
+                };
+                set_error_handler($errHandler, E_ERROR);
+                set_exception_handler($errHandler);
+                // pcntl_signal(SIGUSR2, $errHandler);
                 // 通知树服务器储存
                 self::$TreeIPC->call('new', ['pid' => posix_getpid(), 'ppid' => posix_getppid(), 'IPCName' => self::$GuardIPCName]);
                 // 在子节点中重置守护信息
@@ -117,7 +124,10 @@ class Process
      */
     public static function guard(): void
     {
-        IPC::link(self::$GuardIPCName)->call('guard', []);
+        if ($guardIPC = IPC::link(self::$GuardIPCName)) {
+            $guardIPC->call('guard', []);
+        }
+
         self::$TreeIPC->call('exit', ['pid' => posix_getpid()]);
     }
 }

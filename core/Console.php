@@ -63,13 +63,6 @@ class Console
         self::printn("\033[31m{$content}\033[0m");
     }
 
-    public static function brief(string $title, string $content): void
-    {
-        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
-        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
-        self::printn("\t\033[34m{$title}\t\033[0m \t\t\033[37m {$content} \033[0m");
-    }
-
     public function run(): void
     {
         global $argc;
@@ -89,5 +82,12 @@ class Console
             foreach (self::$commands as $key => $item)
                 self::brief($key, $item);
         }
+    }
+
+    public static function brief(string $title, string $content): void
+    {
+        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+        /** @noinspection PhpUnnecessaryCurlyVarSyntaxInspection */
+        self::printn("\t\033[34m{$title}\t\033[0m \t\t\033[37m {$content} \033[0m");
     }
 }

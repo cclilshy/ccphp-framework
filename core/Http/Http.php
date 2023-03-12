@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-04 00:13:15
- * @LastEditors: cclilshy cclilshy@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @FilePath: /ccphp/vendor/Cclilshy\Flow-php/Http.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -79,7 +79,7 @@ class Http
      * @param  ?array $data
      * @return Http
      */
-    public function go(string $type, ?array $data = []): ?string
+    public function go(string $type, ?array $data = []): string
     {
         $this->request->setType($type);
         $this->request->parse();
@@ -93,9 +93,9 @@ class Http
                     $t = call_user_func([$_, $map->action], $t);
                     $t = $this->statistics($t, $this->statistics);
                     if ($this->box) {
-                        return $t;
+                        return $this->request->result($t);
                     } else {
-                        $this->request->return($t);
+                        return $this->request->send($t);
                     }
 
                     break;
@@ -110,22 +110,21 @@ class Http
                 if (strtoupper($fileInfo['extension']) !== 'PHP') {
                     $this->response->setHeader('Content-Type', mime_content_type($filePath));
                     if ($this->box) {
-                        return file_get_contents($filePath);
+                        return $this->request->result(file_get_contents($filePath));
                     } else {
-                        $this->request->return(file_get_contents($filePath));
+                        return $this->request->send(file_get_contents($filePath));
                     }
                     // return $this;
                 }
             }
             $_ = $this->httpErrorHandle(404, 'Route not defined : ' . $this->request->path, __FILE__, 1);
             if ($this->box) {
-                return $_;
+                return $this->request->result($_);
             } else {
-                $this->request->return($_);
+                return $this->request->send($_);
             }
         }
         $this->statistics->record('endTime', microtime(true));
-        return '';
     }
 
     /**

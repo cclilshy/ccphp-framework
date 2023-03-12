@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy cclilshy@163.com
  * @Date: 2023-03-06 16:48:58
- * @LastEditors: cclilshy cclilshy@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @Description: My house
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
@@ -78,8 +78,12 @@ class Response
 
     public function send()
     {
-
         socket_write($this->client, $this);
+    }
+
+    public function result(): string
+    {
+        return $this;
     }
 
     public function __toString(): string

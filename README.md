@@ -4,20 +4,13 @@
 
 > 环境要求`PHP 8.2+`
 > 正在.......
-> 用不了
+> 可以用
 
 ### Linux
-
-```bash
-git clone https://github.com/cclilshy/ccphp-framework.git
+```php
+./master server start
 ```
-
-```bash
-./master server start # 启动服务(包括数据库连接池和进程管理服务)
-```
-
-### Windows(不支持)
-
+> http://127.0.0.1:2222
 ## 简介
 
 > 原生PHP-MVC框架

@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-02-19 16:23:07
- * @LastEditors: cclilshy cclilshy@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @Description: My house
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
@@ -35,6 +35,20 @@ class Node
         $this->children = [];
         $this->IPCName = $IPCName;
         $this->call('new', ['pid' => $pid]);
+    }
+
+    /** 与IPC建立一次性连接，并发送遗传自定义命令
+     *
+     * @return mixed
+     */
+    private function call(): mixed
+    {
+        if ($ipc = IPC::link($this->IPCName)) {
+            $res = call_user_func_array([$ipc, 'call'], func_get_args());
+            $ipc->close();
+            return $res;
+        }
+        return false;
     }
 
     public function __get($name): mixed
@@ -128,19 +142,5 @@ class Node
     public function get($pid)
     {
         return $this->children[$pid] ?? null;
-    }
-
-    /** 与IPC建立一次性连接，并发送遗传自定义命令
-     *
-     * @return mixed
-     */
-    private function call(): mixed
-    {
-        if ($ipc = IPC::link($this->IPCName)) {
-            $res = call_user_func_array([$ipc, 'call'], func_get_args());
-            $ipc->close();
-            return $res;
-        }
-        return false;
     }
 }

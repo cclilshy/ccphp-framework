@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@gmail.com
  * @Date: 2023-02-19 20:58:16
- * @LastEditors: cclilshy cclilshy@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @Description: My house
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
@@ -28,6 +28,13 @@ class IPC
     private function __construct(string $name)
     {
         $this->name = $name;
+        // $errHandler = function () {
+        //     self::$TreeIPC->call('exit', ['pid' => posix_getpid()]);
+        //     exit;
+        // };
+        // set_error_handler($errHandler, E_ERROR);
+        // set_exception_handler($errHandler);
+        // pcntl_signal(SIGUSR2, $errHandler);
     }
 
     /**
@@ -57,11 +64,6 @@ class IPC
         }
     }
 
-    public static function async(): void
-    {
-
-    }
-
     /**
      * 根据IPC名称连接到监视者
      *
@@ -83,56 +85,6 @@ class IPC
     }
 
     /**
-     * 关闭连接
-     */
-    public function close(): void
-    {
-        $this->me->close();
-        $this->to->close();
-        $this->common->close();
-        $this->lock->close();
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    /**
-     * 通知监视者销毁并自释放空间
-     *
-     * @return void
-     */
-    public function stop(): void
-    {
-        if ($this->call('quit') === 'quit') {
-            $this->release();
-        }
-    }
-
-    /**
-     * 通过此方法可以调用监视者
-     *
-     * @return mixed
-     */
-    public function call(): mixed
-    {
-        $lock = $this->lock->clone();
-        $lock->lock();
-        $context = serialize(func_get_args());
-        $this->common->write($context);
-        $this->to->write(strlen($context) . PHP_EOL);
-        $length = $this->me->fgets();
-        $context = unserialize($this->common->read($length));
-        $lock->unlock();
-        return $context;
-    }
-
-    /**
      * 开始监视进程
      *
      * @return int
@@ -141,7 +93,7 @@ class IPC
     {
         switch ($pid = pcntl_fork()) {
             case 0:
-                $_ = set_error_handler(function ($errno, $errstr, $errfile, $errline) {
+                set_error_handler(function ($errno, $errstr, $errfile, $errline) {
                     echo 'Err(' . $errno . ')File ' . $errfile . ' (' . $errline . ') :' . $errstr . PHP_EOL;
                     $this->common->write(serialize(false));
                     $this->to->write(strlen(serialize(false)) . PHP_EOL);
@@ -187,6 +139,17 @@ class IPC
     }
 
     /**
+     * 关闭连接
+     */
+    public function close(): void
+    {
+        $this->me->close();
+        $this->to->close();
+        $this->common->close();
+        $this->lock->close();
+    }
+
+    /**
      * 关闭连接并删除管道
      *
      * @return void
@@ -198,5 +161,44 @@ class IPC
         $this->to->release();
         $this->common->release();
         $this->lock->release();
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->$name;
+    }
+
+    /**
+     * 通知监视者销毁并自释放空间
+     *
+     * @return void
+     */
+    public function stop(): void
+    {
+        if ($this->call('quit') === 'quit') {
+            $this->release();
+        }
+    }
+
+    /**
+     * 通过此方法可以调用监视者
+     *
+     * @return mixed
+     */
+    public function call(): mixed
+    {
+        $lock = $this->lock->clone();
+        $lock->lock();
+        $context = serialize(func_get_args());
+        $this->common->write($context);
+        $this->to->write(strlen($context) . PHP_EOL);
+        $length = $this->me->fgets();
+        $context = unserialize($this->common->read($length));
+        $lock->unlock();
+        return $context;
     }
 }
