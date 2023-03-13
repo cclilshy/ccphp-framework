@@ -77,9 +77,9 @@ class Http
     /**
      * @param string  $type
      * @param  ?array $data
-     * @return Http
+     * @return ?string
      */
-    public function go(string $type, ?array $data = []): string
+    public function go(string $type, ?array $data = []): ?string
     {
         $this->request->setType($type);
         $this->request->parse();

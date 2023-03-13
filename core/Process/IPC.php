@@ -68,20 +68,105 @@ class IPC
      * 根据IPC名称连接到监视者
      *
      * @param string $name
+     * @param ?int   $timeout
      * @return IPC|false
      */
-    public static function link(string $name): IPC|false
+    public static function link(string $name, ?int $timeout = 0): IPC|false
     {
         $name = $name ?? posix_getpid() . '_' . substr(md5(microtime(true)), 0, 6);
         if (!Fifo::link($name . '_p') || !Fifo::link($name . '_s') || !Fifo::link($name . '_c'))
             return false;
 
         $ipc = new self($name);
-        $ipc->me = Fifo::link($name . '_p');
-        $ipc->to = Fifo::link($name . '_s');
-        $ipc->common = Fifo::link($name . '_c');
+
+        $ipc->me = Fifo::link($name . '_p', $timeout);
+        $ipc->to = Fifo::link($name . '_s', $timeout);
+        $ipc->common = Fifo::link($name . '_c', $timeout);
         $ipc->lock = Pipe::link($name);
         return $ipc;
+    }
+
+    /**
+     * 关闭连接
+     */
+    public function close(): void
+    {
+        $this->me->close();
+        $this->to->close();
+        $this->common->close();
+        $this->lock->close();
+    }
+
+    /**
+     * @param $name
+     * @return mixed
+     */
+    public function __get($name)
+    {
+        return $this->$name;
+    }
+
+    /**
+     * 通知监视者销毁并自释放空间
+     *
+     * @return void
+     */
+    public function stop(): void
+    {
+        if ($this->call('quit') === 'quit') {
+            $this->close();
+        }
+    }
+
+    // 事实上管道的安全,应该由监视者自己维护,而不应该由调用者维护
+    // 消费者是服务态,调用者只需要考虑调用,不应考虑其他问题
+    // 但是,由于管道的特殊性,调用者需要考虑管道的安全性
+
+    /**
+     * 通过此方法可以调用监视者
+     * 该进程会堵塞直到监视者返回结果,并返回结果
+     * 该进程如果等不到结果会被强制杀死
+     *
+     * @return mixed
+     */
+    public function call(): mixed
+    {
+
+        // 克隆管道
+        $lock = $this->lock->clone();
+        // 锁定管道
+        $lock->lock();
+
+        var_dump(func_get_args());
+
+        // 序列化请求参数
+        $context = serialize(func_get_args());
+        $contextLen = strlen($context);
+        // 将校验长度加入报文头
+        $context = pack('L', strlen($context)) . $context;
+
+        // 发送报文
+        $this->common->write($context);
+
+        // 发送报文长度
+        $this->to->write($contextLen . PHP_EOL);
+
+        // 读取返回结果长度
+        $length = intval($this->me->fgets());
+        if ($length === '') {
+            $lock->unlock();
+            return false;
+        }
+
+        // full context
+        if (!$fullContext = $this->fullContext($length)) {
+            $result = false;
+        } else {
+            $result = unserialize($fullContext);
+        }
+        var_dump($result);
+        $lock->unlock();
+        return $result;
     }
 
     /**
@@ -118,35 +203,66 @@ class IPC
         $this->to = Fifo::link($this->name . '_p');
         $this->common = Fifo::link($this->name . '_c');
         while ($length = $this->me->fgets()) {
-            $arguments = unserialize($this->common->read($length));
-            if (isset($arguments[0]) && $arguments[0] === 'quit') {
-                $this->common->write(serialize('quit'));
-                $this->to->write(strlen(serialize('quit')) . PHP_EOL);
-                $this->close();
-                exit;
-            }
-            $arguments[] = $this;
-            $result = call_user_func_array($this->observer, $arguments);
-            $context = serialize($result);
-            $this->common->write($context);
-            $this->to->write(strlen($context) . PHP_EOL);
-            if ($result === 'quit') {
-                sleep(1);
-                $this->release();
-                exit;
+            if (!$fullContext = $this->fullContext($length)) {
+                $result = false;
+            } else {
+                $arguments = unserialize($fullContext);
+                $arguments[] = $this;
+
+                if (isset($arguments[0]) && $arguments[0] === 'quit') {
+                    $result = 'quit';
+                } else {
+                    $result = call_user_func_array($this->observer, $arguments);
+                }
+                $context = serialize($result);
+                // 将校验长度加入报文头
+                $context = pack('L', strlen($context)) . $context;
+                $contextLen = strlen($context);
+                // 发送报文
+                $this->common->write($context);
+                // 发送报文长度
+                $this->to->write($contextLen . PHP_EOL);
+                if ((isset($arguments[0]) && $arguments[0] === 'quit') || $result === 'quit') {
+                    usleep(1000);
+                    $this->release();
+                    exit;
+                }
             }
         }
     }
 
     /**
-     * 关闭连接
+     * 获取完整上下文
+     *
+     * @param int $length  寻找数据长度
+     * @param int $residue 渣数据长度
+     * @return string | false
+     * @throws \Exception
      */
-    public function close(): void
+    private function fullContext(int $length, ?int $residue = 0): string|false
     {
-        $this->me->close();
-        $this->to->close();
-        $this->common->close();
-        $this->lock->close();
+        var_dump($length, $residue);
+        $this->common->setBlocking(false);
+        if ($residue > 0) {
+            $this->common->read($residue);
+        }
+
+        $_residue = $this->common->read(4);
+        if ($_residue === '') {
+            $this->common->setBlocking(true);
+            return false;
+        }
+        if (!$_residue = unpack('L', $_residue)[1]) {
+            throw new \Exception("报文发生了不可预知的错误!", 1);
+        } else {
+            // $_residue = hex2bin($_residue);
+            if ($_residue !== $length) {
+                return $this->fullContext($length, $_residue);
+            } else {
+                $this->common->setBlocking(true);
+                return $this->common->read($_residue);
+            }
+        }
     }
 
     /**
@@ -161,44 +277,5 @@ class IPC
         $this->to->release();
         $this->common->release();
         $this->lock->release();
-    }
-
-    /**
-     * @param $name
-     * @return mixed
-     */
-    public function __get($name)
-    {
-        return $this->$name;
-    }
-
-    /**
-     * 通知监视者销毁并自释放空间
-     *
-     * @return void
-     */
-    public function stop(): void
-    {
-        if ($this->call('quit') === 'quit') {
-            $this->release();
-        }
-    }
-
-    /**
-     * 通过此方法可以调用监视者
-     *
-     * @return mixed
-     */
-    public function call(): mixed
-    {
-        $lock = $this->lock->clone();
-        $lock->lock();
-        $context = serialize(func_get_args());
-        $this->common->write($context);
-        $this->to->write(strlen($context) . PHP_EOL);
-        $length = $this->me->fgets();
-        $context = unserialize($this->common->read($length));
-        $lock->unlock();
-        return $context;
     }
 }

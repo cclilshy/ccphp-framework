@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy cclilshy@163.com
  * @Date: 2023-03-02 00:17:47
- * @LastEditors: cclilshy cclilshy@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @Description: My house
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
@@ -17,25 +17,28 @@ class Fifo
 
     /**
      * @param string $name
+     * @param ?int   $timeout
      */
-    public function __construct(string $name)
+    public function __construct(string $name, ?int $timeout = 0)
     {
         $this->name = $name;
         $this->path = CACHE_PATH . '/pipe/fifo_' . $name . '.fifo';
         $this->stream = fopen($this->path, 'r+');
+        stream_set_timeout($this->stream, $timeout);
     }
 
     /**
      * @param string $name
+     * @param int    $timeout
      * @return Fifo|false
      */
-    public static function create(string $name): Fifo|false
+    public static function create(string $name, ?int $timeout = 0): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
         if (file_exists($path . '.fifo')) {
             return false;
         } elseif (posix_mkfifo($path . '.fifo', 0666)) {
-            return new self($name);
+            return new self($name, $timeout);
         } else {
             return false;
         }
@@ -43,13 +46,14 @@ class Fifo
 
     /**
      * @param string $name
+     * @param ?int   $timeout
      * @return Fifo|false
      */
-    public static function link(string $name): Fifo|false
+    public static function link(string $name, ?int $timeout = 0): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
         if (!!file_exists($path . '.fifo')) {
-            return new self($name);
+            return new self($name, $timeout);
         } else {
             return false;
         }
@@ -108,5 +112,10 @@ class Fifo
         if (get_resource_type($this->stream) !== 'Unknown') {
             fclose($this->stream);
         }
+    }
+
+    public function setBlocking(bool $bool): bool
+    {
+        return stream_set_blocking($this->stream, $bool);
     }
 }

@@ -49,6 +49,26 @@ class Tree
     }
 
     /**
+     * 关闭树服务
+     *
+     * @return bool
+     */
+    public static function stop(): bool
+    {
+        if ($server = Server::load('Tree')) {
+            $ipcName = $server->data['tree_name'];
+            if ($IPC = IPC::link($ipcName)) {
+                $IPC->stop();
+                $server->release();
+                Console::pgreen('[TreeServer] stopped!');
+                return true;
+            }
+        }
+        Console::pred('[TreeServer] stop failed may not run');
+        return false;
+    }
+
+    /**
      * 树主函数
      *
      * @param $ipc
@@ -175,25 +195,5 @@ class Tree
         }
         $node->kill();
         unset($this->map[$node->pid]);
-    }
-
-    /**
-     * 关闭树服务
-     *
-     * @return bool
-     */
-    public static function stop(): bool
-    {
-        if ($server = Server::load('Tree')) {
-            $ipcName = $server->data['tree_name'];
-            if ($IPC = IPC::link($ipcName)) {
-                $IPC->stop();
-                $server->release();
-                Console::pgreen('[TreeServer] stopped!');
-                return true;
-            }
-        }
-        Console::pred('[TreeServer] stop failed may not run');
-        return false;
     }
 }

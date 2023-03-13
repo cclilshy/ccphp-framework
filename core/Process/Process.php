@@ -28,7 +28,7 @@ class Process
         // 加载进程树信息
         if ($server = Server::load('Tree')) {
             // 连接进程树IPC
-            if (self::$TreeIPC = IPC::link($server->data['tree_name'])) {
+            if (self::$TreeIPC = IPC::link($server->data['tree_name'], 3)) {
                 self::$inited = true;
                 // 主进程加入树根
                 self::$TreeIPC->call('new', ['pid' => posix_getpid(), 'ppid' => posix_getppid(), 'IPCName' => 'undefined']);
@@ -125,7 +125,11 @@ class Process
     public static function guard(): void
     {
         if ($guardIPC = IPC::link(self::$GuardIPCName)) {
+            echo '关闭成功';
+
             $guardIPC->call('guard', []);
+        } else {
+            echo '关闭失败';
         }
 
         self::$TreeIPC->call('exit', ['pid' => posix_getpid()]);

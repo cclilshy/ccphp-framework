@@ -37,7 +37,7 @@ class EventHandler
 
     public static function create(): EventHandler
     {
-        $name = uniqid('HTTP_EVENT_HANDLER' . mt_rand(1111, 9999) . microtime());
+        $name = uniqid('HTTP_EVENT_HANDLER' . mt_rand(1111, 9999) . microtime(true));
         $pid = Process::fork(function () use ($name) {
             $fifo = Fifo::create($name);
             // 创建客户端套接字
@@ -54,6 +54,11 @@ class EventHandler
                     $symbol = $fifo->read(1);
 
                     if ($symbol === '#') {
+                        if ($context === 'quit') {
+                            socket_close($socket);
+                            $fifo->release();
+                            break;
+                        }
                         $info[] = $context;
                         $context = '';
                         continue;
@@ -72,6 +77,7 @@ class EventHandler
                     $context = '';
                 }
             }
+            return;
         });
         sleep(1);
         try {
