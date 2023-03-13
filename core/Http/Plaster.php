@@ -65,6 +65,35 @@ class Plaster
     }
 
     /**
+     * @param array $executeForArguments
+     * @param array $tempArgv
+     * @return string
+     */
+    private function executeFor(array $executeForArguments, array $tempArgv = array()): string
+    {
+        foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
+            $$executeIfForeachKey = $executeIfForeachValue;
+        }
+        $executeForStart = $executeForArguments[1];
+        $executeForCondition = $executeForArguments[2];
+        $executeForEnd = $executeForArguments[3];
+        $executeForFarmment = $executeForArguments[4];
+        $templateFramment = '';
+        try {
+            eval("{$executeForStart};");
+            while (eval("return {$executeForCondition};")) {
+                $templateFramment .= self::apply($executeForFarmment, get_defined_vars());
+                eval("{$executeForEnd};");
+            }
+        } catch (\Throwable $e) {
+            return $e;
+            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
+        }
+
+        return str_replace($executeForArguments[0], $templateFramment, $executeForArguments[0]);
+    }
+
+    /**
      * 渲染的递归入口
      *
      * @param string $applyTemplateText
@@ -140,35 +169,6 @@ class Plaster
             $applyTemplateText = str_replace($phpFrammentMatchResult[0][$phpFrammentMatchIndex], $output, $applyTemplateText);
         }
         return $applyTemplateText;
-    }
-
-    /**
-     * @param array $executeForArguments
-     * @param array $tempArgv
-     * @return string
-     */
-    private function executeFor(array $executeForArguments, array $tempArgv = array()): string
-    {
-        foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
-            $$executeIfForeachKey = $executeIfForeachValue;
-        }
-        $executeForStart = $executeForArguments[1];
-        $executeForCondition = $executeForArguments[2];
-        $executeForEnd = $executeForArguments[3];
-        $executeForFarmment = $executeForArguments[4];
-        $templateFramment = '';
-        try {
-            eval("{$executeForStart};");
-            while (eval("return {$executeForCondition};")) {
-                $templateFramment .= self::apply($executeForFarmment, get_defined_vars());
-                eval("{$executeForEnd};");
-            }
-        } catch (\Throwable $e) {
-            return $e;
-            // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
-        }
-
-        return str_replace($executeForArguments[0], $templateFramment, $executeForArguments[0]);
     }
 
     /**

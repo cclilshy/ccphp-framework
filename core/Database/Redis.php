@@ -26,7 +26,7 @@ class Redis
      * @param \stdClass $config
      * @return RedisPecl
      */
-    public static function pconnect(\stdClass $config): Redis
+    public static function pconnect(\stdClass $config): RedisPecl
     {
         $redis = new \RedisPecl();
         $redis->connect($config->host, $config->port, 1);

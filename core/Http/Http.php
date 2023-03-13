@@ -59,9 +59,6 @@ class Http
 
     /**
      * 返回一个实体,允许自定义请求对象,如不自定义则主动创建
-     *
-     * @param Request|null $request
-     * @return Http
      */
     public static function build(?Request $request = null, ?bool $box = false): Http
     {
@@ -163,7 +160,7 @@ class Http
      * @param int    $httpCode
      * @return void
      */
-    public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): string
+    public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503)
     {
         $this->statistics->record('endTime', microtime(true));
         $fileDescribe = '';

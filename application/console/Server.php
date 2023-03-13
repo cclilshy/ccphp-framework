@@ -30,12 +30,12 @@ class Server
         }
         if ($argv[1] == 'start') {
             if (Config::get('server.database_pool') === true) {
-//                Pool::launch();//需要先初始化数据库
+                //                Pool::launch();//需要先初始化数据库
             }
             Tree::launch();
             HttpServer::launch();
         } elseif ($argv[1] === 'stop') {
-//            Pool::stop();
+            //            Pool::stop();
             HttpServer::stop();
             Tree::stop();
         }

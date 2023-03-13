@@ -140,6 +140,7 @@ class Pipe
             fclose($this->resource);
         }
 
-        unlink($this->path);
+        if (file_exists($this->path))
+            unlink($this->path);
     }
 }

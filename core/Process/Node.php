@@ -37,6 +37,20 @@ class Node
         $this->call('new', ['pid' => $pid]);
     }
 
+    /** 与IPC建立一次性连接，并发送遗传自定义命令
+     *
+     * @return mixed
+     */
+    private function call(): mixed
+    {
+        if ($ipc = IPC::link($this->IPCName)) {
+            $res = call_user_func_array([$ipc, 'call'], func_get_args());
+            $ipc->close();
+            return $res;
+        }
+        return false;
+    }
+
     public function __get($name): mixed
     {
         return $this->$name;
@@ -91,7 +105,7 @@ class Node
     /** 指定一个继承人
      *
      * @param int $pid
-     * @return Node|void
+     * @return Node
      */
     public function extend(int $pid)
     {
@@ -127,19 +141,5 @@ class Node
     public function get($pid)
     {
         return $this->children[$pid] ?? null;
-    }
-
-    /** 与IPC建立一次性连接，并发送遗传自定义命令
-     *
-     * @return mixed
-     */
-    private function call(): mixed
-    {
-        if ($ipc = IPC::link($this->IPCName)) {
-            $res = call_user_func_array([$ipc, 'call'], func_get_args());
-            $ipc->close();
-            return $res;
-        }
-        return false;
     }
 }

@@ -10,7 +10,6 @@
 namespace core\Http\Server;
 
 use Exception;
-use core\Config;
 use core\File\Fifo;
 use core\Http\Http;
 use core\Http\Request;
@@ -44,7 +43,7 @@ class EventHandler
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
             // 连接服务器
-            socket_connect($socket, '127.0.0.1', Config::get('http.server_port'));
+            socket_connect($socket, '127.0.0.1', 2787);
 
             $context = '';
             $info = array();
@@ -56,7 +55,7 @@ class EventHandler
                     if ($symbol === '#') {
                         if ($context === 'quit') {
                             socket_close($socket);
-                            $fifo->release();
+                            //                            $fifo->release();
                             break;
                         }
                         $info[] = $context;
@@ -106,5 +105,13 @@ class EventHandler
         $len = strlen($context);
 
         $this->fifo->write("{$name}#{$len}#{$context}");
+    }
+
+    /**
+     * @return void
+     */
+    public function close(): void
+    {
+        fclose($this->fifo);
     }
 }

@@ -17,28 +17,25 @@ class Fifo
 
     /**
      * @param string $name
-     * @param ?int   $timeout
      */
-    public function __construct(string $name, ?int $timeout = 0)
+    public function __construct(string $name)
     {
         $this->name = $name;
         $this->path = CACHE_PATH . '/pipe/fifo_' . $name . '.fifo';
         $this->stream = fopen($this->path, 'r+');
-        stream_set_timeout($this->stream, $timeout);
     }
 
     /**
      * @param string $name
-     * @param int    $timeout
      * @return Fifo|false
      */
-    public static function create(string $name, ?int $timeout = 0): Fifo|false
+    public static function create(string $name): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
         if (file_exists($path . '.fifo')) {
             return false;
         } elseif (posix_mkfifo($path . '.fifo', 0666)) {
-            return new self($name, $timeout);
+            return new self($name);
         } else {
             return false;
         }
@@ -46,14 +43,13 @@ class Fifo
 
     /**
      * @param string $name
-     * @param ?int   $timeout
      * @return Fifo|false
      */
-    public static function link(string $name, ?int $timeout = 0): Fifo|false
+    public static function link(string $name): Fifo|false
     {
         $path = CACHE_PATH . '/pipe/fifo_' . $name;
         if (!!file_exists($path . '.fifo')) {
-            return new self($name, $timeout);
+            return new self($name);
         } else {
             return false;
         }

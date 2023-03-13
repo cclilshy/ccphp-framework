@@ -6,6 +6,4 @@
  * @Description: My house
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
-return [
-    'hello' => '你好'
-];
+return ['hello' => '你好'];

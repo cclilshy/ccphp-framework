@@ -21,19 +21,21 @@ class Process
     /**
      * 初始化
      *
-     * @return void
+     * @return bool
+     * @throws \Exception
      */
-    public static function initialization(): void
+    public static function initialization(): bool
     {
         // 加载进程树信息
         if ($server = Server::load('Tree')) {
             // 连接进程树IPC
-            if (self::$TreeIPC = IPC::link($server->data['tree_name'], 3)) {
-                self::$inited = true;
+            if (self::$TreeIPC = IPC::link($server->data['tree_name'])) {
                 // 主进程加入树根
                 self::$TreeIPC->call('new', ['pid' => posix_getpid(), 'ppid' => posix_getppid(), 'IPCName' => 'undefined']);
+                return self::$inited = true;
             }
         }
+        return self::$inited = false;
     }
 
     /**
@@ -42,6 +44,7 @@ class Process
      * @param callable $handler
      * @param string   $group
      * @return int
+     * @throws \Exception
      */
     public static function fork(callable $handler, string $group = ''): int
     {
@@ -81,8 +84,13 @@ class Process
     /*
      * 向任意进程发送信号
      */
+    /**
+     * @throws \Exception
+     */
     public static function signal(int $pid, int $signNo): bool
     {
+        if (!self::$inited = true)
+            return false;
         if (self::$TreeIPC->call('signal', ['pid' => $pid, 'signo' => $signNo]) === 0) {
             return true;
         }
@@ -94,9 +102,12 @@ class Process
      *
      * @param int $pid
      * @return bool
+     * @throws \Exception
      */
     public static function kill(int $pid): bool
     {
+        if (!self::$inited)
+            return false;
         if (self::$TreeIPC->call('kill', ['pid' => $pid]) === 0) {
             return true;
         }
@@ -111,6 +122,8 @@ class Process
      */
     public static function killAll(int $ppid): bool
     {
+        if (!self::$inited = true)
+            return false;
         if (self::$TreeIPC->call('killAll', ['ppid' => $ppid]) === 0) {
             return true;
         }
@@ -121,9 +134,12 @@ class Process
      * 开始守护，当前进程将不再创建子进程
      *
      * @return void
+     * @throws \Exception
      */
     public static function guard(): void
     {
+        if (!self::$inited = true)
+            return;
         if ($guardIPC = IPC::link(self::$GuardIPCName)) {
             echo '关闭成功';
 
