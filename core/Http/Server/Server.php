@@ -46,7 +46,7 @@ class Server
                 socket_set_option(self::$eventServer, SOL_SOCKET, SO_REUSEPORT, 1);
 
                 // 监听指定HTTP端口
-                socket_bind(self::$server, '127.0.0.1', Config::get('http.server_port'));
+                socket_bind(self::$server, '0.0.0.0', Config::get('http.server_port'));
                 socket_bind(self::$eventServer, '127.0.0.1', 2787);
 
                 // 监听连接
