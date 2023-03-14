@@ -11,10 +11,11 @@ namespace core\Cache;
 
 // Service Layer For Cache Data And Provide The Corresponding Method
 
+
 class Cache
 {
-    protected static $buffer;
-    protected static $config;
+    protected static mixed $buffer;
+    protected static array $config;
 
     /**
      * 访问指定缓存器的静态方法

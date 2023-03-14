@@ -10,16 +10,21 @@
 namespace core\Flow;
 
 // 流程控制器
+
+
 class FlowController
 {
     private FlowBuild $flowBuild;           // 流程模块包
-    private array     $working = array();   // 数据暂存区
+    private array     $working = [];        // 数据暂存区
 
+    /**
+     * @param \core\Flow\FlowBuild $flowBuild
+     */
     public function __construct(FlowBuild $flowBuild)
     {
         // 向每个模块执行build方法
         $this->flowBuild = $flowBuild;
-        foreach ($this->flowBuild as &$module) {
+        foreach ($this->flowBuild as $module) {
             call_user_func([$module, 'build'], $this);
         }
     }

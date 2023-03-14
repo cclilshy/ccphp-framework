@@ -9,6 +9,7 @@
 
 namespace core\Http;
 
+
 class Request
 {
     private mixed    $client;
@@ -24,6 +25,9 @@ class Request
     private bool     $ajax;
     private Response $response;
 
+    /**
+     * @param array|null $config
+     */
     public function __construct(?array $config = [])
     {
         if ($config) {
@@ -41,22 +45,43 @@ class Request
         $this->response = new Response($this);
     }
 
+    /**
+     * @param array|null $config
+     * @return \core\Http\Request
+     */
     public static function initialization(array $config = null): Request
     {
         return new self($config);
     }
 
+    /**
+     * @param array|null $config
+     * @return \core\Http\Request
+     */
     public static function reload(array $config = null): Request
     {
         return new self($config);
     }
 
+    /**
+     * @param $client
+     * @return $this
+     */
+    /**
+     * @param $client
+     * @return $this
+     */
     public function setStream($client): Request
     {
         $this->client = $client;
         return $this;
     }
 
+    /**
+     * @param string|array $key
+     * @param string|null  $value
+     * @return $this
+     */
     public function setHeader(string|array $key, ?string $value): Request
     {
         if (is_array($key)) {
@@ -67,12 +92,21 @@ class Request
         return $this;
     }
 
+    /**
+     * @param string $key
+     * @param string $value
+     * @return $this
+     */
     public function setCookie(string $key, string $value): Request
     {
         $this->cookie[$key] = $value;
         return $this;
     }
 
+    /**
+     * @param string $type
+     * @return $this
+     */
     public function setType(string $type): Request
     {
         $this->type = $type;
@@ -82,9 +116,13 @@ class Request
         return $this;
     }
 
+    /**
+     * @return $this
+     */
     public function parse(): Request
     {
         if ($this->type === 'SERVER') {
+            return $this;
         } elseif ($this->type === 'PROXY') {
             $this->path   = '/' . trim($_SERVER['REQUEST_URI'], '/');
             $this->method = $_SERVER['REQUEST_METHOD'];
@@ -97,6 +135,10 @@ class Request
         return $this;
     }
 
+    /**
+     * @param string $context
+     * @return void
+     */
     public function send(string $context)
     {
         if ($this->type === 'SERVER') {
@@ -106,22 +148,45 @@ class Request
         }
     }
 
+    /**
+     * @param string $body
+     * @return $this
+     */
     public function setBody(string $body): Request
     {
         $this->body = $body;
         return $this;
     }
 
+    /**
+     * @param string $context
+     * @return string
+     */
+    /**
+     * @param string $context
+     * @return string
+     */
     public function result(string $context)
     {
         return $this->response->setBody($context)->result();
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     */
+    /**
+     * @param $name
+     * @return mixed
+     */
     public function __get($name)
     {
         return $this->$name;
     }
 
+    /**
+     *
+     */
     public function __destruct()
     {
         unset($this->response);

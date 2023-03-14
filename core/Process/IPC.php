@@ -31,6 +31,9 @@ class IPC
     private Fifo $common; // 公共管道
     private Pipe $lock;
 
+    /**
+     * @param string $name
+     */
     private function __construct(string $name)
     {
         $this->name = $name;
@@ -78,7 +81,8 @@ class IPC
     /**
      * 根据IPC名称连接到监视者
      *
-     * @param string $name
+     * @param string    $name
+     * @param bool|null $destroy
      * @return IPC|false
      */
     public static function link(string $name, ?bool $destroy = false): IPC|false
@@ -183,7 +187,6 @@ class IPC
      */
     private function fullContext(int $length, int $residue = 0): false|string
     {
-        //        var_dump($length, $residue);
         $this->common->setBlocking(false);
         if ($residue > 0) {
             $this->common->read($residue);
@@ -195,7 +198,7 @@ class IPC
             return false;
         }
         if (!$_residue = unpack('L', $_residue)[1]) {
-            throw new Exception("报文发生了不可预知的错误!", 1);
+            throw new Exception('报文发生了不可预知的错误!', 1);
         } elseif ($_residue !== $length) {
             return $this->fullContext($length, $_residue);
         } else {
@@ -248,10 +251,9 @@ class IPC
                     $this->common->write(serialize(false));
                     $this->to->write(strlen(serialize(false)) . PHP_EOL);
                     $this->listenr();
-                    return;
                 }, E_ALL);
                 $this->listenr();
-                break;
+                exit;
             default:
                 $this->observerProcessId = $pid;
                 return $pid;
@@ -326,7 +328,6 @@ class IPC
                     exit;
                 case -1:
                     throw new Exception('无法启用fork服务,请检查系统荷载 ', 1);
-                    break;
                 default:
                     declare(ticks=1);
                     pcntl_signal(SIGCHLD, function () {

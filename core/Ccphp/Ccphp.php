@@ -15,6 +15,7 @@ namespace core\Ccphp;
 use Exception;
 use core\Master;
 
+
 class Ccphp
 {
     /**

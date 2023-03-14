@@ -8,12 +8,13 @@
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-return ['driver'    => 'mysql',
-        'host'      => 'localhost',
-        'database'  => 'temp',
-        'username'  => 'root',
-        'password'  => '123456',
-        'charset'   => 'utf8',
-        'collation' => 'utf8_unicode_ci',
-        'prefix'    => ''
+return [
+    'driver'    => 'mysql',
+    'host'      => 'localhost',
+    'database'  => 'temp',
+    'username'  => 'root',
+    'password'  => '123456',
+    'charset'   => 'utf8',
+    'collation' => 'utf8_unicode_ci',
+    'prefix'    => ''
 ];

@@ -15,6 +15,9 @@ namespace core\Model;
  */
 class Model
 {
+    /**
+     * @return void
+     */
     public static function initialization(): void
     {
         // 没什么用

@@ -16,6 +16,7 @@ namespace core\Http;
 use Exception;
 use core\Config;
 
+
 class Lang
 {
     /**
@@ -25,6 +26,10 @@ class Lang
      */
     private static array $lang = [];
 
+    /**
+     * @param string $language
+     * @return bool
+     */
     public static function select(string $language = 'zh-cn'): bool
     {
         return true;

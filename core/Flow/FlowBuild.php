@@ -10,10 +10,12 @@
 namespace core\Flow;
 
 // 流程打包
+
+
 class FlowBuild
 {
     // 模块列表
-    private array $modules = array();
+    private array $modules = [];
     // 流程callable
     private mixed $flow;
     // 流程错误处理

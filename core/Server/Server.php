@@ -12,6 +12,8 @@ namespace core\Server;
 use core\File\Pipe;
 
 // 支持查询任意服务信息,包括未注册的服务信息
+
+
 class Server
 {
     public string $name;

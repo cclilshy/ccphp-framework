@@ -11,6 +11,7 @@ namespace core;
 
 use Exception;
 
+
 class Master
 {
     private static array  $record;
@@ -30,9 +31,13 @@ class Master
         }
     }
 
+    /**
+     * @param string|null $name
+     * @return array
+     */
     public static function reload(string $name = null): array
     {
-        $result = array();
+        $result = [];
         foreach (self::$record as $name) {
             $class         = self::$modulePath . '\\' . ucfirst($name);
             $result[$name] = call_user_func([$class, 'reload']);
@@ -40,6 +45,10 @@ class Master
         return $result;
     }
 
+    /**
+     * @param string $path
+     * @return void
+     */
     public static function setModulePath(string $path): void
     {
         self::$modulePath = $path;

@@ -15,6 +15,7 @@ use core\Http\Http;
 use core\Http\Request;
 use core\Process\Process;
 
+
 class EventHandler
 {
     protected Fifo $fifo;
@@ -49,7 +50,7 @@ class EventHandler
             socket_connect($socket, '127.0.0.1', 2787);
 
             $context = '';
-            $info    = array();
+            $info    = [];
             while (true) {
                 if (!isset($info[1])) {
                     $symbol = $fifo->read(1);
@@ -74,7 +75,7 @@ class EventHandler
 
                     $len = strlen($result);
                     socket_write($socket, "@{$info[0]}#{$len}#{$result}");
-                    $info    = array();
+                    $info    = [];
                     $context = '';
                 }
             }
@@ -88,6 +89,10 @@ class EventHandler
         }
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     */
     public function __get($name)
     {
         return $this->$name;

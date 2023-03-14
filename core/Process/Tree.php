@@ -13,11 +13,13 @@ use core\Console;
 use core\Server\Server;
 
 // 进程🌲
+
+
 class Tree
 {
     private Node  $root;             // 根节点
     private Node  $orphanProcess;    // 孤儿根节点
-    private array $map = array();
+    private array $map = [];
 
 
     private function __construct()
@@ -37,7 +39,7 @@ class Tree
             $handler = function ($action, $data, $ipc) {
                 $ipc->space->handler($ipc, $action, $data);
             };
-            $ipcName = IPC::create($handler, new self)->name;
+            $ipcName = IPC::create($handler, new self())->name;
 
             $server->info(['tree_name' => $ipcName]);
             Console::pgreen('[TreeServer] started!');
@@ -63,10 +65,10 @@ class Tree
             case 'new':
                 if ($node = $this->find($data['ppid'])) {
                     $node->new($data['pid'], $data['ppid'], $data['IPCName']);
-                    $this->map[$data['pid']] = array('ppid' => $data['ppid']);
+                    $this->map[$data['pid']] = ['ppid' => $data['ppid']];
                 } else {
                     $this->orphanProcess->new($data['pid'], $data['ppid'], $data['IPCName']);
-                    $this->map[$data['pid']] = array('ppid' => 1);
+                    $this->map[$data['pid']] = ['ppid' => 1];
                 }
                 break;
             case 'exit':
@@ -106,7 +108,7 @@ class Tree
         // 新成员进入，找到指定节点，插入新成员
         $node            = $this->root;
         $parentProcessId = $pid;
-        $path            = array($parentProcessId);
+        $path            = [$parentProcessId];
         while ($parentProcessId = $this->map[$parentProcessId]['ppid'] ?? null) {
             if ($parentProcessId === 1) {
                 $node = $this->orphanProcess;
@@ -144,6 +146,8 @@ class Tree
             }
             // 释放哈希表
             unset($this->map[$node->pid]);
+        } else {
+            //            echo '找不到' . $pid . PHP_EOL;
         }
     }
 

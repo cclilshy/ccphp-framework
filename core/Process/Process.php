@@ -9,9 +9,12 @@
 
 namespace core\Process;
 
+use core\Console;
 use core\Server\Server;
 
 // 进程管理器
+
+
 class Process
 {
     private static IPC    $TreeIPC;                 //进程树IPC
@@ -25,6 +28,8 @@ class Process
      */
     public static function initialization(): bool
     {
+        if (!isset(self::$inited) === true)
+            return true;
         // 加载进程树信息
         if ($server = Server::load('Tree')) {
             // 连接进程树IPC
@@ -46,9 +51,10 @@ class Process
      * 创建一个子进程
      *
      * @param callable $handler
+     * @param ?string  $name
      * @return int
      */
-    public static function fork(callable $handler): int
+    public static function fork(callable $handler, ?string $name = null): int
     {
         if (!isset(self::$inited) || !self::$inited)
             return -1;
@@ -80,7 +86,9 @@ class Process
                     'IPCName' => self::$GuardIPCName
                 ]);
                 // 在子节点中重置守护信息
+                self::$inited       = false;
                 self::$GuardIPCName = '';
+
                 // 处理主业务
                 call_user_func($handler);
                 // 通知进程树销毁
@@ -149,10 +157,10 @@ class Process
         if (!isset(self::$inited) || !self::$inited)
             return;
         if ($guardIPC = IPC::link(self::$GuardIPCName)) {
-            echo '开始守护成功' . PHP_EOL;
+            Console::pdebug(' 开始守护成功');
             $guardIPC->call('guard', []);
         } else {
-            echo '开始守护失败' . PHP_EOL;
+            Console::pdebug(' 开始守护失败');
         }
 
         self::$TreeIPC->call('exit', ['pid' => posix_getpid()]);

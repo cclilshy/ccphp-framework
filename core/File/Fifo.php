@@ -9,9 +9,10 @@
 
 namespace core\File;
 
+
 class Fifo
 {
-    private        $stream;
+    private mixed  $stream;
     private string $name;
     private string $path;
 
@@ -110,6 +111,10 @@ class Fifo
         }
     }
 
+    /**
+     * @param bool $bool
+     * @return bool
+     */
     public function setBlocking(bool $bool): bool
     {
         return stream_set_blocking($this->stream, $bool);

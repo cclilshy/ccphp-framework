@@ -12,10 +12,12 @@ namespace core\Process;
 use core\Console;
 
 // 兄弟进程守护类
+
+
 class Guardian
 {
     // 兄弟进程ID
-    public array $processIds = array();
+    public array $processIds = [];
 
     // 忽略父进程的存亡自我销毁
     public bool $guard = false;
@@ -49,7 +51,7 @@ class Guardian
             }
             return true;
         };
-        return IPC::create($handler, new self)->name ?? false;
+        return IPC::create($handler, new self())->name ?? false;
     }
 
     /**

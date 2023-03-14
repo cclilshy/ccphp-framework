@@ -12,15 +12,28 @@ namespace core;
 
 use stdClass;
 
+
 class Config
 {
-    protected static array $config = array();
+    protected static array $config = [];
 
+    /**
+     * @param string $name
+     * @return \stdClass
+     */
     public static function std(string $name): stdClass
     {
         return (object)self::get($name);
     }
 
+    /**
+     * @param string $name
+     * @return array|mixed|null
+     */
+    /**
+     * @param string $name
+     * @return array|mixed|null
+     */
     public static function get(string $name)
     {
         $reqConstruct = explode('.', $name);
@@ -31,6 +44,9 @@ class Config
         return $rest;
     }
 
+    /**
+     * @return void
+     */
     public static function initialization(): void
     {
         $files = scandir(CONF_PATH);
@@ -42,6 +58,16 @@ class Config
 
     }
 
+    /**
+     * @param string $name
+     * @param        $value
+     * @return mixed
+     */
+    /**
+     * @param string $name
+     * @param        $value
+     * @return mixed
+     */
     public static function set(string $name, $value)
     {
         $reqConstruct = explode('.', $name);
@@ -53,11 +79,18 @@ class Config
         return $value;
     }
 
+    /**
+     * @return array
+     */
     public static function all(): array
     {
         return self::$config;
     }
 
+    /**
+     * @param string $name
+     * @return void
+     */
     public static function env(string $name): void
     {
 

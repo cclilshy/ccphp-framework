@@ -19,6 +19,8 @@ use core\Process\ProcessMirroring;
 use function microtime;
 
 // 数据库内存常驻的
+
+
 class Pool
 {
     // 调度服务的IPC
@@ -38,7 +40,7 @@ class Pool
             self::dispatcher();
 
             // 一个进程分配一个连接
-            $connectNames = array();
+            $connectNames = [];
 
             // 分配指定数量连接，并储存其IPC名称
             for ($i = 0; $i < Config::get('server.database_pool_connect'); $i++) {
@@ -77,6 +79,9 @@ class Pool
         }
     }
 
+    /**
+     * @return void
+     */
     private static function dispatcher(): void
     {
         // 创建调度服务
@@ -100,7 +105,7 @@ class Pool
                     $ipc->space[] = $name;
                     break;
             }
-        }, array());
+        }, []);
     }
 
     /**
@@ -121,7 +126,7 @@ class Pool
 
             // 从调度服务器获取一个数据库连接IPC
             if ($connectName = $dispatcher->call('get', null)) {
-                $std             = new stdClass;
+                $std             = new stdClass();
                 $std->dispatcher = $dispatcher;
 
                 // 连接数据库IPC

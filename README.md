@@ -8,11 +8,22 @@
 
 ### Linux
 
+#### 核心扩展 (一般编译安装自带)
+> * `posix`
+> * `pcntl`
+
 ```php
-./master server start
+// 启动服务
+./master server start 
+
+// 后台启动
+./master server start -d 
+
+// 结束服务
+./master server stop 
 ```
 
-> http://127.0.0.1:2222
+> *启动后可以通过 <a href="http://127.0.0.1:2222" target="_blank">http://127.0.0.1:2222</a> 访问服务器* 
 
 ## 简介
 
@@ -26,6 +37,7 @@
 * 模块化开发
 * 终端/HTTP端分离,可单独使用
 * 多进程全局通信/管控
+* 内置高性能FPM (类编译运行模式)
 
 ## 文档
 
@@ -35,21 +47,22 @@
     * http 网站
     * console 终端
     * route 路由
+* core 框架核心
 * cache 临时文件目录
 * extend 外部插件目录
 * model 模型目录
 * resource 资源目录
     * config 配置文件
     * logs 日志文件
-* vendor 框架核心
+* vendor 云开源集合
 
-## 框架核心类空间
+## 框架核心命名空间
 
 ```php
 namespace core;
 ```
 
-### HTTP入口文件路径
+### Proxy模式下HTTP入口文件路径
 
 > application/http/public
 
@@ -58,14 +71,10 @@ namespace core;
 > 所有扩展和服务必须从加载器加载(兼容内存常驻)
 > APP类保留 `initialization`,~~`reload`~~ 方法
 > 初次加载时会执行init方法,该方法内的数据内存常驻(如数据库配置,日志流文件,路由等)
-> load方法在每次访问时会在用户自己的内存块执行, 重置初始化参数
 
 ```php
 // 加载\core\App类下 `init` 方法, 并返回 `init` 的返回
-\core\Master::rouse('App');
-
-// 加载多个组件, 并返回第一个组件的 `init` 返回
-\core\Master::rouse('App,Database,Cache');
+\core\Master::rouse('App',$args);
 ```
 
 ## 管道
@@ -116,6 +125,12 @@ Config::get('database.mysql.host');
 //设置一个配置项,当前请求的生命周期内有效
 Config::set('cid',1);
 ```
+### 常用配置
+```php
+system.debug // 终端调试
+http.http_server_port // 外置端口
+http.debug // 网页输出调试
+```
 
 ## 服务
 
@@ -124,7 +139,7 @@ Config::set('cid',1);
 $server = \core\Server::create(string $name = ''); 
 
 // 加载现有服务信息,不提供$name则按照文件命名, 一个服务允许多个入口加载查看信息,重载
-$server = \core\Server::create(string $name = ''); 
+$server = \core\Server::load(string $name = ''); 
 
 // 释放该服务信息(不意味着释放了服务,只是移除储存信息)
 $server->release(); 

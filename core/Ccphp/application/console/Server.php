@@ -7,15 +7,29 @@
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
 
-namespace core\console;
+namespace core\Ccphp\application\console;
+
 
 class Server
 {
+    /**
+     * @return string
+     */
     public function register(): string
     {
         return 'As a service';
     }
 
+    /**
+     * @param $argv
+     * @param $console
+     * @return void
+     */
+    /**
+     * @param $argv
+     * @param $console
+     * @return void
+     */
     public function main($argv, $console): void
     {
 

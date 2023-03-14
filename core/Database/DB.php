@@ -13,6 +13,7 @@ namespace core\Database;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Capsule\Manager as Capsule;
 
+
 class DB
 {
     private static array           $config;  // 配置
@@ -32,7 +33,7 @@ class DB
         // $type = $config['type'];
         // self::$dbClass = __NAMESPACE__ . '\Database\\' . ucfirst($type);
         // self::$config = $config[$type];
-        self::$capsule = new Capsule;
+        self::$capsule = new Capsule();
         self::$capsule->addConnection($config);
         self::$connect = self::getConnect();
     }

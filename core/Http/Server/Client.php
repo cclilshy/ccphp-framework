@@ -9,9 +9,10 @@
 
 namespace core\Http\Server;
 
+
 class Client
 {
-    private        $socket;
+    private mixed  $socket;
     private string $context;
     private string $method   = 'undefined';
     private string $path;
@@ -22,6 +23,12 @@ class Client
     private int    $createTime;
     private int    $faildCount;
 
+    /**
+     * @param $socket
+     */
+    /**
+     * @param $socket
+     */
     public function __construct($socket)
     {
         $this->socket = $socket;
@@ -96,7 +103,6 @@ class Client
     public function complete(): bool
     {
         if ($this->complete) {
-            var_dump($this);
         }
         return $this->complete;
     }

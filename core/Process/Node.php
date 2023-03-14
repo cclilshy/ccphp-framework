@@ -14,6 +14,7 @@ namespace core\Process;
 // 任何进程都可以向任何进程发送消息
 // 任何进程都可以向任何进程发送信号
 
+
 class Node
 {
     // 哈希表索引
@@ -51,6 +52,14 @@ class Node
         return false;
     }
 
+    /**
+     * @param $name
+     * @return mixed
+     */
+    /**
+     * @param $name
+     * @return mixed
+     */
     public function __get($name): mixed
     {
         return $this->$name;
@@ -89,7 +98,9 @@ class Node
      */
     public function new(int $pid, int $ppid, string $IPCName): void
     {
-        $this->children[$pid] = new self($pid, $ppid, $IPCName);
+        if (!isset($this->children[$pid])) {
+            $this->children[$pid] = new self($pid, $ppid, $IPCName);
+        }
     }
 
     /** 发送指定信号

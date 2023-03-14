@@ -9,6 +9,7 @@
 
 namespace core\File;
 
+
 class Pipe
 {
     private        $resource;
@@ -17,6 +18,14 @@ class Pipe
     private string $name;
     private string $path;
 
+    /**
+     * @param $name
+     * @param $eof
+     */
+    /**
+     * @param $name
+     * @param $eof
+     */
     private function __construct($name, $eof = -1)
     {
         $this->name     = $name;
@@ -26,6 +35,10 @@ class Pipe
         $this->eof      = $eof;
     }
 
+    /**
+     * @param string $name
+     * @return \core\File\Pipe|false
+     */
     public static function create(string $name): Pipe|false
     {
         if (!file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe')) {
@@ -35,6 +48,10 @@ class Pipe
         return false;
     }
 
+    /**
+     * @param string $name
+     * @return \core\File\Pipe|false
+     */
     public static function link(string $name): Pipe|false
     {
         if (file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe')) {
@@ -43,6 +60,11 @@ class Pipe
         return false;
     }
 
+    /**
+     * @param string $content
+     * @param int    $start
+     * @return int|false
+     */
     public function write(string $content, int $start = 0): int|false
     {
         if (strlen($content) < 1) {
@@ -57,6 +79,9 @@ class Pipe
         return fwrite($this->resource, $content);
     }
 
+    /**
+     * @return void
+     */
     private function flush(): void
     {
         ftruncate($this->resource, 0);
@@ -64,12 +89,20 @@ class Pipe
         $this->adjustPoint(0);
     }
 
+    /**
+     * @param int $location
+     * @return void
+     */
     private function adjustPoint(int $location): void
     {
         $this->point = $location;
         fseek($this->resource, $this->point);
     }
 
+    /**
+     * @param string $content
+     * @return int
+     */
     public function push(string $content): int
     {
         $this->adjustPoint($this->eof);
@@ -78,11 +111,19 @@ class Pipe
         return $this->eof;
     }
 
+    /**
+     * @return string|false
+     */
     public function read(): string|false
     {
         return $this->section(0);
     }
 
+    /**
+     * @param int $start
+     * @param int $end
+     * @return string|false
+     */
     public function section(int $start, int $end = 0): string|false
     {
         if ($end === 0) {
@@ -110,6 +151,14 @@ class Pipe
         return $context;
     }
 
+    /**
+     * @param $wait
+     * @return bool
+     */
+    /**
+     * @param $wait
+     * @return bool
+     */
     public function lock($wait = true): bool
     {
         if ($wait) {
@@ -119,6 +168,9 @@ class Pipe
         }
     }
 
+    /**
+     * @return bool
+     */
     public function unlock(): bool
     {
         return flock($this->resource, LOCK_UN);
@@ -129,11 +181,17 @@ class Pipe
         return new self($this->name, $this->eof);
     }
 
+    /**
+     * @return void
+     */
     public function close(): void
     {
         fclose($this->resource);
     }
 
+    /**
+     * @return void
+     */
     public function release(): void
     {
         if (!get_resource_type($this->resource) == 'Unknown') {

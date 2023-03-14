@@ -2,7 +2,7 @@
 /*
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-07 20:03:12
- * @LastEditors: cclilshy jingnigg@163.com
+ * @LastEditors: cclilshy jingnigg@gmail.com
  * @FilePath: /ccphp/vendor/core/Database/RedisPecl.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
@@ -12,12 +12,19 @@ namespace core\Database;
 
 // 封装一个Redis连接
 use stdClass;
-use RedisPecl;
+use Redis as RedisPecl;
+
 
 class Redis
 {
     protected mixed $connect;
 
+    /**
+     * @param $connect
+     */
+    /**
+     * @param $connect
+     */
     public function __construct($connect)
     {
         $this->connect = $connect;
@@ -46,7 +53,7 @@ class Redis
      * @param \stdClass $config
      * @return Redis
      */
-    public static function connect(stdClass $config): Redis
+    public static function connect(array $config): Redis
     {
         $redis = new RedisPecl();
         $redis->pconnect($config->host, $config->port, 1);

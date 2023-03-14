@@ -15,6 +15,7 @@ namespace core\Http;
 // 用户层应用，应当实例化
 // 目前只支持Proxy形式加载
 
+
 class Session
 {
     // SessionID

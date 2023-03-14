@@ -12,10 +12,14 @@ namespace core\Route;
 
 // 加载层, 用于记录用户请求的路由, 并提供对应的方法
 
+
+/**
+ * @method static console(string $string, string $string1)
+ */
 class Route
 {
-    const METHODS = array('get', 'post', 'put', 'patch', 'delete', 'options', 'console', 'cron');
-    private static array $map = array();
+    public const METHODS = ['get', 'post', 'put', 'patch', 'delete', 'options', 'console', 'cron'];
+    private static array $map = [];
 
     /**
      * 加载所有路由文件

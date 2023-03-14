@@ -12,7 +12,9 @@ namespace console;
 // Start The Service Class Perform Timing Tasks And Socket Services
 
 use core\Config;
+use core\Console;
 use core\Process\Tree;
+use core\Process\Process;
 use core\Http\Server\Server as HttpServer;
 
 class Server
@@ -22,22 +24,38 @@ class Server
         return "As a service\n";
     }
 
-    public function main($argv, $console): void
+    public function main(array $argv, Console $console): void
     {
         if (count($argv) < 2) {
             $console::printn("Please enter the command \n> master server [start|stop] [-d]\n");
             return;
         }
         if ($argv[1] == 'start') {
-            if (Config::get('server.database_pool') === true) {
-                //                Pool::launch();//需要先初始化数据库
-            }
             Tree::launch();
-            HttpServer::launch();
+            if (Config::get('server.database_pool') === true) {
+                //Pool::launch();//需要先初始化数据库
+            }
+
+            $func = function () {
+                HttpServer::launch();
+            };
+
+            if (isset($argv[2]) && $argv[2] === '-d') {
+                Process::initialization();
+                Process::fork($func);
+                sleep(1);
+                Process::guard();
+            } else {
+                $func();
+            }
+
         } elseif ($argv[1] === 'stop') {
-            //            Pool::stop();
-            HttpServer::stop();
-            Tree::stop();
+            try {
+                HttpServer::stop();
+                Tree::stop();
+            } catch (\Exception $e) {
+                echo $e->getMessage() . PHP_EOL;
+            }
         }
     }
 }

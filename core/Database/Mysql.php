@@ -10,22 +10,29 @@ use mysqli;
 use mysqli_result;
 use core\Ccphp\Launch;
 
+
 class Mysql
 {
-    const OPERS = ['IS', 'LIKE', 'NOT', 'IS NOT', '<', '>', '<>', '='];
-    protected        $config;
-    protected mysqli $mysqli;
-    protected        $table;
-    protected array  $where   = [];
-    protected array  $whereOr = [];
-    protected        $order   = null;
-    protected string $field   = '*';
-    protected array  $data    = [];
-    protected        $limit   = null;
-    protected        $action;
-    protected        $command;
-    protected        $execr;
+    public const OPERS = ['IS', 'LIKE', 'NOT', 'IS NOT', '<', '>', '<>', '='];
+    protected array       $config;
+    protected mysqli      $mysqli;
+    protected string      $table;
+    protected array       $where   = [];
+    protected array       $whereOr = [];
+    protected string|null $order   = null;
+    protected string      $field   = '*';
+    protected array       $data    = [];
+    protected string      $action;
+    protected string      $command;
+    protected mixed       $execr;
+    private DatabaseInfo  $databaseInfo;
 
+    /**
+     * @param $config
+     */
+    /**
+     * @param $config
+     */
     public function __construct($config = null)
     {
         if ($config) {
@@ -33,25 +40,57 @@ class Mysql
         }
         defined('DESC') || define('DESC', 'DESC');
         defined('ASC') || define('ASC', 'ASC');
+        $this->databaseInfo = new DatabaseInfo($this);
     }
 
+    /**
+     *
+     */
     public function __destruct()
     {
         if (is_object($this->mysqli))
             $this->mysqli->close();
     }
 
+    /**
+     * @param $connect
+     * @return void
+     */
+    /**
+     * @param $connect
+     * @return void
+     */
     public function setConnect($connect): void
     {
         $this->mysqli = $connect;
     }
 
+    /**
+     * @param $table
+     * @return $this
+     */
+    /**
+     * @param $table
+     * @return $this
+     */
     public function table($table): static
     {
         $this->table = $table;
         return $this;
     }
 
+    /**
+     * @param $key
+     * @param $compare
+     * @param $value
+     * @return $this
+     */
+    /**
+     * @param $key
+     * @param $compare
+     * @param $value
+     * @return $this
+     */
     public function where($key, $compare = null, $value = null): static
     {
         if ($value === null) {
@@ -59,13 +98,21 @@ class Mysql
             $compare = in_array($compare, self::OPERS) ? $compare : '=';
         }
         if (!empty($key))
-            array_push($this->where, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
+            $this->where[] = is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]];
         return $this;
     }
 
+    /**
+     * @param $wheres
+     * @return array
+     */
+    /**
+     * @param $wheres
+     * @return array
+     */
     protected static function paserWhereArray($wheres): array
     {
-        $array = array();
+        $array = [];
         foreach ($wheres as $k => $v) {
             $item = is_array($v) && is_int($k) ? $v : $wheres;
             foreach ($item as $jk => $jv) {
@@ -78,7 +125,7 @@ class Mysql
                     $tempCompare = '=';
                     $tempValue   = $jv;
                 }
-                array_push($array, [$tempKey, $tempCompare, $tempValue]);
+                $array[] = [$tempKey, $tempCompare, $tempValue];
                 break;
             }
             if (!is_array($v)) {
@@ -88,16 +135,36 @@ class Mysql
         return $array;
     }
 
+    /**
+     * @param $key
+     * @param $compare
+     * @param $value
+     * @return $this
+     */
+    /**
+     * @param $key
+     * @param $compare
+     * @param $value
+     * @return $this
+     */
     public function whereOr($key, $compare = null, $value = null): static
     {
         if ($value === null) {
             $value   = in_array($compare, self::OPERS) ? $value : $compare;
             $compare = in_array($compare, self::OPERS) ? $compare : '=';
         }
-        array_push($this->whereOr, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
+        $this->whereOr[] = is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]];
         return $this;
     }
 
+    /**
+     * @param $data
+     * @return int
+     */
+    /**
+     * @param $data
+     * @return int
+     */
     public function insert($data = null): int
     {
         $this->action = 'INSERT';
@@ -106,6 +173,14 @@ class Mysql
         return mysqli_affected_rows($this->mysqli);
     }
 
+    /**
+     * @param $data
+     * @return $this
+     */
+    /**
+     * @param $data
+     * @return $this
+     */
     public function data($data): static
     {
         if ($data !== null) {
@@ -121,6 +196,9 @@ class Mysql
         return $this;
     }
 
+    /**
+     * @return \mysqli_result|bool|$this
+     */
     protected function paserAndExec(): mysqli_result|bool|static
     {
 
@@ -160,11 +238,11 @@ class Mysql
         for ($i = 0; $i < count($this->where); $i++) {
             for ($j = 0; $j < count($this->where[$i]); $j++) {
                 if ($j === 0 && $i === 0) {
-                    $this->command .= "WHERE (";
+                    $this->command .= 'WHERE (';
                 } elseif ($j === 0) {
-                    $this->command .= "AND (";
+                    $this->command .= 'AND (';
                 } else {
-                    $this->command .= "AND ";
+                    $this->command .= 'AND ';
                 }
 
                 $key           = "`{$this->where[$i][$j][0]}`";
@@ -180,11 +258,11 @@ class Mysql
         for ($i = 0; $i < count($this->whereOr); $i++) {
             for ($j = 0; $j < count($this->whereOr[$i]); $j++) {
                 if ($j === 0 && $i === 0) {
-                    $this->command .= "OR (";
+                    $this->command .= 'OR (';
                 } elseif ($j === 0) {
-                    $this->command .= "OR (";
+                    $this->command .= 'OR (';
                 } else {
-                    $this->command .= "AND ";
+                    $this->command .= 'AND ';
                 }
                 $key           = "`{$this->whereOr[$i][$j][0]}`";
                 $compare       = $this->whereOr[$i][$j][1];
@@ -196,8 +274,8 @@ class Mysql
             }
         }
 
-        if ($this->limit) {
-            $this->command .= "LIMIT {$this->limit}";
+        if ($this->databaseInfo->limit) {
+            $this->command .= "LIMIT {$this->databaseInfo->limit}";
         }
 
         if ($this->order) {
@@ -209,13 +287,22 @@ class Mysql
         return $this;
     }
 
-    public function query($command)
+    /**
+     * @param $command
+     * @return mixed
+     */
+    public function query($command): mixed
     {
         $this->command = $command;
         $this->paserAndExec();
         return $this->execr;
     }
 
+
+    /**
+     * @param $data
+     * @return string
+     */
     protected static function parseInsertArray($data): string
     {
         $i      = 0;
@@ -231,7 +318,7 @@ class Mysql
                 if ($i !== 0 || $j !== 0) {
                     continue;
                 }
-                $field .= $i === 0 ? '(' : '';
+                $field .= '(';
                 $field .= "`{$ik}`";
                 $field .= $i === count($item) - 1 ? ') ' : ',';
                 $i++;
@@ -246,6 +333,14 @@ class Mysql
         return "{$field} VALUES {$values}";
     }
 
+    /**
+     * @param $data
+     * @return int
+     */
+    /**
+     * @param $data
+     * @return int
+     */
     public function update($data = null): int
     {
         $this->action = 'UPDATE';
@@ -254,6 +349,9 @@ class Mysql
         return mysqli_affected_rows($this->mysqli);
     }
 
+    /**
+     * @return int
+     */
     public function delete(): int
     {
         $this->action = 'DELETE';
@@ -261,17 +359,22 @@ class Mysql
         return mysqli_affected_rows($this->mysqli);
     }
 
+    /**
+     * @return array|null
+     */
     public function select(): ?array
     {
         $this->action = 'SELECT';
         $this->paserAndExec();
         if ($this->execr) {
-            $result = mysqli_fetch_all($this->execr, MYSQLI_ASSOC);
-            return $result;
+            return mysqli_fetch_all($this->execr, MYSQLI_ASSOC);
         }
         return null;
     }
 
+    /**
+     * @return int
+     */
     public function count(): int
     {
         $this->action = 'SELECT';
@@ -284,6 +387,9 @@ class Mysql
         return 0;
     }
 
+    /**
+     * @return $this
+     */
     public function field(): static
     {
         $this->field = '';
@@ -295,12 +401,25 @@ class Mysql
         return $this;
     }
 
+    /**
+     * @param $field
+     * @param $sort
+     * @return $this
+     */
+    /**
+     * @param $field
+     * @param $sort
+     * @return $this
+     */
     public function order($field, $sort): static
     {
         $this->order = "`{$field}` {$sort}";
         return $this;
     }
 
+    /**
+     * @return array|null
+     */
     public function first(): ?array
     {
         $this->action = 'SELECT';
@@ -313,20 +432,30 @@ class Mysql
         return null;
     }
 
+    /**
+     * @param int $page
+     * @param int $limit
+     * @return Mysql
+     */
     public function page(int $page, int $limit): static
     {
-        $start = ($page - 1) * $limit;
-        $end   = ($page * $limit) - 1;
-        $this->limit($start, $end);
-        return $this;
+        return $this->databaseInfo->page($page, $limit);
     }
 
+    /**
+     * @param int $start
+     * @param int $end
+     * @return static
+     */
     public function limit(int $start, int $end): static
     {
-        $this->limit = "$start,$end";
-        return $this;
+        return $this->databaseInfo->limit($start, $end);
     }
 
+    /**
+     * @param string $command
+     * @return array
+     */
     public function queryArray(string $command): array
     {
         $this->command = $command;

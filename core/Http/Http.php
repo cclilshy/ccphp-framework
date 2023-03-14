@@ -21,6 +21,7 @@ use core\Flow\FlowController;
 // Load The Running Http Information
 // And Guide To The Destination According To The Routing Static Method Can Be Called Anywhere
 
+
 class Http
 {
     private static array  $config;         // 全局配置
@@ -35,12 +36,12 @@ class Http
      */
     public function __construct(?Request $request = null, ?bool $box = false)
     {
-        $this->statistics = new Statistics;
+        $this->statistics = new Statistics();
         $this->box        = $box;
         if ($request) {
             $this->request = $request;
         } else {
-            $this->request = new Request;
+            $this->request = new Request();
         }
     }
 
@@ -55,7 +56,7 @@ class Http
         // 加载路由
         self::$config = Config::get('http') ?? [];
         Master::rouse('Route\Route');
-        return new self;
+        return new self();
     }
 
     /**
@@ -66,6 +67,9 @@ class Http
         return new self($request, $box);
     }
 
+    /**
+     *
+     */
     public function __destruct()
     {
         unset($this->request);
@@ -75,9 +79,9 @@ class Http
     /**
      * @param string  $type
      * @param  ?array $data
-     * @return ?string
+     * @return string|null
      */
-    public function go(string $type, ?array $data = []): ?string
+    public function go(string $type, ?array $data = []): string|null
     {
         $this->request->setType($type);
         $this->request->parse();
@@ -90,7 +94,7 @@ class Http
                         'request'  => $this->request,
                         'response' => $this->response,
                         'http'     => $this,
-                        'plaster'  => new Plaster
+                        'plaster'  => new Plaster()
                     ];
                     $_ = new $map->className($t);
                     $t = call_user_func([$_, $map->action], $t);
@@ -98,7 +102,7 @@ class Http
                     if ($this->box) {
                         return $this->request->result($t);
                     } else {
-                        return $this->request->send($t);
+                        $this->request->send($t);
                     }
                 default:
                     break;
@@ -113,7 +117,7 @@ class Http
                     if ($this->box) {
                         return $this->request->result(file_get_contents($filePath));
                     } else {
-                        return $this->request->send(file_get_contents($filePath));
+                        $this->request->send(file_get_contents($filePath));
                     }
                     // return $this;
                 }
@@ -122,7 +126,7 @@ class Http
             if ($this->box) {
                 return $this->request->result($_);
             } else {
-                return $this->request->send($_);
+                $this->request->send($_);
             }
         }
         $this->statistics->record('endTime', microtime(true));
@@ -168,7 +172,7 @@ class Http
      * @param string $errFile
      * @param int    $errLine
      * @param int    $httpCode
-     * @return \core\Http\Throwable|string
+     * @return string|null
      */
     public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503)
     {

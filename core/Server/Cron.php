@@ -16,6 +16,9 @@ class Cron
 {
     private static $tasks;
 
+    /**
+     * @return int
+     */
     public static function start()
     {
         return Process::fork(function () {
@@ -33,15 +36,24 @@ class Cron
         });
     }
 
-    public static function stop()
+    /**
+     * @return void
+     */
+    public static function stop(): void
     {
-        return Server::release();
+        Server::release();
     }
 
-    public static function timer($name, $callback, $interval)
+    /**
+     * @param $name
+     * @param $callback
+     * @param $interval
+     * @return void
+     */
+    public static function timer($name, $callback, $interval): void
     {
         if (is_callable($callback)) {
-            self::$tasks[$name] = array('interval' => $interval, 'lasttime' => 0,);
+            self::$tasks[$name] = ['interval' => $interval, 'lasttime' => 0,];
         }
         Route::cron($name, $callback);
     }
