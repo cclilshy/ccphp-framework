@@ -12,8 +12,8 @@ namespace core\Flow;
 // 流程控制器
 class FlowController
 {
-    private FlowBuild $flowBuild;   // 流程模块包
-    private array $working = array();   // 数据暂存区
+    private FlowBuild $flowBuild;           // 流程模块包
+    private array     $working = array();   // 数据暂存区
 
     public function __construct(FlowBuild $flowBuild)
     {
@@ -60,7 +60,7 @@ class FlowController
      */
     public function go()
     {
-        $params = func_get_args();
+        $params   = func_get_args();
         $params[] = $this;
         return call_user_func_array($this->flowBuild->flow, $params);
     }

@@ -15,10 +15,10 @@ use Illuminate\Database\Capsule\Manager as Capsule;
 
 class DB
 {
-    private static $config; // 配置
-    private static $db; // 全局连接
-    private static string $dbClass; // 使用的数据库类型
-    private static Capsule $capsule; // Laravel的依赖
+    private static array           $config;  // 配置
+    private static mixed           $db;      // 全局连接
+    private static string          $dbClass; // 使用的数据库类型
+    private static Capsule         $capsule; // Laravel的依赖
     private static Connection|Pool $connect; // 储存连接实体或连接池
 
     /**

@@ -9,11 +9,16 @@
 
 // Support All Classes
 
-return ['onStart' => function ($socket) {
-}, 'onConnect'    => function ($socket) {
-    $socket->send("hello,world\n");
-}, 'onMessage'    => function ($socket, $data) {
-    $socket->send('you say : ' . $data);
-    sleep(1000);
-}, 'onClose'      => function ($socket) {
-}];
+return [
+    'onStart'   => function ($socket) {
+    },
+    'onConnect' => function ($socket) {
+        $socket->send("hello,world\n");
+    },
+    'onMessage' => function ($socket, $data) {
+        $socket->send('you say : ' . $data);
+        sleep(1000);
+    },
+    'onClose'   => function ($socket) {
+    }
+];

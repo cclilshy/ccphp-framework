@@ -45,13 +45,13 @@ class Route
         if (!in_array($name, self::METHODS))
             return;
 
-        $method = strtoupper($name);
+        $method   = strtoupper($name);
         $entrance = '/' . trim($arguments[0], '/');
 
         if (is_callable($arguments[1])) {
             self::$map[$method][$entrance] = new Map('anonymous', '', '', $arguments[1]);
         } else {
-            $_ = explode('@', $arguments[1]);
+            $_                             = explode('@', $arguments[1]);
             self::$map[$method][$entrance] = new Map('controller', $_[0], $_[1] ?? 'main');
         }
     }
@@ -94,7 +94,7 @@ class Route
     public static function guide(string $method, string $entrance): Map|null
     {
         $entrance = '/' . trim($entrance, '/');
-        $method = strtoupper($method);
+        $method   = strtoupper($method);
         if (isset(self::$map[$method][$entrance])) {
             return self::$map[$method][$entrance];
         }

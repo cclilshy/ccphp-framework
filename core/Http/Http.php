@@ -13,6 +13,7 @@ namespace core\Http;
 use core\Config;
 use core\Master;
 use core\Route\Route;
+use core\Ccphp\Ccphp;
 use core\Ccphp\Statistics;
 use core\Flow\FlowController;
 
@@ -22,12 +23,12 @@ use core\Flow\FlowController;
 
 class Http
 {
-    private static array $config;   // 全局配置
-    public FlowController $flow;    // 流程
-    public Statistics $statistics;  // 统计
-    public Request $request;        // 请求信息
-    public Response $response;      // 响应信息
-    protected bool $box;
+    private static array  $config;         // 全局配置
+    public FlowController $flow;           // 流程
+    public Statistics     $statistics;     // 统计
+    public Request        $request;        // 请求信息
+    public Response       $response;       // 响应信息
+    protected bool        $box;
 
     /**
      * Http constructor.
@@ -35,7 +36,7 @@ class Http
     public function __construct(?Request $request = null, ?bool $box = false)
     {
         $this->statistics = new Statistics;
-        $this->box = $box;
+        $this->box        = $box;
         if ($request) {
             $this->request = $request;
         } else {
@@ -85,7 +86,12 @@ class Http
         if ($map = Route::guide($this->request->method, $this->request->path)) {
             switch ($map->type) {
                 case 'controller':
-                    $t = (object)['request' => $this->request, 'response' => $this->response, 'http' => $this, 'plaster' => new Plaster];
+                    $t = (object)[
+                        'request'  => $this->request,
+                        'response' => $this->response,
+                        'http'     => $this,
+                        'plaster'  => new Plaster
+                    ];
                     $_ = new $map->className($t);
                     $t = call_user_func([$_, $map->action], $t);
                     $t = $this->statistics($t, $this->statistics);
@@ -94,8 +100,6 @@ class Http
                     } else {
                         return $this->request->send($t);
                     }
-
-                    break;
                 default:
                     break;
             }
@@ -135,15 +139,21 @@ class Http
     {
         if (Http::$config['debug'] === true && $this->request->ajax === false) {
             $this->statistics->record('endTime', microtime(true));
-            $general = ['timeLength' => $statistics->endTime - $statistics->startTime, 'uri' => $this->request->path, 'fileCount' => count($statistics->loadFiles), 'memory' => $statistics->memory, 'maxMemory' => $statistics->maxMemory];
-            $plaster = new \core\Http\Plaster();
+            $general = [
+                'timeLength' => $statistics->endTime - $statistics->startTime,
+                'uri'        => $this->request->path,
+                'fileCount'  => count($statistics->loadFiles),
+                'memory'     => $statistics->memory,
+                'maxMemory'  => $statistics->maxMemory
+            ];
+            $plaster = new Plaster();
             $plaster->assign('sqls', $statistics->sqls);
             $plaster->assign('files', $statistics->loadFiles);
             $plaster->assign('general', $general);
             $plaster->assign('gets', $this->request->get);
             $plaster->assign('posts', $this->request->post);
 
-            $statisticsHtml = \core\Ccphp\Ccphp::template('statistics');
+            $statisticsHtml = Ccphp::template('statistics');
 
             return $content .= PHP_EOL . $plaster->apply($statisticsHtml);
         }
@@ -158,14 +168,14 @@ class Http
      * @param string $errFile
      * @param int    $errLine
      * @param int    $httpCode
-     * @return void
+     * @return \core\Http\Throwable|string
      */
     public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503)
     {
         $this->statistics->record('endTime', microtime(true));
         $fileDescribe = '';
         if (is_file($errFile)) {
-            $errLines = file($errFile);
+            $errLines  = file($errFile);
             $startLine = max($errLine - 10, 1);
             for ($i = 0; $i < 21; $i++, $startLine++) {
                 if ($startLine > count($errLines))
@@ -174,9 +184,22 @@ class Http
             }
         }
 
-        $general = ['uri' => $this->request->path, 'info' => ['errno' => $errno, 'errstr' => $errstr, 'errFile' => $errFile, 'errLine' => $errLine, 'fileDescribe' => $fileDescribe], 'timeLength' => $this->statistics->endTime - $this->statistics->startTime, 'fileCount' => count($this->statistics->loadFiles), 'memory' => $this->statistics->memory, 'maxMemory' => $this->statistics->maxMemory];
+        $general = [
+            'uri'        => $this->request->path,
+            'info'       => [
+                'errno'        => $errno,
+                'errstr'       => $errstr,
+                'errFile'      => $errFile,
+                'errLine'      => $errLine,
+                'fileDescribe' => $fileDescribe
+            ],
+            'timeLength' => $this->statistics->endTime - $this->statistics->startTime,
+            'fileCount'  => count($this->statistics->loadFiles),
+            'memory'     => $this->statistics->memory,
+            'maxMemory'  => $this->statistics->maxMemory
+        ];
 
-        $plaster = new \core\Http\Plaster();
+        $plaster = new Plaster();
         $plaster->assign('sqls', $this->statistics->sqls);
         $plaster->assign('files', $this->statistics->loadFiles);
         $plaster->assign('general', $general);
@@ -184,7 +207,7 @@ class Http
         $plaster->assign('posts', $this->request->post);
         $plaster->assign('config', Config::all());
 
-        $html = \core\Ccphp\Ccphp::template('error');
+        $html = Ccphp::template('error');
         return $plaster->apply($html);
     }
 }

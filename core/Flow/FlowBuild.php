@@ -15,9 +15,9 @@ class FlowBuild
     // 模块列表
     private array $modules = array();
     // 流程callable
-    private $flow;
+    private mixed $flow;
     // 流程错误处理
-    private $errorHandler;
+    private mixed $errorHandler;
 
     public function __construct()
     {
@@ -45,7 +45,7 @@ class FlowBuild
      */
     public function build(callable $flow, callable $errorHandler): FlowController
     {
-        $this->flow = $flow;
+        $this->flow         = $flow;
         $this->errorHandler = $errorHandler;
         return new FlowController($this);
     }

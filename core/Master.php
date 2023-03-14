@@ -9,9 +9,11 @@
 
 namespace core;
 
+use Exception;
+
 class Master
 {
-    private static array $record;
+    private static array  $record;
     private static string $modulePath = __NAMESPACE__;
 
     /**
@@ -24,7 +26,7 @@ class Master
             self::$record[] = $name;
             return call_user_func_array([$class, 'initialization'], $args);
         } else {
-            throw new \Exception("Class $class not found");
+            throw new Exception("Class $class not found");
         }
     }
 
@@ -32,7 +34,7 @@ class Master
     {
         $result = array();
         foreach (self::$record as $name) {
-            $class = self::$modulePath . '\\' . ucfirst($name);
+            $class         = self::$modulePath . '\\' . ucfirst($name);
             $result[$name] = call_user_func([$class, 'reload']);
         }
         return $result;

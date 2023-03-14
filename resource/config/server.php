@@ -16,4 +16,5 @@ return [// 启用进程树
         'database_pool_connect' => 20,
 
         // 一个连接最大供进程使用
-        'database_pool_max'     => 20,];
+        'database_pool_max'     => 20
+];

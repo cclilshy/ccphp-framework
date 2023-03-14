@@ -11,19 +11,19 @@ namespace core\File;
 
 class Pipe
 {
-    private $resource;
-    private int $point;
-    private int $eof;
+    private        $resource;
+    private int    $point;
+    private int    $eof;
     private string $name;
     private string $path;
 
     private function __construct($name, $eof = -1)
     {
-        $this->name = $name;
-        $this->path = CACHE_PATH . '/pipe/' . $name . '.pipe';
+        $this->name     = $name;
+        $this->path     = CACHE_PATH . '/pipe/' . $name . '.pipe';
         $this->resource = fopen($this->path, 'r+');
-        $this->point = 0;
-        $this->eof = $eof;
+        $this->point    = 0;
+        $this->eof      = $eof;
     }
 
     public static function create(string $name): Pipe|false
@@ -94,16 +94,16 @@ class Pipe
         }
 
         $this->adjustPoint($start);
-        $length = $end - $start + 1;
+        $length  = $end - $start + 1;
         $context = '';
 
         while ($length > 0) {
             if ($length > 8192) {
                 $context .= fread($this->resource, 8192);
-                $length -= 8192;
+                $length  -= 8192;
             } else {
                 $context .= fread($this->resource, $length);
-                $length = 0;
+                $length  = 0;
             }
         }
 

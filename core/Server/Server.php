@@ -11,44 +11,44 @@ namespace core\Server;
 
 use core\File\Pipe;
 
-// record server Server
 // 支持查询任意服务信息,包括未注册的服务信息
 class Server
 {
     public string $name;
-    public bool $status;
-    public int $pid;
-    public Pipe $pipe;
-    public array $data;
+    public bool   $status;
+    public int    $pid;
+    public Pipe   $pipe;
+    public array  $data;
 
-
-    private function __construct($name, $new = false)
+    /**
+     * @param string $name
+     * @param false  $new
+     */
+    private function __construct(string $name, bool $new = false)
     {
         if ($new) {
             $this->status = false;
-            $this->name = $name;
-            $this->pid = posix_getpid();
-            $this->pipe = Pipe::create($name);
-            $this->data = [];
+            $this->name   = $name;
+            $this->pid    = posix_getpid();
+            $this->pipe   = Pipe::create($name);
+            $this->data   = [];
             $this->record();
         } else {
-            $this->pipe = Pipe::link($name);
-            $server = $this->pipe->read();
-            $server = unserialize($server);
+            $this->pipe   = Pipe::link($name);
+            $server       = $this->pipe->read();
+            $server       = unserialize($server);
             $this->status = $server->status;
-            $this->name = $server->name;
-            $this->pid = $server->pid;
-            $this->data = $server->data;
+            $this->name   = $server->name;
+            $this->pid    = $server->pid;
+            $this->data   = $server->data;
         }
     }
 
-    // public function __destruct(){
-    //     $this->record();
-    // }
-
-    // 设置与保存信息
-
-    public static function create(string $name = ''): Server|false
+    /**
+     * @param ?string $name
+     * @return \core\Server\Server|false
+     */
+    public static function create(?string $name): Server|false
     {
         $name = empty($name) ? str_replace('/', '_', debug_backtrace()[0]['file']) : $name;
         if (Pipe::link($name)) {
@@ -58,12 +58,21 @@ class Server
         }
     }
 
+    // 设置与保存信息
+
+    /**
+     * @return void
+     */
     private function record(): void
     {
         $this->pipe->write(serialize($this));
     }
 
-    public static function load(string $name = ''): object|false
+    /**
+     * @param string $name
+     * @return \core\Server\Server|false
+     */
+    public static function load(string $name = ''): Server|false
     {
         $name = empty($name) ? str_replace('/', '_', debug_backtrace()[0]['file']) : $name;
         if (Pipe::link($name)) {
@@ -73,8 +82,18 @@ class Server
         }
     }
 
-    // 创建一个服务,并自动储存该类的信息, 返回创建成功与否
+    //    /**
+    //     * @return void
+    //     */
+    //    public function __destruct()
+    //    {
+    //        $this->record();
+    //    }
 
+    /**
+     * @param $data
+     * @return array|void
+     */
     public function info($data = null)
     {
         if ($data === null) {
@@ -84,8 +103,9 @@ class Server
         $this->record();
     }
 
-    // 加载一个服务的信息
-
+    /**
+     * @return void
+     */
     public function release(): void
     {
         $this->pipe->release();

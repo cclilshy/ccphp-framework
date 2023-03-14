@@ -15,14 +15,14 @@ use core\Server\Server;
 // 进程🌲
 class Tree
 {
-    private Node $root; // 根节点
-    private Node $orphanProcess;    // 孤儿根节点
+    private Node  $root;             // 根节点
+    private Node  $orphanProcess;    // 孤儿根节点
     private array $map = array();
 
 
     private function __construct()
     {
-        $this->root = new Node(0, 0, 'undefined');
+        $this->root          = new Node(0, 0, 'undefined');
         $this->orphanProcess = new Node(1, 0, 'undefined');
     }
 
@@ -104,9 +104,9 @@ class Tree
             return $this->orphanProcess;
         }
         // 新成员进入，找到指定节点，插入新成员
-        $node = $this->root;
+        $node            = $this->root;
         $parentProcessId = $pid;
-        $path = array($parentProcessId);
+        $path            = array($parentProcessId);
         while ($parentProcessId = $this->map[$parentProcessId]['ppid'] ?? null) {
             if ($parentProcessId === 1) {
                 $node = $this->orphanProcess;
@@ -181,16 +181,19 @@ class Tree
      * 关闭树服务
      *
      * @return bool
+     * @throws \Exception
      */
     public static function stop(): bool
     {
         if ($server = Server::load('Tree')) {
             $ipcName = $server->data['tree_name'];
-            if ($IPC = IPC::link($ipcName)) {
+            if ($IPC = IPC::link($ipcName, true)) {
                 $IPC->stop();
                 $server->release();
                 Console::pgreen('[TreeServer] stopped!');
                 return true;
+            } else {
+                $server->release();
             }
         }
         Console::pred('[TreeServer] stop failed may not run');

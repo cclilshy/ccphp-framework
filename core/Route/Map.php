@@ -17,7 +17,7 @@ class Map
     private string $type;
     private string $className;
     private string $action;
-    private $callable;
+    private        $callable;
 
     /**
      * 创建一个导向，支持类::静态函数/类名->方法/匿名函数
@@ -32,7 +32,7 @@ class Map
         $this->type = $type;
         if ($type == 'controller') {
             $this->className = $className;
-            $this->action = $action;
+            $this->action    = $action;
         } else {
             $this->callable = $callable;
         }

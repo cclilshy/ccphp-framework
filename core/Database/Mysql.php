@@ -5,26 +5,31 @@
  */
 
 namespace core\Database;
+
+use mysqli;
+use mysqli_result;
+use core\Ccphp\Launch;
+
 class Mysql
 {
     const OPERS = ['IS', 'LIKE', 'NOT', 'IS NOT', '<', '>', '<>', '='];
-    protected $config;
-    protected \mysqli $mysqli;
-    protected $table;
-    protected array $where = [];
-    protected array $whereOr = [];
-    protected $order = null;
-    protected string $field = '*';
-    protected array $data = [];
-    protected $limit = null;
-    protected $action;
-    protected $command;
-    protected $execr;
+    protected        $config;
+    protected mysqli $mysqli;
+    protected        $table;
+    protected array  $where   = [];
+    protected array  $whereOr = [];
+    protected        $order   = null;
+    protected string $field   = '*';
+    protected array  $data    = [];
+    protected        $limit   = null;
+    protected        $action;
+    protected        $command;
+    protected        $execr;
 
     public function __construct($config = null)
     {
         if ($config) {
-            $this->mysqli = new \mysqli($config['host'], $config['username'], $config['password'], $config['database'], $config['port']);
+            $this->mysqli = new mysqli($config['host'], $config['username'], $config['password'], $config['database'], $config['port']);
         }
         defined('DESC') || define('DESC', 'DESC');
         defined('ASC') || define('ASC', 'ASC');
@@ -50,7 +55,7 @@ class Mysql
     public function where($key, $compare = null, $value = null): static
     {
         if ($value === null) {
-            $value = in_array($compare, self::OPERS) ? $value : $compare;
+            $value   = in_array($compare, self::OPERS) ? $value : $compare;
             $compare = in_array($compare, self::OPERS) ? $compare : '=';
         }
         if (!empty($key))
@@ -65,13 +70,13 @@ class Mysql
             $item = is_array($v) && is_int($k) ? $v : $wheres;
             foreach ($item as $jk => $jv) {
                 if (is_int($jk)) {
-                    $tempKey = $item[0];
+                    $tempKey     = $item[0];
                     $tempCompare = count($item) === 3 ? $item[1] : '=';
-                    $tempValue = count($item) === 3 ? $item[2] : $item[1];
+                    $tempValue   = count($item) === 3 ? $item[2] : $item[1];
                 } else {
-                    $tempKey = $jk;
+                    $tempKey     = $jk;
                     $tempCompare = '=';
-                    $tempValue = $jv;
+                    $tempValue   = $jv;
                 }
                 array_push($array, [$tempKey, $tempCompare, $tempValue]);
                 break;
@@ -86,7 +91,7 @@ class Mysql
     public function whereOr($key, $compare = null, $value = null): static
     {
         if ($value === null) {
-            $value = in_array($compare, self::OPERS) ? $value : $compare;
+            $value   = in_array($compare, self::OPERS) ? $value : $compare;
             $compare = in_array($compare, self::OPERS) ? $compare : '=';
         }
         array_push($this->whereOr, is_array($key) ? self::paserWhereArray($key) : [[$key, $compare, $value]]);
@@ -107,16 +112,16 @@ class Mysql
             $this->data = $data;
             foreach ($this->data as $key => $value) {
                 unset($this->data[$key]);
-                $key = str_replace('`', '\`', $key);
-                $value = str_replace("\\", "\\\\", $value);
-                $value = str_replace("'", "\'", $value);
+                $key              = str_replace('`', '\`', $key);
+                $value            = str_replace("\\", "\\\\", $value);
+                $value            = str_replace("'", "\'", $value);
                 $this->data[$key] = $value;
             }
         }
         return $this;
     }
 
-    protected function paserAndExec(): \mysqli_result|bool|static
+    protected function paserAndExec(): mysqli_result|bool|static
     {
 
         if ($this->command && $this->action === '') {
@@ -162,9 +167,9 @@ class Mysql
                     $this->command .= "AND ";
                 }
 
-                $key = "`{$this->where[$i][$j][0]}`";
-                $compare = $this->where[$i][$j][1];
-                $value = $this->where[$i][$j][2] ? "'{$this->where[$i][$j][2]}'" : 'NULL';
+                $key           = "`{$this->where[$i][$j][0]}`";
+                $compare       = $this->where[$i][$j][1];
+                $value         = $this->where[$i][$j][2] ? "'{$this->where[$i][$j][2]}'" : 'NULL';
                 $this->command .= "{$key} {$compare} {$value} ";
                 if ($j === count($this->where[$i]) - 1) {
                     $this->command .= ') ';
@@ -181,9 +186,9 @@ class Mysql
                 } else {
                     $this->command .= "AND ";
                 }
-                $key = "`{$this->whereOr[$i][$j][0]}`";
-                $compare = $this->whereOr[$i][$j][1];
-                $value = $this->whereOr[$i][$j][2] ? "'{$this->whereOr[$i][$j][2]}'" : 'NULL';
+                $key           = "`{$this->whereOr[$i][$j][0]}`";
+                $compare       = $this->whereOr[$i][$j][1];
+                $value         = $this->whereOr[$i][$j][2] ? "'{$this->whereOr[$i][$j][2]}'" : 'NULL';
                 $this->command .= "{$key} {$compare} {$value} ";
                 if ($j === count($this->whereOr[$i]) - 1) {
                     $this->command .= ') ';
@@ -199,7 +204,7 @@ class Mysql
             $this->command .= "ORDER BY {$this->order}";
         }
 
-        \core\Ccphp\Launch::record('sql', $this->command);
+        Launch::record('sql', $this->command);
         $this->execr = $this->mysqli->query($this->command);
         return $this;
     }
@@ -213,9 +218,9 @@ class Mysql
 
     protected static function parseInsertArray($data): string
     {
-        $i = 0;
-        $j = 0;
-        $field = '';
+        $i      = 0;
+        $j      = 0;
+        $field  = '';
         $values = '';
         foreach ($data as $key => $value) {
             $item = is_int($key) ? $value : $data;
@@ -270,7 +275,7 @@ class Mysql
     public function count(): int
     {
         $this->action = 'SELECT';
-        $this->field = 'count(*)';
+        $this->field  = 'count(*)';
         $this->paserAndExec();
         if ($this->execr) {
             $result = mysqli_fetch_row($this->execr);
@@ -282,7 +287,7 @@ class Mysql
     public function field(): static
     {
         $this->field = '';
-        $arguments = func_get_args();
+        $arguments   = func_get_args();
         while ($item = array_shift($arguments)) {
             $this->field .= "`{$item}`";
             $this->field .= count($arguments) > 0 ? ',' : '';
@@ -311,7 +316,7 @@ class Mysql
     public function page(int $page, int $limit): static
     {
         $start = ($page - 1) * $limit;
-        $end = ($page * $limit) - 1;
+        $end   = ($page * $limit) - 1;
         $this->limit($start, $end);
         return $this;
     }

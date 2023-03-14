@@ -14,6 +14,7 @@
 namespace core\Http;
 
 use Exception;
+use core\Config;
 
 class Lang
 {
@@ -39,7 +40,7 @@ class Lang
      */
     public static function get(string $name, string $lang = ''): string
     {
-        $lang = $lang ?: \core\Config::get('lang.default_lang');
+        $lang = $lang ?: Config::get('lang.default_lang');
         $lang = self::load($lang);
         return $lang[$name] ?? $name;
     }
@@ -58,7 +59,7 @@ class Lang
         }
         $file = APP_PATH . 'lang/' . $lang . '.php';
         if (is_file($file)) {
-            $lang = include $file;
+            $lang              = include $file;
             self::$lang[$lang] = $lang;
             return $lang;
         } else {

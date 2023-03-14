@@ -11,32 +11,32 @@ namespace core\Http;
 
 class Request
 {
-    private $client;
-    private string $type;
-    private string $method;
-    private string $version;
-    private string $path;
-    private string $cookie;
-    private string $body;
-    private array $get;
-    private array $post;
-    private array $header;
-    private bool $ajax;
+    private mixed    $client;
+    private string   $type;
+    private string   $method;
+    private string   $version;
+    private string   $path;
+    private string   $cookie;
+    private string   $body;
+    private array    $get;
+    private array    $post;
+    private array    $header;
+    private bool     $ajax;
     private Response $response;
 
     public function __construct(?array $config = [])
     {
         if ($config) {
-            $this->client = $config['socket'];
-            $this->type = 'SERVER';
-            $this->method = $config['method'];
+            $this->client  = $config['socket'];
+            $this->type    = 'SERVER';
+            $this->method  = $config['method'];
             $this->version = $config['version'];
-            $this->path = $config['path'];
-            $this->cookie = $config['header']['COOKIE'] ?? '';
-            $this->get = [];
-            $this->post = [];
-            $this->header = $config['header'];
-            $this->ajax = isset($this->header['X-REQUESTED-WITH']) && $this->header['X-REQUESTED-WITH'] === 'XMLHttpRequest';
+            $this->path    = $config['path'];
+            $this->cookie  = $config['header']['COOKIE'] ?? '';
+            $this->get     = [];
+            $this->post    = [];
+            $this->header  = $config['header'];
+            $this->ajax    = isset($this->header['X-REQUESTED-WITH']) && $this->header['X-REQUESTED-WITH'] === 'XMLHttpRequest';
         }
         $this->response = new Response($this);
     }
@@ -86,13 +86,13 @@ class Request
     {
         if ($this->type === 'SERVER') {
         } elseif ($this->type === 'PROXY') {
-            $this->path = '/' . trim($_SERVER['REQUEST_URI'], '/');
+            $this->path   = '/' . trim($_SERVER['REQUEST_URI'], '/');
             $this->method = $_SERVER['REQUEST_METHOD'];
             $this->cookie = $_SERVER['HTTP_COOKIE'] ?? '';
-            $this->get = $_GET;
-            $this->post = $_POST;
+            $this->get    = $_GET;
+            $this->post   = $_POST;
             $this->header = getallheaders();
-            $this->ajax = isset($this->header['X-Requested-With']) && $this->header['X-Requested-With'] === 'XMLHttpRequest';
+            $this->ajax   = isset($this->header['X-Requested-With']) && $this->header['X-Requested-With'] === 'XMLHttpRequest';
         }
         return $this;
     }

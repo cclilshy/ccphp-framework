@@ -10,12 +10,13 @@
 
 namespace http\controller;
 
+use stdClass;
 use core\Http\Controller;
 
 class Index extends Controller
 {
 
-    public function __construct(\stdClass $base)
+    public function __construct(stdClass $base)
     {
         parent::__construct($base);
     }

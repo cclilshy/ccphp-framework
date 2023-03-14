@@ -24,7 +24,7 @@ class Config
     public static function get(string $name)
     {
         $reqConstruct = explode('.', $name);
-        $rest = self::$config;
+        $rest         = self::$config;
         for ($i = 0; $i < count($reqConstruct); $i++) {
             $rest = $rest[$reqConstruct[$i]] ?? null;
         }
@@ -45,7 +45,7 @@ class Config
     public static function set(string $name, $value)
     {
         $reqConstruct = explode('.', $name);
-        $rest = &self::$config;
+        $rest         = &self::$config;
         for ($i = 0; $i < count($reqConstruct); $i++) {
             $rest = &$rest[$reqConstruct[$i]];
         }

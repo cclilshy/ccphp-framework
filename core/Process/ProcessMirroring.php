@@ -12,8 +12,8 @@ namespace core\Process;
 // 进程镜像，用于储存用户自定义调用栈序，可反化加载调用栈
 class ProcessMirroring
 {
-    public $func;
-    public array $flow = array();
+    public        $func;
+    public array  $flow = array();
     public object $space;
 
     /**
@@ -67,7 +67,7 @@ class ProcessMirroring
      */
     public function go()
     {
-        $result = call_user_func($this->func, $this);
+        $result     = call_user_func($this->func, $this);
         $this->flow = [];
         return $result;
     }

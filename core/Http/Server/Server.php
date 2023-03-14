@@ -2,6 +2,7 @@
 
 namespace core\Http\Server;
 
+use Exception;
 use core\Master;
 use core\Config;
 use core\Console;
@@ -13,12 +14,12 @@ use core\Server\Server as BaseServer;
  */
 class Server
 {
-    private static mixed $server; // 服务套接字
-    private static mixed $eventServer; // Event套接字
-    private static array $tasks = array();    // 代办事项
-    private static array $transfer = array(); // 客户端套接字
-    private static array $handlerScokets = array(); // 消费者套接字
-    private static array $handlerFifos = array();
+    private static mixed $server;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // 服务套接字
+    private static mixed $eventServer;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              // Event套接字
+    private static array $tasks          = array();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    // 代办事项
+    private static array $transfer = array();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       // 客户端套接字
+    private static array $handlerScokets = array();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 // 消费者套接字
+    private static array $handlerFifos   = array();
 
     /**
      * Summary of launch
@@ -30,14 +31,13 @@ class Server
     public static function launch(): void
     {
         if ($server = BaseServer::create('HTTP_SERVER')) {
-            Process::initialization();
             // Process::fork(function () use ($server) {
             Master::rouse('Http\Http');
             ini_set('default_socket_timeout', -1);
             ini_set('max_execution_time', 0);
             try {
                 // 创建连接
-                self::$server = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+                self::$server      = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
                 self::$eventServer = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
                 // 端口非互斥模式
@@ -52,22 +52,24 @@ class Server
 
                 // 监听连接
                 if (!socket_listen(self::$server) || !socket_listen(self::$eventServer)) {
-                    throw new \Exception(socket_strerror(socket_last_error()));
+                    throw new Exception(socket_strerror(socket_last_error()));
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 socket_close(self::$server);
                 socket_close(self::$eventServer);
                 echo '发生错误: ' . $e->getMessage() . PHP_EOL;
                 return;
             }
-
+            Process::initialization();
             // 启动消费者
             $handlerProcessIds = array();
             for ($i = 0; $i < Config::get('http.server_handle_count'); $i++) {
-                $event = EventHandler::create();
-                self::$handlerFifos[] = $event;
-                $handlerProcessIds[] = $event->pid;
+                if ($event = EventHandler::create()) {
+                    self::$handlerFifos[] = $event;
+                    $handlerProcessIds[]  = $event->pid;
+                }
             }
+            usleep(100000);
             Process::guard();
             $server->info(['handlerProcessIds' => $handlerProcessIds, 'serverProcessId' => posix_getpid()]);
 
@@ -105,7 +107,7 @@ class Server
 
                             // 来自客户端的消息
                         } elseif (self::$eventServer === $socket) {
-                            $handler = socket_accept($socket);
+                            $handler                = socket_accept($socket);
                             self::$handlerScokets[] = $handler;
                         } else {
                             echo '客户端发来数据' . PHP_EOL;
@@ -120,17 +122,19 @@ class Server
                             if ($context === '@') {
                                 echo '是消费者消息' . PHP_EOL;
                                 $content = '';
-                                $_ = array();
+                                $_       = array();
 
                                 while (true) {
                                     if (!isset($_[1])) {
                                         $symbol = socket_read($socket, 1);
                                         if ($symbol === '#') {
-                                            if ($content === 'stop')
+                                            if ($content === 'stop') {
                                                 self::release();
+                                                return;
+                                            }
 
                                             // 存如信息并清空暂存区
-                                            $_[] = $content;
+                                            $_[]     = $content;
                                             $content = '';
                                             continue;
                                         }
@@ -140,7 +144,7 @@ class Server
                                         $_[] = socket_read($socket, intval($_[1]));
 
                                         $nominator = $_[0];
-                                        $context = $_[2];
+                                        $context   = $_[2];
 
                                         if ($client = self::$tasks[$nominator] ?? null) {
                                             socket_write($client['socket'], $context);
@@ -156,23 +160,23 @@ class Server
                             // 新的客户端进入
                             $client = &self::$transfer[$socketName];
                             // 读取数据
-                            $context .= socket_read($socket, 1024);
+                            $context           .= socket_read($socket, 1024);
                             $client['context'] .= $context;
 
                             if ($client['method'] === 'undefined') {
                                 if (str_contains($client['context'], "\r\n\r\n")) {
-                                    $_ = explode("\r\n\r\n", $client['context']);
+                                    $_                        = explode("\r\n\r\n", $client['context']);
                                     $client['header_context'] = $_[0];
-                                    $client['body_context'] = $_[1] ?? '';
+                                    $client['body_context']   = $_[1] ?? '';
                                     if ($headerLines = explode("\r\n", $client['header_context'])) {
                                         $base = array_shift($headerLines);
                                         if (count($base = explode(' ', $base)) === 3) {
-                                            $client['method'] = strtoupper($base[0]);
-                                            $client['path'] = $base[1];
+                                            $client['method']  = strtoupper($base[0]);
+                                            $client['path']    = $base[1];
                                             $client['version'] = $base[2];
 
                                             foreach ($headerLines as $item) {
-                                                $_ = explode(':', $item);
+                                                $_                                         = explode(':', $item);
                                                 $client['header'][strtoupper(trim($_[0]))] = trim($_[1] ?? '');
                                             }
 
@@ -210,7 +214,7 @@ class Server
                                 echo '当前客户端总数' . count(self::$transfer) . PHP_EOL;
                                 // 推送处理
                                 self::$tasks[$socketName] = $client;
-                                $handle = self::$handlerFifos[array_rand(self::$handlerFifos)];
+                                $handle                   = self::$handlerFifos[array_rand(self::$handlerFifos)];
                                 $handle->push($socketName, $client);
                                 unset(self::$transfer[$socketName]);
                             }
@@ -233,7 +237,20 @@ class Server
 
     private static function addClient($socket): void
     {
-        self::$transfer[spl_object_hash($socket)] = array('socket' => $socket, 'context' => false, 'header_context' => '', 'body_context' => '', 'method' => 'undefined', 'path' => '', 'version' => '', 'data' => '', 'header' => array(), 'complete' => false, 'createTime' => time(), 'failedCount' => 0,);
+        self::$transfer[spl_object_hash($socket)] = array(
+            'socket'         => $socket,
+            'context'        => false,
+            'header_context' => '',
+            'body_context'   => '',
+            'method'         => 'undefined',
+            'path'           => '',
+            'version'        => '',
+            'data'           => '',
+            'header'         => array(),
+            'complete'       => false,
+            'createTime'     => time(),
+            'failedCount'    => 0,
+        );
     }
 
     /**
@@ -244,13 +261,12 @@ class Server
         foreach (array_column(self::$transfer, 'socket') as $item) {
             self::removeClient($item);
         }
-        foreach (self::$eventServer as $item) {
+        foreach (self::$handlerFifos as $item) {
             $item->push('stop', []);
             $item->close();
         }
         socket_close(self::$server);
         socket_close(self::$eventServer);
-        exit;
     }
 
     /**
@@ -259,40 +275,31 @@ class Server
     public static function stop(): void
     {
         if ($server = BaseServer::load('HTTP_SERVER')) {
-            $pid = pcntl_fork();
-            if ($pid > 0) {
-                declare (ticks=1);
-                pcntl_signal(SIGCHLD, function () use ($pid) {
-                    pcntl_waitpid($pid, $status);
-                    exit;
-                }, false);
-                sleep(5);
-                posix_kill($pid, SIGKILL);
-                $server->release();
-                exit;
-            }
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+             try {
+                    @$_ = socket_connect($socket, '127.0.0.1', Config::get('http.server_port'));
+                    if ($_) {
+                        socket_write($socket, '@stop#');
+                        socket_close($socket);
+                    }else{
+                        throw new Exception('Could not connect to server');
+                    }
+                } catch (Exception $e) {
+                    Console::pred("Error: " . $e->getMessage());
+                }
             if (Process::initialization()) {
                 // 创建客户端套接字
-                $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-
-                // 连接服务器
-                socket_connect($socket, '127.0.0.1', Config::get('http.server_port'));
-
-                socket_write($socket, '@stop#');
-                socket_close($socket);
 
                 $info = $server->info();
                 foreach ($info['handlerProcessIds'] as $pid) {
                     Process::kill($pid);
                 }
                 Process::kill($info['serverProcessId']);
-
-                $server->release();
                 Console::pgreen('Http Server stop success!');
             }
-
-
-            //            var_dump($info);
+            $server->release();
+        }else{
+             Console::pred("[HttpServer] may not runing");
         }
     }
 }

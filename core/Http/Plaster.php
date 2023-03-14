@@ -22,7 +22,13 @@ use function htmlspecialchars;
 
 class Plaster
 {
-    private static $regexs = array('foreach' => '/@foreach[\t\s]*\([\t\s]*(?:(?:(\$\w+(?:\[(?:\$*\w+|(?:"(?:[^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|\'(?:[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'))\])?)[\t\s]+as[\t\s]+(\$\w+))(?:[\t\s]*=>[\t\s]*(\g<1>))?[\t\s]*\))\R((?:\g<0>|(?!(@foreach|@endforeach))[\s\S]*?)+\R)?[\t\s]*@endforeach/', 'for' => '/@for[\s\t]*\(([\s\S]*?)?\;([\s\S]*?)\;([\s\S]*?)\)[\s\t]*((?:\g<0>|(?!(@for|@endfor))[\s\S]*?)+\R)[\t\s]*@endfor/', 'while' => '/@while[\s\t]*\(([\s\S]*?)\)\R+((?:\g<0>|(?!(@while|@endwhile))[\s\S]*?)+\R)?[\t\s]*@endwhile/', 'if' => '/@?(?:if|elseif)[\s\t]*\(([\s\S]*?)\)\R([\s\S]*?)\R[\s\t]*(@else([\s\S]*?)\R)?[\s\t]*@endif/', 'embed' => '/@embed[\s]*\((.*){1}\)[\s]*@endembed/');
+    private static $regexs = array(
+        'foreach' => '/@foreach[\t\s]*\([\t\s]*(?:(?:(\$\w+(?:\[(?:\$*\w+|(?:"(?:[^"\\\\]*(?:\\\\.[^"\\\\]*)*)"|\'(?:[^\'\\\\]*(?:\\\\.[^\'\\\\]*)*)\'))\])?)[\t\s]+as[\t\s]+(\$\w+))(?:[\t\s]*=>[\t\s]*(\g<1>))?[\t\s]*\))\R((?:\g<0>|(?!(@foreach|@endforeach))[\s\S]*?)+\R)?[\t\s]*@endforeach/',
+        'for'     => '/@for[\s\t]*\(([\s\S]*?)?\;([\s\S]*?)\;([\s\S]*?)\)[\s\t]*((?:\g<0>|(?!(@for|@endfor))[\s\S]*?)+\R)[\t\s]*@endfor/',
+        'while'   => '/@while[\s\t]*\(([\s\S]*?)\)\R+((?:\g<0>|(?!(@while|@endwhile))[\s\S]*?)+\R)?[\t\s]*@endwhile/',
+        'if'      => '/@?(?:if|elseif)[\s\t]*\(([\s\S]*?)\)\R([\s\S]*?)\R[\s\t]*(@else([\s\S]*?)\R)?[\s\t]*@endif/',
+        'embed'   => '/@embed[\s]*\((.*){1}\)[\s]*@endembed/'
+    );
     /**
      * 模板变量暂存区
      *
@@ -74,11 +80,11 @@ class Plaster
         foreach (array_merge($this->arguments, $tempArgv) as $executeIfForeachKey => $executeIfForeachValue) {
             $$executeIfForeachKey = $executeIfForeachValue;
         }
-        $executeForStart = $executeForArguments[1];
+        $executeForStart     = $executeForArguments[1];
         $executeForCondition = $executeForArguments[2];
-        $executeForEnd = $executeForArguments[3];
-        $executeForFarmment = $executeForArguments[4];
-        $templateFramment = '';
+        $executeForEnd       = $executeForArguments[3];
+        $executeForFarmment  = $executeForArguments[4];
+        $templateFramment    = '';
         try {
             eval("{$executeForStart};");
             while (eval("return {$executeForCondition};")) {
@@ -108,13 +114,13 @@ class Plaster
         $applyTemplateTextPoint = 0;
         while ($applyTemplateTextPoint < strlen($applyTemplateText)) {
             $applyLableCircuitStackCount = count($applyLableCircuitStack);
-            $applyTemplateTextPointChar = substr($applyTemplateText, $applyTemplateTextPoint++, 1);
+            $applyTemplateTextPointChar  = substr($applyTemplateText, $applyTemplateTextPoint++, 1);
             if ($applyTemplateTextPointChar === '@') {
                 foreach (self::$regexs as $applyForeachAssignmentKey => $applyForeachAssignmentValue) {
                     if (strpos($applyTemplateText, $applyForeachAssignmentKey, $applyTemplateTextPoint) === $applyTemplateTextPoint) {
                         if ($applyLableCircuitStackCount === 0)
                             $startIndex = $applyTemplateTextPoint - 1;
-                        $applyLableName = $applyForeachAssignmentKey;
+                        $applyLableName           = $applyForeachAssignmentKey;
                         $applyLableCircuitStack[] = $applyForeachAssignmentKey;
                         break;
                     } elseif (end($applyLableCircuitStack) !== false && strpos($applyTemplateText, 'end' . end($applyLableCircuitStack), $applyTemplateTextPoint) === $applyTemplateTextPoint) {
@@ -125,10 +131,10 @@ class Plaster
             }
 
             if ($applyLableCircuitStackCount === 1 && count($applyLableCircuitStack) === 0) {
-                $applyTemplateFragment = substr($applyTemplateText, $startIndex, $applyTemplateTextPoint - $startIndex + strlen('end' . $applyLableName));
+                $applyTemplateFragment       = substr($applyTemplateText, $startIndex, $applyTemplateTextPoint - $startIndex + strlen('end' . $applyLableName));
                 $applyTemplateFragmentResult = self::execute($applyTemplateFragment, $applyLableName, get_defined_vars());
                 if ($applyTemplateFragmentResult !== false) {
-                    $applyTemplateText = str_replace($applyTemplateFragment, $applyTemplateFragmentResult, $applyTemplateText);
+                    $applyTemplateText      = str_replace($applyTemplateFragment, $applyTemplateFragmentResult, $applyTemplateText);
                     $applyTemplateTextPoint += strlen($applyTemplateFragmentResult) - strlen($applyTemplateFragment);
                 }
             }
@@ -165,7 +171,7 @@ class Plaster
                 return $e;
                 // \core\Http::httpErrorHandle($e->getCode(), $e->getMessage(), $e->getFile(), $e->getLine());
             }
-            $output = ob_get_clean();
+            $output            = ob_get_clean();
             $applyTemplateText = str_replace($phpFrammentMatchResult[0][$phpFrammentMatchIndex], $output, $applyTemplateText);
         }
         return $applyTemplateText;
@@ -222,8 +228,8 @@ class Plaster
             $$executeIfForeachKey = $executeIfForeachValue;
         }
         $executeIfCondition = $arguments[1];
-        $executeIfAccord = $arguments[2];
-        $executeIfElse = $arguments[3] ?? null;
+        $executeIfAccord    = $arguments[2];
+        $executeIfElse      = $arguments[3] ?? null;
 
         try {
             if (eval("return {$executeIfCondition};")) {
@@ -253,11 +259,11 @@ class Plaster
     private function executeForeach(array $arguments, array $tempArgv = array()): string
     {
         extract(array_merge($this->arguments, $tempArgv));
-        $originContent = $arguments[0];
+        $originContent             = $arguments[0];
         $templateFrammentArrayName = $arguments[1];
-        $templateFrammentKeyName = $arguments[2];
-        $templateFrammentItemName = $arguments[3];
-        $templateFrammentContent = $arguments[4];
+        $templateFrammentKeyName   = $arguments[2];
+        $templateFrammentItemName  = $arguments[3];
+        $templateFrammentContent   = $arguments[4];
         if ($templateFrammentItemName === '')
             $templateFrammentItemName = $templateFrammentKeyName;
         foreach ($this->arguments as $applyForeachAssignmentKey => $applyForeachAssignmentValue)
@@ -271,7 +277,10 @@ class Plaster
         }
         $templateFrammentIndex = 0;
         foreach ($templateFrammentArray as $templateFrammentKey => $templateFrammentValue) {
-            $templateFrammentHtml .= self::apply($templateFrammentContent, [substr($templateFrammentKeyName, 1) => $templateFrammentKey, substr($templateFrammentItemName, 1) => $templateFrammentValue,]);
+            $templateFrammentHtml .= self::apply($templateFrammentContent, [
+                substr($templateFrammentKeyName, 1)  => $templateFrammentKey,
+                substr($templateFrammentItemName, 1) => $templateFrammentValue,
+            ]);
             $templateFrammentIndex++;
         }
         return $templateFrammentHtml;

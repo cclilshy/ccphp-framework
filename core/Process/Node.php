@@ -17,9 +17,9 @@ namespace core\Process;
 class Node
 {
     // 哈希表索引
-    private int $pid; // 进程id
-    private int $ppid; // 父进程
-    private array $children; // 子进程
+    private int    $pid;      // 进程id
+    private int    $ppid;     // 父进程
+    private array  $children; // 子进程
     private string $IPCName;
 
     /** 创建一个节点，储存其基本信息
@@ -30,10 +30,10 @@ class Node
      */
     public function __construct(int $pid, int $ppid, string $IPCName)
     {
-        $this->pid = $pid;
-        $this->ppid = $ppid;
+        $this->pid      = $pid;
+        $this->ppid     = $ppid;
         $this->children = [];
-        $this->IPCName = $IPCName;
+        $this->IPCName  = $IPCName;
         $this->call('new', ['pid' => $pid]);
     }
 

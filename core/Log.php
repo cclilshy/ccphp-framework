@@ -18,9 +18,9 @@ namespace core;
 
 class Log
 {
-    private static $logFile;
-    private static $env = '';
-    private static $constant = [];
+    private static mixed  $logFile;
+    private static string $env      = '';
+    private static array  $constant = [];
 
     public static function initialization(): void
     {

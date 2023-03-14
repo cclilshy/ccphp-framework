@@ -11,16 +11,16 @@ namespace core\Http\Server;
 
 class Client
 {
-    private $socket;
+    private        $socket;
     private string $context;
-    private string $method = 'undefined';
+    private string $method   = 'undefined';
     private string $path;
     private string $verstion;
     private string $data;
-    private array $header;
-    private bool $complete = false;
-    private int $createTime;
-    private int $faildCount;
+    private array  $header;
+    private bool   $complete = false;
+    private int    $createTime;
+    private int    $faildCount;
 
     public function __construct($socket)
     {
@@ -38,18 +38,18 @@ class Client
         $this->context .= $context;
         if ($this->method === 'undefined') {
             if (str_contains($this->context, "\r\n\r\n")) {
-                $_ = explode("\r\n\r\n", $this->context);
+                $_             = explode("\r\n\r\n", $this->context);
                 $headerContext = $_[0];
-                $bodyContext = $_[1] ?? '';
+                $bodyContext   = $_[1] ?? '';
 
                 if ($headerLines = explode("\r\n", $headerContext)) {
                     $base = array_shift($headerLines);
                     if (count($base = explode(' ', $base)) === 3) {
-                        $this->method = strtoupper($base[0]);
-                        $this->path = $base[1];
+                        $this->method   = strtoupper($base[0]);
+                        $this->path     = $base[1];
                         $this->verstion = $base[2];
                         foreach ($headerLines as $item) {
-                            $_ = explode(':', $item);
+                            $_                                     = explode(':', $item);
                             $this->header[strtoupper(trim($_[0]))] = strtoupper(trim($_[1]));
                         }
                         if ($this->method === 'POST') {
@@ -64,7 +64,7 @@ class Client
                                     return true;
                                 }
                             }
-                        } elseif ($this->method === 'POST') {
+                        } elseif ($this->method === 'GET') {
                             echo 'GET完整' . PHP_EOL;
                             // GET报文完整
                             $this->complete = true;

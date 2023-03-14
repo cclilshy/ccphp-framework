@@ -11,22 +11,26 @@ namespace core\Http;
 
 class Response
 {
-    private $client;
-    private int $statusCode;
-    private array $header = array();
+    private mixed $client;
+    private int   $statusCode;
+    private array $header;
     private float $version;
 
-    private string $charset = 'utf-8';
-    private string $contentType = 'text/html';
-    private string $body;
+    private string  $charset     = 'utf-8';
+    private string  $contentType = 'text/html';
+    private string  $body;
     private Request $request;
 
     public function __construct(Request $request)
     {
-        $this->version = 1.1;
+        $this->version    = 1.1;
         $this->statusCode = 200;
-        $this->header = array('Server' => 'Buildphp', 'Connection' => 'keep-alive', 'Content-Type' => "{$this->contentType}; charset={$this->charset}",);
-        $this->request = $request;
+        $this->header     = array(
+            'Server'       => 'Buildphp',
+            'Connection'   => 'keep-alive',
+            'Content-Type' => "{$this->contentType}; charset={$this->charset}",
+        );
+        $this->request    = $request;
     }
 
     public function setHttpVersion(float $version): Response

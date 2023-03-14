@@ -12,7 +12,7 @@ namespace core\Cache;
 
 class Redis
 {
-    protected static $config;
+    protected static array $config;
 
     // KeyValue数据库的实体
     protected \core\Database\Redis $connect;

@@ -36,7 +36,7 @@ class Cache
      */
     public static function initialization($config): void
     {
-        $type = $config['type'];
+        $type         = $config['type'];
         self::$config = $config[$type];
         self::$buffer = ucfirst($type);
         call_user_func([__NAMESPACE__ . '\Cache\\' . self::$buffer, 'init'], self::$config);

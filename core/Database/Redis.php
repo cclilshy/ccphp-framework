@@ -11,9 +11,12 @@
 namespace core\Database;
 
 // 封装一个Redis连接
+use stdClass;
+use RedisPecl;
+
 class Redis
 {
-    protected $connect;
+    protected mixed $connect;
 
     public function __construct($connect)
     {
@@ -26,14 +29,14 @@ class Redis
      * @param \stdClass $config
      * @return RedisPecl
      */
-    public static function pconnect(\stdClass $config): RedisPecl
+    public static function pconnect(stdClass $config): RedisPecl
     {
-        $redis = new \RedisPecl();
+        $redis = new RedisPecl();
         $redis->connect($config->host, $config->port, 1);
         if (!empty($config->password)) {
             $redis->auth($config->password);
         }
-        $redis->setOption(\RedisPecl::OPT_READ_TIMEOUT, -1);
+        $redis->setOption(RedisPecl::OPT_READ_TIMEOUT, -1);
         return new self($redis);
     }
 
@@ -43,9 +46,9 @@ class Redis
      * @param \stdClass $config
      * @return Redis
      */
-    public static function connect(\stdClass $config): Redis
+    public static function connect(stdClass $config): Redis
     {
-        $redis = new \RedisPecl();
+        $redis = new RedisPecl();
         $redis->pconnect($config->host, $config->port, 1);
         if ($config->password !== '')
             $redis->auth($config->password);

@@ -9,11 +9,14 @@
 
 namespace core\Database;
 
+use stdClass;
+use Exception;
 use core\Config;
 use core\Console;
 use core\Process\IPC;
 use core\Server\Server;
 use core\Process\ProcessMirroring;
+use function microtime;
 
 // 数据库内存常驻的
 class Pool
@@ -25,6 +28,7 @@ class Pool
      * 启动调度服务器
      *
      * @return void
+     * @throws \Exception
      */
     public static function launch(): void
     {
@@ -45,14 +49,14 @@ class Pool
                     }, DB::getConnect());
 
                     if ($ipc === false)
-                        throw new \Exception('IPC服务启动失败');
+                        throw new Exception('IPC服务启动失败');
 
                     // 通知调度服务器
                     self::$dispatcher->call('new', $ipc->name);
 
                     // 主进程记录连接服务IPC名称
                     $connectNames[] = $ipc->name;
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
 
                     // 注销所有连接
                     foreach ($connectNames as $name) {
@@ -78,7 +82,7 @@ class Pool
         // 创建调度服务
         self::$dispatcher = IPC::create(function ($action, $name, $ipc) {
             // 接收到的消息进行处理
-            Console::pdebug('[Pool][' . \microtime(true) . ']' . $name . '->' . $action);
+            Console::pdebug('[Pool][' . microtime(true) . ']' . $name . '->' . $action);
             switch ($action) {
                 // 新的数据库常驻服务
                 case 'new':
@@ -103,12 +107,13 @@ class Pool
      * 获取一个连接镜像
      *
      * @return ProcessMirroring|false
+     * @throws \Exception
      */
     public static function get(): ProcessMirroring|null
     {
         // 加载数据库连接池服务信息
         if ($server = Server::load('DatabasePool')) {
-            $info = $server->info();
+            $info           = $server->info();
             $dispatcherName = $info['dispatcher_name'];
 
             // 连接调度服务器
@@ -116,7 +121,7 @@ class Pool
 
             // 从调度服务器获取一个数据库连接IPC
             if ($connectName = $dispatcher->call('get', null)) {
-                $std = new \stdClass;
+                $std             = new stdClass;
                 $std->dispatcher = $dispatcher;
 
                 // 连接数据库IPC
@@ -140,14 +145,15 @@ class Pool
      * 停止数据库连接池服务
      *
      * @return void
+     * @throws \Exception
      */
     public static function stop(): void
     {
         // 加载数据库连接池服务信息
         if ($server = Server::load('DatabasePool')) {
-            $info = $server->info();
+            $info           = $server->info();
             $dispatcherName = $info['dispatcher_name'];
-            $connectNames = $info['connect_names'];
+            $connectNames   = $info['connect_names'];
 
             // 循环关闭数据库连接
             foreach ($connectNames as $connectName) {

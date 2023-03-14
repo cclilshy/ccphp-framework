@@ -11,7 +11,7 @@ namespace core\File;
 
 class Fifo
 {
-    private $stream;
+    private        $stream;
     private string $name;
     private string $path;
 
@@ -20,8 +20,8 @@ class Fifo
      */
     public function __construct(string $name)
     {
-        $this->name = $name;
-        $this->path = CACHE_PATH . '/pipe/fifo_' . $name . '.fifo';
+        $this->name   = $name;
+        $this->path   = CACHE_PATH . '/pipe/fifo_' . $name . '.fifo';
         $this->stream = fopen($this->path, 'r+');
     }
 

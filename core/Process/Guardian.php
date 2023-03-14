@@ -23,9 +23,9 @@ class Guardian
     /**
      * 创建一个守护程序并返回IPC名称
      *
-     * @return string
+     * @return string | false
      */
-    public static function create(): string
+    public static function create(): string|false
     {
         $handler = function ($action, $data, $ipc) {
             Console::pdebug('[Guardian(' . posix_getpid() . ')] ' . $action . ':' . json_encode($data));
@@ -43,14 +43,13 @@ class Guardian
                     break;
             }
 
-            var_dump($ipc->space->processIds, posix_getppid(), $ipc->space->guard);
             // 当父进程退出时且所有兄弟进程结束时，自我释放
             if (count($ipc->space->processIds) === 0 && (posix_getppid() === 1 || $ipc->space->guard)) {
                 return 'quit';
             }
             return true;
         };
-        return IPC::create($handler, new self)->name;
+        return IPC::create($handler, new self)->name ?? false;
     }
 
     /**

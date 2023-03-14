@@ -12,6 +12,7 @@ namespace core\Ccphp;
 
 // Entry Class For Starting The Framework
 
+use Exception;
 use core\Master;
 
 class Ccphp
@@ -28,7 +29,7 @@ class Ccphp
             Master::rouse('Cache');
             Master::rouse('Config');
             Master::rouse('Log');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
         }
     }
 

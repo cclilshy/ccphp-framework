@@ -21,6 +21,7 @@
     "illuminate/events": "^10.1",
     "symfony/var-dumper": "^6.2",
     "ext-sockets": "*",
-    "ext-fileinfo": "*"
+    "ext-fileinfo": "*",
+    "ext-mysqli": "*"
   }
 }

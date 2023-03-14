@@ -22,7 +22,7 @@ class Console
     {
         $list = Route::consoles();
         foreach ($list as $key => $item) {
-            $describe = call_user_func([$item, 'register']);
+            $describe       = call_user_func([$item, 'register']);
             self::$commands = array_merge(self::$commands, [$key => $describe]);
         }
         return new self();
@@ -45,7 +45,7 @@ class Console
 
     public static function pdebug(): void
     {
-        $args = func_get_args();
+        $args    = func_get_args();
         $content = '';
         foreach ($args as $arg) {
             if (is_array($arg) || is_object($arg)) {
@@ -68,8 +68,8 @@ class Console
         global $argc;
         global $argv;
 
-        $option = $argv[1] ?? 'help';
-        $map = Route::guide('console', $option);
+        $option     = $argv[1] ?? 'help';
+        $map        = Route::guide('console', $option);
         self::$argv = $argv;
         if ($map !== null) {
             array_shift($argv);

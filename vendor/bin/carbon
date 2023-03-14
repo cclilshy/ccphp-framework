@@ -11,7 +11,7 @@
 
 namespace Composer;
 
-$GLOBALS['_composer_bin_dir'] = __DIR__;
+$GLOBALS['_composer_bin_dir']       = __DIR__;
 $GLOBALS['_composer_autoload_path'] = __DIR__ . '/..' . '/autoload.php';
 
 if (PHP_VERSION_ID < 80000) {
@@ -28,10 +28,10 @@ if (PHP_VERSION_ID < 80000) {
             public function stream_open($path, $mode, $options, &$opened_path): bool
             {
                 // get rid of phpvfscomposer:// prefix for __FILE__ & __DIR__ resolution
-                $opened_path = substr($path, 17);
+                $opened_path    = substr($path, 17);
                 $this->realpath = realpath($opened_path) ?: $opened_path;
-                $opened_path = $this->realpath;
-                $this->handle = fopen($this->realpath, $mode);
+                $opened_path    = $this->realpath;
+                $this->handle   = fopen($this->realpath, $mode);
                 $this->position = 0;
 
                 return (bool)$this->handle;
