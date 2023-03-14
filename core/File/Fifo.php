@@ -42,6 +42,11 @@ class Fifo
         }
     }
 
+    public static function exists(string $name): bool
+    {
+        return file_exists(CACHE_PATH . '/pipe/fifo_' . $name . '.fifo');
+    }
+
     /**
      * @param string $name
      * @return Fifo|false

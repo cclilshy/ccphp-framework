@@ -60,6 +60,11 @@ class Pipe
         return false;
     }
 
+    public static function exists(string $name): bool
+    {
+        return file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe');
+    }
+
     /**
      * @param string $content
      * @param int    $start

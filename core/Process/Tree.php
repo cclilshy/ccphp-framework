@@ -35,19 +35,24 @@ class Tree
      */
     public static function launch(): bool
     {
-        if ($server = Server::create('Tree')) {
-            $handler = function ($action, $data, $ipc) {
-                $ipc->space->handler($ipc, $action, $data);
-            };
-            $ipcName = IPC::create($handler, new self())->name;
+        try {
+            if ($server = Server::create('Tree')) {
+                $handler = function ($action, $data, $ipc) {
+                    $ipc->space->handler($ipc, $action, $data);
+                };
+                $ipcName = IPC::create($handler, new self())->name;
 
-            $server->info(['tree_name' => $ipcName]);
-            Console::pgreen('[TreeServer] started!');
-            return true;
-        } else {
-            Console::pred('[TreeServer] start failed : it\'s start');
-            return false;
+                $server->info(['tree_name' => $ipcName]);
+                Console::pgreen('[TreeServer] started!');
+                return true;
+            } else {
+                Console::pred('[TreeServer] start failed : it\'s start');
+                return false;
+            }
+        } catch (\Exception $e) {
+            Console::pred($e->getMessage());
         }
+        return false;
     }
 
     /**
@@ -190,15 +195,18 @@ class Tree
     public static function stop(): bool
     {
         if ($server = Server::load('Tree')) {
-            $ipcName = $server->data['tree_name'];
-            if ($IPC = IPC::link($ipcName, true)) {
-                $IPC->stop();
-                $server->release();
-                Console::pgreen('[TreeServer] stopped!');
-                return true;
-            } else {
-                $server->release();
+            try {
+                $ipcName = $server->data['tree_name'];
+                if ($IPC = IPC::link($ipcName, true)) {
+                    $IPC->stop();
+                    $server->release();
+                    Console::pgreen('[TreeServer] stopped!');
+                    return true;
+                }
+            } catch (\Exception $e) {
+                Console::pred($e->getMessage());
             }
+            $server->release();
         }
         Console::pred('[TreeServer] stop failed may not run');
         return false;

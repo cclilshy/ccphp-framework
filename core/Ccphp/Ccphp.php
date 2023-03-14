@@ -14,6 +14,7 @@ namespace core\Ccphp;
 
 use Exception;
 use core\Master;
+use core\Console;
 
 
 class Ccphp
@@ -31,6 +32,7 @@ class Ccphp
             Master::rouse('Config');
             Master::rouse('Log');
         } catch (Exception $e) {
+            Console::pred($e->getMessage());
         }
     }
 

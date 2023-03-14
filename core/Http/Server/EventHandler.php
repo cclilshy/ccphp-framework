@@ -37,6 +37,7 @@ class EventHandler
 
     /**
      * @return \core\Http\Server\EventHandler|false
+     * @throws \Exception
      */
     public static function create(): EventHandler|false
     {

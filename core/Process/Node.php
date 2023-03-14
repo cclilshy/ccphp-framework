@@ -44,11 +44,16 @@ class Node
      */
     private function call(): mixed
     {
-        if ($ipc = IPC::link($this->IPCName)) {
-            $res = call_user_func_array([$ipc, 'call'], func_get_args());
-            $ipc->close();
-            return $res;
+        try {
+            if ($ipc = IPC::link($this->IPCName)) {
+                $res = call_user_func_array([$ipc, 'call'], func_get_args());
+                $ipc->close();
+                return $res;
+            }
+        } catch (\Exception $e) {
+            return false;
         }
+
         return false;
     }
 
