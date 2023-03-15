@@ -26,10 +26,7 @@ class Config
         return (object)self::get($name);
     }
 
-    /**
-     * @param string $name
-     * @return array|mixed|null
-     */
+
     /**
      * @param string $name
      * @return array|mixed|null
@@ -58,11 +55,6 @@ class Config
 
     }
 
-    /**
-     * @param string $name
-     * @param        $value
-     * @return mixed
-     */
     /**
      * @param string $name
      * @param        $value

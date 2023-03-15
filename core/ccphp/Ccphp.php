@@ -3,12 +3,12 @@
  * @Author: cclilshy jingnigg@163.com
  * @Date: 2022-12-25 19:05:33
  * @LastEditors: cclilshy jingnigg@163.com
- * @FilePath: /ccphp/vendor/core/Ccphp.php
+ * @FilePath: /ccphp/vendor/core/ccphp.php
  * @Description: My house
  * Copyright (c) 2022 by cclilshy email: jingnigg@163.com, All Rights Reserved.
  */
 
-namespace core\Ccphp;
+namespace core\ccphp;
 
 // Entry Class For Starting The Framework
 
@@ -17,7 +17,7 @@ use core\Master;
 use core\Console;
 
 
-class Ccphp
+class ccphp
 {
     /**
      * 加载框架必要的依赖

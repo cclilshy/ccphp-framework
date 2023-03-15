@@ -63,10 +63,7 @@ class Request
         return new self($config);
     }
 
-    /**
-     * @param $client
-     * @return $this
-     */
+
     /**
      * @param $client
      * @return $this
@@ -139,7 +136,7 @@ class Request
      * @param string $context
      * @return void
      */
-    public function send(string $context)
+    public function send(string $context): void
     {
         if ($this->type === 'SERVER') {
             $this->response->setBody($context)->send();
@@ -162,19 +159,11 @@ class Request
      * @param string $context
      * @return string
      */
-    /**
-     * @param string $context
-     * @return string
-     */
-    public function result(string $context)
+    public function result(string $context): string
     {
         return $this->response->setBody($context)->result();
     }
 
-    /**
-     * @param $name
-     * @return mixed
-     */
     /**
      * @param $name
      * @return mixed

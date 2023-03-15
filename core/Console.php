@@ -93,6 +93,8 @@ class Console
      */
     public function run(): void
     {
+        posix_setsid();
+        cli_set_process_title('ccphp');
         global $argc;
         global $argv;
 

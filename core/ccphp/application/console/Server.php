@@ -7,7 +7,7 @@
  * Copyright (c) 2023 by user email: cclilshy, All Rights Reserved.
  */
 
-namespace core\Ccphp\application\console;
+namespace core\ccphp\application\console;
 
 
 class Server
@@ -20,11 +20,6 @@ class Server
         return 'As a service';
     }
 
-    /**
-     * @param $argv
-     * @param $console
-     * @return void
-     */
     /**
      * @param $argv
      * @param $console

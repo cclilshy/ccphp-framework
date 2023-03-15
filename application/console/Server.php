@@ -12,6 +12,7 @@ namespace console;
 // Start The Service Class Perform Timing Tasks And Socket Services
 
 use core\Config;
+use core\Master;
 use core\Console;
 use core\Process\Tree;
 use core\Process\Process;
@@ -31,7 +32,7 @@ class Server
             return;
         }
         if ($argv[1] == 'start') {
-            Tree::launch();
+            Master::rouse('Process\Tree')->launch();
             if (Config::get('server.database_pool') === true) {
                 //Pool::launch();//需要先初始化数据库
             }
@@ -52,7 +53,7 @@ class Server
         } elseif ($argv[1] === 'stop') {
             try {
                 HttpServer::stop();
-                Tree::stop();
+                Master::rouse('Process\Tree')->stop();
             } catch (\Exception $e) {
                 echo $e->getMessage() . PHP_EOL;
             }

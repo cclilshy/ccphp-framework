@@ -1,8 +1,8 @@
 <?php
 
-namespace core\Process;
+namespace core\Process\interface;
 
-interface IPCFactoryInterface
+interface IPC
 {
     /**
      * @param callable    $observer
@@ -18,4 +18,9 @@ interface IPCFactoryInterface
      * @return \core\Process\IPC|false
      */
     public static function link(string $name, ?bool $destroy = false): IPC|false;
+
+    /**
+     * @return mixed
+     */
+    public function call(): mixed;
 }

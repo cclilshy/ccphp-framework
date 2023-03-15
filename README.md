@@ -161,7 +161,7 @@ use \core\Process\Process;
 
 // 启动树服务,只需要启动一次
 Tree::launch();
-Tree::stop(); //关闭树服务
+(new core\Process\Tree)->stop(); //关闭树服务
 
 // 连接树
 Process::init();

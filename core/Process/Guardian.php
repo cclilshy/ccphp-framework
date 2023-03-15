@@ -26,6 +26,7 @@ class Guardian
      * 创建一个守护程序并返回IPC名称
      *
      * @return string | false
+     * @throws \Exception
      */
     public static function create(): string|false
     {

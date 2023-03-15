@@ -72,7 +72,7 @@ class ProcessMirroring
     /**
      * @return mixed
      */
-    public function go()
+    public function go(): mixed
     {
         $result     = call_user_func($this->func, $this);
         $this->flow = [];

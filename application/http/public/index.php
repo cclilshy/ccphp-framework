@@ -11,5 +11,5 @@
 use core\Master;
 
 include __DIR__ . '/../../../core/Base/ccload.php';
-Master::rouse('Ccphp\Ccphp');
+Master::rouse('ccphp\ccphp');
 Master::rouse('Http\Http')->go("PROXY");

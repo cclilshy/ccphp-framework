@@ -13,8 +13,8 @@ namespace core\Http;
 use core\Config;
 use core\Master;
 use core\Route\Route;
-use core\Ccphp\Ccphp;
-use core\Ccphp\Statistics;
+use core\ccphp\ccphp;
+use core\ccphp\Statistics;
 use core\Flow\FlowController;
 
 
@@ -103,7 +103,9 @@ class Http
                         return $this->request->result($t);
                     } else {
                         $this->request->send($t);
+                        return null;
                     }
+                    break;
                 default:
                     break;
             }
@@ -157,7 +159,7 @@ class Http
             $plaster->assign('gets', $this->request->get);
             $plaster->assign('posts', $this->request->post);
 
-            $statisticsHtml = Ccphp::template('statistics');
+            $statisticsHtml = ccphp::template('statistics');
 
             return $content .= PHP_EOL . $plaster->apply($statisticsHtml);
         }
@@ -174,7 +176,7 @@ class Http
      * @param int    $httpCode
      * @return string|null
      */
-    public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503)
+    public function httpErrorHandle(int $errno, string $errstr, string $errFile, int $errLine, int $httpCode = 503): ?string
     {
         $this->statistics->record('endTime', microtime(true));
         $fileDescribe = '';
@@ -211,7 +213,7 @@ class Http
         $plaster->assign('posts', $this->request->post);
         $plaster->assign('config', Config::all());
 
-        $html = Ccphp::template('error');
+        $html = ccphp::template('error');
         return $plaster->apply($html);
     }
 }

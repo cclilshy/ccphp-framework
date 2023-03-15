@@ -1,6 +1,6 @@
 <?php
 
-namespace core\Ccphp\application\console;
+namespace core\ccphp\application\console;
 
 class Run
 {
@@ -12,11 +12,6 @@ class Run
         return 'system server';
     }
 
-    /**
-     * @param $argv
-     * @param $console
-     * @return void
-     */
     /**
      * @param $argv
      * @param $console

@@ -81,7 +81,7 @@ class Process
                     self::$TreeIPC->call('exit', ['pid' => posix_getpid()]);
                     exit;
                 };
-                set_error_handler($errHandler, E_ERROR);
+                $_          = set_error_handler($errHandler, E_ERROR);
                 set_exception_handler($errHandler);
 
                 // 通知树服务器储存

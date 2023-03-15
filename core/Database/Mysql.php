@@ -8,7 +8,7 @@ namespace core\Database;
 
 use mysqli;
 use mysqli_result;
-use core\Ccphp\Launch;
+use core\ccphp\Launch;
 
 
 class Mysql
@@ -27,9 +27,7 @@ class Mysql
     protected mixed       $execr;
     private DatabaseInfo  $databaseInfo;
 
-    /**
-     * @param $config
-     */
+
     /**
      * @param $config
      */
@@ -56,19 +54,11 @@ class Mysql
      * @param $connect
      * @return void
      */
-    /**
-     * @param $connect
-     * @return void
-     */
     public function setConnect($connect): void
     {
         $this->mysqli = $connect;
     }
 
-    /**
-     * @param $table
-     * @return $this
-     */
     /**
      * @param $table
      * @return $this
@@ -79,12 +69,6 @@ class Mysql
         return $this;
     }
 
-    /**
-     * @param $key
-     * @param $compare
-     * @param $value
-     * @return $this
-     */
     /**
      * @param $key
      * @param $compare
@@ -102,10 +86,6 @@ class Mysql
         return $this;
     }
 
-    /**
-     * @param $wheres
-     * @return array
-     */
     /**
      * @param $wheres
      * @return array
@@ -141,12 +121,6 @@ class Mysql
      * @param $value
      * @return $this
      */
-    /**
-     * @param $key
-     * @param $compare
-     * @param $value
-     * @return $this
-     */
     public function whereOr($key, $compare = null, $value = null): static
     {
         if ($value === null) {
@@ -161,10 +135,6 @@ class Mysql
      * @param $data
      * @return int
      */
-    /**
-     * @param $data
-     * @return int
-     */
     public function insert($data = null): int
     {
         $this->action = 'INSERT';
@@ -173,10 +143,6 @@ class Mysql
         return mysqli_affected_rows($this->mysqli);
     }
 
-    /**
-     * @param $data
-     * @return $this
-     */
     /**
      * @param $data
      * @return $this
@@ -337,10 +303,6 @@ class Mysql
      * @param $data
      * @return int
      */
-    /**
-     * @param $data
-     * @return int
-     */
     public function update($data = null): int
     {
         $this->action = 'UPDATE';
@@ -406,11 +368,6 @@ class Mysql
      * @param $sort
      * @return $this
      */
-    /**
-     * @param $field
-     * @param $sort
-     * @return $this
-     */
     public function order($field, $sort): static
     {
         $this->order = "`{$field}` {$sort}";
@@ -435,9 +392,9 @@ class Mysql
     /**
      * @param int $page
      * @param int $limit
-     * @return Mysql
+     * @return \core\Database\DatabaseInfo|\core\Database\Mysql
      */
-    public function page(int $page, int $limit): static
+    public function page(int $page, int $limit)
     {
         return $this->databaseInfo->page($page, $limit);
     }
@@ -445,9 +402,9 @@ class Mysql
     /**
      * @param int $start
      * @param int $end
-     * @return static
+     * @return \core\Database\DatabaseInfo|\core\Database\Mysql
      */
-    public function limit(int $start, int $end): static
+    public function limit(int $start, int $end)
     {
         return $this->databaseInfo->limit($start, $end);
     }

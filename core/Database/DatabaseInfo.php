@@ -16,9 +16,9 @@ class DatabaseInfo
     /**
      * @param int $page
      * @param int $limit
-     * @return \core\Database\DatabaseInfo
+     * @return \core\Database\DatabaseInfo|\core\Database\Mysql
      */
-    public function page(int $page, int $limit): static
+    public function page(int $page, int $limit)
     {
         $start = ($page - 1) * $limit;
         $end   = ($page * $limit) - 1;
@@ -29,9 +29,9 @@ class DatabaseInfo
     /**
      * @param int $start
      * @param int $end
-     * @return \core\Database\DatabaseInfo
+     * @return \core\Database\DatabaseInfo|\core\Database\Mysql
      */
-    public function limit(int $start, int $end): static
+    public function limit(int $start, int $end)
     {
         $this->limit = "$start,$end";
         return $this->mysql;

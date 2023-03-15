@@ -60,20 +60,11 @@ class Map
      * @param $arguments
      * @return mixed
      */
-    /**
-     * @param $name
-     * @param $arguments
-     * @return mixed
-     */
     public function __call($name, $arguments)
     {
         return call_user_func_array([$this->className, $name], $arguments);
     }
 
-    /**
-     * @param $name
-     * @return mixed
-     */
     /**
      * @param $name
      * @return mixed

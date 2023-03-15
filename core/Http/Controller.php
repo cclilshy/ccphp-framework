@@ -39,10 +39,6 @@ class Controller
      * @param $data
      * @return \core\Http\Controller
      */
-    /**
-     * @param $data
-     * @return \core\Http\Controller
-     */
     public function json($data): Controller
     {
         if (is_array($data)) {

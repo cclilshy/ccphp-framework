@@ -61,10 +61,6 @@ class Node
      * @param $name
      * @return mixed
      */
-    /**
-     * @param $name
-     * @return mixed
-     */
     public function __get($name): mixed
     {
         return $this->$name;
@@ -123,7 +119,7 @@ class Node
      * @param int $pid
      * @return Node
      */
-    public function extend(int $pid)
+    public function extend(int $pid): self
     {
         $this->ppid = $pid;
         return $this;

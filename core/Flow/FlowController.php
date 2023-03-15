@@ -63,7 +63,7 @@ class FlowController
      *
      * @return mixed
      */
-    public function go()
+    public function go(): mixed
     {
         $params   = func_get_args();
         $params[] = $this;

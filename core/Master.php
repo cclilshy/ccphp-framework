@@ -9,16 +9,17 @@
 
 namespace core;
 
-use Exception;
-
 
 class Master
 {
     private static array  $record;
     private static string $modulePath = __NAMESPACE__;
 
+
     /**
-     * @throws \Exception
+     * @param string $name
+     * @param array  $args
+     * @return mixed|void
      */
     public static function rouse(string $name, array $args = [])
     {
@@ -27,7 +28,7 @@ class Master
             self::$record[] = $name;
             return call_user_func_array([$class, 'initialization'], $args);
         } else {
-            throw new Exception("Class $class not found");
+            echo("Class $class not found\n");
         }
     }
 

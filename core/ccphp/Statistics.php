@@ -7,7 +7,7 @@
  * Copyright (c) 2023 by user email: jingnigg@gmail.com, All Rights Reserved.
  */
 
-namespace core\Ccphp;
+namespace core\ccphp;
 
 // 在协程运行时，这个类必须对象方式调用，用于统计当前进程的调用栈和信息
 

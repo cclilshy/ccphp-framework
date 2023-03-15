@@ -12,13 +12,14 @@ namespace core\Process;
 use Exception;
 use core\File\Fifo;
 use core\File\Pipe;
+use core\Process\interface\IPC as IPCFactory;
 
 /**
  * function stop() 由调用者发起，停止监视者服务
  * function release() 应当由监视者发起，释放管道文件
  * function close() 调用者发起，主动关闭调用，不影响监视者运行
  */
-class IPC implements IPCFactoryInterface
+class IPC implements IPCFactory
 {
     public mixed  $space;    // 允许在初始化时用户自定义的对象
     private mixed $observer; // 监控函数

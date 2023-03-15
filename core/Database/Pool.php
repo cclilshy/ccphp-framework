@@ -80,7 +80,10 @@ class Pool
     }
 
     /**
+     * 创建数据库调度服务
+     *
      * @return void
+     * @throws \Exception
      */
     private static function dispatcher(): void
     {

@@ -58,14 +58,10 @@ class Log
     }
 
     /**
-     * @param $params
+     * @param array $params
      * @return bool
      */
-    /**
-     * @param $params
-     * @return bool
-     */
-    public static function record($params = []): bool
+    public static function record(array $params = []): bool
     {
         $nowDate = date('Y-m-d H:i:s', time());
 

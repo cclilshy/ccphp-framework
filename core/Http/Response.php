@@ -102,10 +102,6 @@ class Response
      * @param $client
      * @return $this
      */
-    /**
-     * @param $client
-     * @return $this
-     */
     public function setClient($client): Response
     {
         $this->client = $client;
@@ -161,10 +157,6 @@ class Response
         return $header . $this->body;
     }
 
-    /**
-     * @param $name
-     * @return mixed
-     */
     /**
      * @param $name
      * @return mixed

@@ -9,8 +9,9 @@
 
 namespace core\File;
 
+use core\File\interface\File;
 
-class Pipe
+class Pipe implements File
 {
     private        $resource;
     private int    $point;
@@ -19,60 +20,56 @@ class Pipe
     private string $path;
 
     /**
-     * @param $name
-     * @param $eof
+     * @param string $name
+     * @param int    $eof
      */
-    /**
-     * @param $name
-     * @param $eof
-     */
-    private function __construct($name, $eof = -1)
+    private function __construct(string $name, int $eof = -1)
     {
         $this->name     = $name;
-        $this->path     = CACHE_PATH . '/pipe/' . $name . '.pipe';
+        $this->path     = File::STP . FS . $name . File::EXT;
         $this->resource = fopen($this->path, 'r+');
         $this->point    = 0;
         $this->eof      = $eof;
     }
 
     /**
-     * @param string $name
+     * @param ?string $name
      * @return \core\File\Pipe|false
      */
-    public static function create(string $name): Pipe|false
+    public static function create(?string $name): Pipe|false
     {
-        if (!file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe')) {
-            touch(CACHE_PATH . '/pipe/' . $name . '.pipe', 0666);
+        if (!self::exists($name)) {
+            touch(File::STP . FS . $name . File::EXT);
             return new Pipe($name);
         }
         return false;
     }
 
+    public static function exists(string|null $name): bool
+    {
+        return file_exists(File::STP . FS . $name . File::EXT);
+    }
+
     /**
-     * @param string $name
+     * @param string|null $name
      * @return \core\File\Pipe|false
      */
-    public static function link(string $name): Pipe|false
+    public static function link(string|null $name): Pipe|false
     {
-        if (file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe')) {
+        if (self::exists($name)) {
             return new Pipe($name, filesize(CACHE_PATH . '/pipe/' . $name . '.pipe'));
         }
         return false;
     }
 
-    public static function exists(string $name): bool
-    {
-        return file_exists(CACHE_PATH . '/pipe/' . $name . '.pipe');
-    }
-
     /**
-     * @param string $content
-     * @param int    $start
+     * @param string $context
+     * @param ?int   $start
      * @return int|false
      */
-    public function write(string $content, int $start = 0): int|false
+    public function write(string $context, ?int $start = 0): int|false
     {
-        if (strlen($content) < 1) {
+        if (strlen($context) < 1) {
             return false;
         }
 
@@ -80,18 +77,18 @@ class Pipe
             $this->flush();
         }
         $this->adjustPoint($start);
-        $this->eof += strlen($content) - $start;
-        return fwrite($this->resource, $content);
+        $this->eof += strlen($context) - $start;
+        return fwrite($this->resource, $context);
     }
 
     /**
-     * @return void
+     * @return bool
      */
-    private function flush(): void
+    public function flush(): bool
     {
-        ftruncate($this->resource, 0);
         $this->eof = -1;
         $this->adjustPoint(0);
+        return ftruncate($this->resource, 0);
     }
 
     /**
@@ -126,21 +123,21 @@ class Pipe
 
     /**
      * @param int $start
-     * @param int $end
+     * @param int $eof
      * @return string|false
      */
-    public function section(int $start, int $end = 0): string|false
+    public function section(int $start, int $eof = 0): string|false
     {
-        if ($end === 0) {
-            $end = $this->eof - $start;
+        if ($eof === 0) {
+            $eof = $this->eof - $start;
         }
 
-        if ($end > $this->eof || $end < $start) {
+        if ($eof > $this->eof || $eof < $start) {
             return false;
         }
 
         $this->adjustPoint($start);
-        $length  = $end - $start + 1;
+        $length  = $eof - $start + 1;
         $context = '';
 
         while ($length > 0) {
@@ -157,14 +154,10 @@ class Pipe
     }
 
     /**
-     * @param $wait
+     * @param bool $wait
      * @return bool
      */
-    /**
-     * @param $wait
-     * @return bool
-     */
-    public function lock($wait = true): bool
+    public function lock(bool $wait = true): bool
     {
         if ($wait) {
             return flock($this->resource, LOCK_EX);

@@ -55,7 +55,7 @@ class Session
      * @param        $value
      * @return mixed|null
      */
-    public function get(string $key, $value = null)
+    public function get(string $key, $value = null): mixed
     {
         if ($this->PHPSESSID && isset($_SESSION[$this->PHPSESSID][$key])) {
             $content = $_SESSION[$this->PHPSESSID][$key];

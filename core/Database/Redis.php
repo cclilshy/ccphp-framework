@@ -22,9 +22,6 @@ class Redis
     /**
      * @param $connect
      */
-    /**
-     * @param $connect
-     */
     public function __construct($connect)
     {
         $this->connect = $connect;
@@ -34,9 +31,9 @@ class Redis
      * 长连接并获取一个连接
      *
      * @param \stdClass $config
-     * @return RedisPecl
+     * @return \core\Database\Redis|\Redis
      */
-    public static function pconnect(stdClass $config): RedisPecl
+    public static function pconnect(stdClass $config)
     {
         $redis = new RedisPecl();
         $redis->connect($config->host, $config->port, 1);

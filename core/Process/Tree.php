@@ -10,22 +10,26 @@
 namespace core\Process;
 
 use core\Console;
-use core\Server\Server;
+use core\interface\Module;
+use core\Server\abstract\Server;
 
 // 进程🌲
-
-
-class Tree
+class Tree extends Server implements Module
 {
     private Node  $root;             // 根节点
     private Node  $orphanProcess;    // 孤儿根节点
     private array $map = [];
 
-
     private function __construct()
     {
+        parent::__construct('Tree');
         $this->root          = new Node(0, 0, 'undefined');
         $this->orphanProcess = new Node(1, 0, 'undefined');
+    }
+
+    public static function initialization(): self
+    {
+        return new self();
     }
 
     /**
@@ -33,16 +37,16 @@ class Tree
      *
      * @return bool
      */
-    public static function launch(): bool
+    public function launch(): bool
     {
         try {
-            if ($server = Server::create('Tree')) {
+            if ($this->initCreate()) {
                 $handler = function ($action, $data, $ipc) {
                     $ipc->space->handler($ipc, $action, $data);
                 };
                 $ipcName = IPC::create($handler, new self())->name;
 
-                $server->info(['tree_name' => $ipcName]);
+                $this->info(['tree_name' => $ipcName]);
                 Console::pgreen('[TreeServer] started!');
                 return true;
             } else {
@@ -152,7 +156,6 @@ class Tree
             // 释放哈希表
             unset($this->map[$node->pid]);
         } else {
-            //            echo '找不到' . $pid . PHP_EOL;
         }
     }
 
@@ -189,26 +192,24 @@ class Tree
     /**
      * 关闭树服务
      *
-     * @return bool
-     * @throws \Exception
+     * @return void
      */
-    public static function stop(): bool
+    public function stop(): void
     {
-        if ($server = Server::load('Tree')) {
+        if ($this->initLoad()) {
             try {
-                $ipcName = $server->data['tree_name'];
+                $ipcName = $this->data['tree_name'];
                 if ($IPC = IPC::link($ipcName, true)) {
                     $IPC->stop();
-                    $server->release();
+                    $this->release();
                     Console::pgreen('[TreeServer] stopped!');
-                    return true;
+                    return;
                 }
             } catch (\Exception $e) {
                 Console::pred($e->getMessage());
             }
-            $server->release();
+            $this->release();
         }
         Console::pred('[TreeServer] stop failed may not run');
-        return false;
     }
 }
